@@ -8,7 +8,7 @@ const config = {
   width: 1000,
   height: 900,
   backgroundColor: '#222222',
-  scene: [Game1, Game2, startScreen, endScreen],
+  scene: [startScreen, Game1, Game2, endScreen],
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH

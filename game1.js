@@ -16,13 +16,15 @@ export default class Game1 extends Phaser.Scene {
         this.load.image('pileOfLeaves', "assets/pileOfLeaves.png");
     }
 
-  create() {
-        this.xCoord = this.cameras.main.width;
-        this.yCoord = this.cameras.main.height;
+    init(data){
+        this.xCoord = data.xCoord;
+        this.yCoord = data.yCoord;
+    }
 
+  create() {
         this.background = this.add.image(this.xCoord / 2, this.yCoord / 2, 'background').setOrigin(0.5);
         this.background.on('pointerdown', () => {
-            this.scene.start('endScreen');
+            this.scene.start('endScreen', {score: this.score, xCoord: this.xCoord, yCoord: this.yCoord});
         });
         this.score = 0;
         
