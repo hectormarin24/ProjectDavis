@@ -5,7 +5,7 @@ import startScreen from './startscreen.js';
 
 const config = {
   type: Phaser.AUTO,
-  width: 1600,
+  width: 1000,
   height: 900,
   backgroundColor: '#222222',
   scene: [Game1, Game2, startScreen, endScreen],

@@ -17,28 +17,37 @@ export default class Game1 extends Phaser.Scene {
     }
 
   create() {
-        this.add.image(640, 400, 'background');
+        this.xCoord = this.cameras.main.width;
+        this.yCoord = this.cameras.main.height;
+
+        this.background = this.add.image(this.xCoord / 2, this.yCoord / 2, 'background').setOrigin(0.5);
+        this.background.on('pointerdown', () => {
+            this.scene.start('endScreen');
+        });
         this.score = 0;
         
         // Recycle button
-        let recycleButton = this.add.image(640, 650, 'recycle_bin').setInteractive();
-        recycleButton.setScale(0.5);
-        recycleButton.on('pointerdown', () => {
+        this.recycleButton = this.add.image(this.xCoord / 4, (3 * this.yCoord) / 4, 'recycle_bin').setOrigin(0.5).setInteractive();
+        this.recycleButton.setScale(0.5);
+        this.recycleButton.on('pointerdown', () => {
             console.log("Recycle clicked!");
+            this.checkAnswer('recycle');
         });
 
         // Trash button
-        let trashButton = this.add.image(400, 650, 'trash_bin').setInteractive();
-        trashButton.setScale(0.5);
-        trashButton.on('pointerdown', () => {
+        this.trashButton = this.add.image(this.xCoord / 2, (3 * this.yCoord) / 4, 'trash_bin').setOrigin(0.5).setInteractive();
+        this.trashButton.setScale(0.5);
+        this.trashButton.on('pointerdown', () => {
             console.log("Trash clicked!");
+            this.checkAnswer('trash');
         });
 
         // Compost button
-        let compostButton = this.add.image(880, 650, 'compost_bin').setInteractive();
-        compostButton.setScale(0.5);
-        compostButton.on('pointerdown', () => {
+        this.compostButton = this.add.image((3 * this.xCoord) / 4, (3 * this.yCoord) / 4, 'compost_bin').setOrigin(0.5).setInteractive();
+        this.compostButton.setScale(0.5);
+        this.compostButton.on('pointerdown', () => {
             console.log("Compost clicked!");
+            this.checkAnswer('compost');
         });
 
         this.nextObject();
@@ -56,7 +65,7 @@ export default class Game1 extends Phaser.Scene {
         ];
 
         this.current = Phaser.Utils.Array.GetRandom(objects);
-        this.currentObject = this.add.image(640, 200, this.current.key);
+        this.currentObject = this.add.image(this.xCoord / 2, this.yCoord / 3, this.current.key).setOrigin(0.5);
     }
 
     checkAnswer(bin) {
@@ -69,7 +78,12 @@ export default class Game1 extends Phaser.Scene {
 
         if (this.score >= 5) {
             console.log("You win!");
-            this.add.text(640, 360, "You Win!", { fontSize: '64px', fill: '#fff' }).setOrigin(0.5);
+            this.currentObject.destroy();
+            this.add.text(this.xCoord / 2, this.yCoord / 2, "You Win!", { fontSize: '64px', fill: '#fff' }).setOrigin(0.5);
+            this.recycleButton.disableInteractive().setAlpha(0.5);
+            this.trashButton.disableInteractive().setAlpha(0.5);
+            this.compostButton.disableInteractive().setAlpha(0.5);
+            this.background.setInteractive();
         } else {
             this.nextObject();
         }
