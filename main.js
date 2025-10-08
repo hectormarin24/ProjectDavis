@@ -1,7 +1,7 @@
 import Game1 from './game1.js';
 import Game2 from './game2.js';
 import endScreen from './endScreen.js';
-import startScreen from './startscreen.js';
+import startScreen from './startScreen.js';
 
 const config = {
   type: Phaser.AUTO,
