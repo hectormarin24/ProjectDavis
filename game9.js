@@ -1,7 +1,4 @@
-/* game9.js
-   Phaser 3 scene for "Game 9" - pot with water or oil, click sink or bucket.
-   Place this file in the root alongside your other scene files and add it to main.js/index.html.
-*/
+
 
 class Game9 extends Phaser.Scene {
   constructor() {
@@ -10,11 +7,10 @@ class Game9 extends Phaser.Scene {
   }
 
   preload() {
-    // Replace these with your real asset paths in /assets/
-    this.load.image('bg', 'assets/bg.png');           // optional background
-    this.load.image('pot', 'assets/pot.png');         // neutral pot image
-    this.load.image('water', 'assets/liquid_water.png'); // blue liquid sprite
-    this.load.image('oil', 'assets/liquid_oil.png');     // brown liquid sprite
+    this.load.image('bg', 'assets/bg.png');           
+    this.load.image('pot', 'assets/pot.png');         
+    this.load.image('water', 'assets/liquid_water.png'); 
+    this.load.image('oil', 'assets/liquid_oil.png');     
     this.load.image('sink', 'assets/sink.png');
     this.load.image('bucket', 'assets/bucket.png');
     this.load.image('button_next', 'assets/button_next.png');
@@ -26,22 +22,21 @@ class Game9 extends Phaser.Scene {
     const cx = this.cameras.main.centerX;
     const cy = this.cameras.main.centerY;
 
-    // background (optional)
+    
     if (this.textures.exists('bg')) {
       this.add.image(cx, cy, 'bg').setDisplaySize(this.cameras.main.width, this.cameras.main.height);
     } else {
       this.cameras.main.setBackgroundColor(0xf0f0f0);
     }
 
-    // randomly decide pot contents
+    // random pot contents
     this.potContents = (Math.random() < 0.5) ? 'water' : 'oil';
     console.log('Game9 potContents:', this.potContents);
 
-    // targets (sink left, bucket right)
+    // targets...sink left, bucket right
     this.sink = this.add.image(cx - 270, cy + 60, 'sink').setInteractive({ cursor: 'pointer' });
     this.bucket = this.add.image(cx + 310, cy + 60, 'bucket').setInteractive({ cursor: 'pointer' });
 
-    // scale targets to look reasonable
     this.sink.setScale(0.2);
     this.bucket.setScale(0.2);
 
@@ -49,36 +44,33 @@ class Game9 extends Phaser.Scene {
     this.pot = this.add.image(cx, cy - 40, 'pot').setDepth(2);
     this.pot.setScale(0.3);
 
-    // Add label showing what the pot contains (for testing you can remove if you want hidden)
+    // label showing pot content
     this.hintText = this.add.text(cx, cy - 150, 'Pot contains: ' + this.potContents, { font: '20px Arial', color: '#000' }).setOrigin(0.5);
 
-    // Invisible "liquid" sprite used for pouring animation.
-    // We'll select the texture depending on potContents.
+    // invis "liquid" sprite used for pouring animation.
     const liquidKey = (this.potContents === 'water') ? 'water' : 'oil';
     this.liquid = this.add.image(this.pot.x, this.pot.y + 30, liquidKey).setOrigin(0.5, 0.5);
     this.liquid.setScale(0.3, 0.3);
-    this.liquid.setAlpha(0); // start hidden
+    this.liquid.setAlpha(0); // start invis
 
-    // Fill level objects (we'll scale a mask or sprite to simulate filling)
+    // Liquid filling after animation
     this.sinkFill = this.add.rectangle(this.sink.x, this.sink.y + 40, 120, 1, 0x3aa6ff).setOrigin(0.5, 1).setAlpha(0.9);
     this.bucketFill = this.add.rectangle(this.bucket.x, this.bucket.y + 60, 90, 1, 0x9b6b2b).setOrigin(0.5, 1).setAlpha(0.9);
 
-    // initialize minimal heights
     this.sinkFillHeight = 0;
     this.bucketFillHeight = 0;
 
-    // UI text
+    // text bottom
     this.message = this.add.text(cx, cy + 180, 'Click the correct container', { font: '20px Arial', color: '#222' }).setOrigin(0.5);
 
-    // sound
     this.pourSound = this.sound.add('pour', { volume: 0.4 });
     this.wrongSound = this.sound.add('wrong', { volume: 0.5 });
 
-    // set interactive handlers
+    // interactive
     this.sink.on('pointerdown', () => this.onTargetClicked('sink'));
     this.bucket.on('pointerdown', () => this.onTargetClicked('bucket'));
 
-    // next button (hidden until end)
+    // next button
     this.nextBtn = this.add.image(cx, cy + 320, 'button_next').setInteractive({ cursor: 'pointer' }).setVisible(false);
     this.nextBtn.setScale(0.4);
     this.nextBtn.on('pointerdown', () => {
@@ -87,7 +79,7 @@ class Game9 extends Phaser.Scene {
       this.scene.start('startScreen'); // default: back to start screen; change as you like
     });
 
-    // for quick keyboard testing
+    // keyboard testing
     this.input.keyboard.on('keydown-R', () => this.resetRound());
   }
 
@@ -135,7 +127,7 @@ class Game9 extends Phaser.Scene {
       ease: 'Sine.easeOut'
     });
 
-    // animate the "pour" (liquid drops)
+    // animate "pour"
     this.pourSound.play();
 
     this.tweens.add({
@@ -194,7 +186,7 @@ class Game9 extends Phaser.Scene {
   }
 
   resetRound() {
-    // allow replay: choose new randomly and reset fills
+    // replay, broken
     this.potContents = (Math.random() < 0.5) ? 'water' : 'oil';
     this.hintText.setText('Pot contains: ' + this.potContents);
     this.message.setText('Click the correct container');
@@ -203,11 +195,11 @@ class Game9 extends Phaser.Scene {
     this.nextBtn.setVisible(false);
   }
 
-  // optional update if you need per-frame logic
+  // if you need per-frame logic
   update() {}
 }
 
-// expose if using script tags
+// expose if using script tags. This allows using consol to jump to the game
 if (typeof window !== 'undefined') {
   window.Game9 = Game9;
 }
