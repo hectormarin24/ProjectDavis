@@ -38,16 +38,16 @@ class Game9 extends Phaser.Scene {
     console.log('Game9 potContents:', this.potContents);
 
     // targets (sink left, bucket right)
-    this.sink = this.add.image(cx - 210, cy + 60, 'sink').setInteractive({ cursor: 'pointer' });
-    this.bucket = this.add.image(cx + 210, cy + 60, 'bucket').setInteractive({ cursor: 'pointer' });
+    this.sink = this.add.image(cx - 270, cy + 60, 'sink').setInteractive({ cursor: 'pointer' });
+    this.bucket = this.add.image(cx + 310, cy + 60, 'bucket').setInteractive({ cursor: 'pointer' });
 
     // scale targets to look reasonable
-    this.sink.setScale(0.6);
-    this.bucket.setScale(0.7);
+    this.sink.setScale(0.2);
+    this.bucket.setScale(0.2);
 
     // pot above center
     this.pot = this.add.image(cx, cy - 40, 'pot').setDepth(2);
-    this.pot.setScale(0.9);
+    this.pot.setScale(0.3);
 
     // Add label showing what the pot contains (for testing you can remove if you want hidden)
     this.hintText = this.add.text(cx, cy - 150, 'Pot contains: ' + this.potContents, { font: '20px Arial', color: '#000' }).setOrigin(0.5);
@@ -55,8 +55,8 @@ class Game9 extends Phaser.Scene {
     // Invisible "liquid" sprite used for pouring animation.
     // We'll select the texture depending on potContents.
     const liquidKey = (this.potContents === 'water') ? 'water' : 'oil';
-    this.liquid = this.add.image(this.pot.x, this.pot.y + 30, liquidKey).setOrigin(0.5, 0);
-    this.liquid.setScale(0.9, 0.2);
+    this.liquid = this.add.image(this.pot.x, this.pot.y + 30, liquidKey).setOrigin(0.5, 0.5);
+    this.liquid.setScale(0.3, 0.3);
     this.liquid.setAlpha(0); // start hidden
 
     // Fill level objects (we'll scale a mask or sprite to simulate filling)
@@ -71,15 +71,16 @@ class Game9 extends Phaser.Scene {
     this.message = this.add.text(cx, cy + 180, 'Click the correct container', { font: '20px Arial', color: '#222' }).setOrigin(0.5);
 
     // sound
-    this.pourSound = this.sound.add('pour', { volume: 0.5 });
-    this.wrongSound = this.sound.add('wrong', { volume: 0.6 });
+    this.pourSound = this.sound.add('pour', { volume: 0.4 });
+    this.wrongSound = this.sound.add('wrong', { volume: 0.5 });
 
     // set interactive handlers
     this.sink.on('pointerdown', () => this.onTargetClicked('sink'));
     this.bucket.on('pointerdown', () => this.onTargetClicked('bucket'));
 
     // next button (hidden until end)
-    this.nextBtn = this.add.image(cx, cy + 220, 'button_next').setInteractive({ cursor: 'pointer' }).setVisible(false);
+    this.nextBtn = this.add.image(cx, cy + 320, 'button_next').setInteractive({ cursor: 'pointer' }).setVisible(false);
+    this.nextBtn.setScale(0.4);
     this.nextBtn.on('pointerdown', () => {
       this.nextBtn.setVisible(false);
       // return to start or move on. You may want: this.scene.start('endScreen') or 'game2'
@@ -119,7 +120,7 @@ class Game9 extends Phaser.Scene {
     this.liquid.setAlpha(1);
     this.liquid.x = this.pot.x;
     this.liquid.y = this.pot.y + 30;
-    this.liquid.setScale(0.9, 0.25);
+    this.liquid.setScale(0.1, 0.1);
 
     // compute target world position (a point inside target)
     const targetX = (target === 'sink') ? this.sink.x : this.bucket.x;
@@ -141,9 +142,9 @@ class Game9 extends Phaser.Scene {
       targets: this.liquid,
       x: targetX,
       y: targetY,
-      scaleX: 0.5,
-      scaleY: 0.5,
-      alpha: 0.9,
+      scaleX: 0.2,
+      scaleY: 0.2,
+      alpha: 0.2,
       duration: 800,
       ease: 'Cubic.easeIn',
       onComplete: () => {
@@ -210,3 +211,4 @@ class Game9 extends Phaser.Scene {
 if (typeof window !== 'undefined') {
   window.Game9 = Game9;
 }
+export default Game9;
