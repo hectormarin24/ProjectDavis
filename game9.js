@@ -63,22 +63,23 @@ class Game9 extends Phaser.Scene {
     // text bottom
     this.message = this.add.text(cx, cy + 180, 'Click the correct container', { font: '20px Arial', color: '#222' }).setOrigin(0.5);
 
-    this.pourSound = this.sound.add('pour', { volume: 0.4 });
-    this.wrongSound = this.sound.add('wrong', { volume: 0.5 });
+    this.pourSound = this.sound.add('pour', { volume: 0.1 });
+    this.wrongSound = this.sound.add('wrong', { volume: 0.2 });
 
     // interactive
     this.sink.on('pointerdown', () => this.onTargetClicked('sink'));
     this.bucket.on('pointerdown', () => this.onTargetClicked('bucket'));
-
+    
     // next button
-    this.nextBtn = this.add.image(cx, cy + 320, 'button_next').setInteractive({ cursor: 'pointer' }).setVisible(false);
-    this.nextBtn.setScale(0.4);
-    this.nextBtn.on('pointerdown', () => {
-      this.nextBtn.setVisible(false);
-      // return to start or move on. You may want: this.scene.start('endScreen') or 'game2'
-      this.scene.start('startScreen'); // default: back to start screen; change as you like
-    });
-
+    
+    //this.nextBtn = this.add.image(cx, cy + 320, 'button_next').setInteractive({ cursor: 'pointer' }).setVisible(false);
+    //this.nextBtn.setScale(0.4);
+    //this.nextBtn.on('pointerdown', () => {
+    //  this.nextBtn.setVisible(false);
+    //  this.scene.start('startScreen'); // default: back to start screen; change as you like
+    //});
+    
+    
     // keyboard testing
     this.input.keyboard.on('keydown-R', () => this.resetRound());
   }
@@ -165,7 +166,7 @@ class Game9 extends Phaser.Scene {
 
         // show next button or finish
         this.time.delayedCall(600, () => {
-          this.nextBtn.setVisible(true);
+          this.nextBtn?.setVisible(true);
         });
       }
     });
@@ -192,7 +193,7 @@ class Game9 extends Phaser.Scene {
     this.message.setText('Click the correct container');
     this.sink.setInteractive({ cursor: 'pointer' });
     this.bucket.setInteractive({ cursor: 'pointer' });
-    this.nextBtn.setVisible(false);
+    this.nextBtn?.setVisible(false);
   }
 
   // if you need per-frame logic
