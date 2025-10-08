@@ -14,6 +14,9 @@ export default class Game1 extends Phaser.Scene {
         this.load.image('banana_peel', "assets/banana_peel.png");
         this.load.image('battery', "assets/battery.png");
         this.load.image('pileOfLeaves', "assets/pileOfLeaves.png");
+
+
+        
     }
 
     init(data){
@@ -24,7 +27,7 @@ export default class Game1 extends Phaser.Scene {
   create() {
         this.background = this.add.image(this.xCoord / 2, this.yCoord / 2, 'background').setOrigin(0.5);
         this.background.on('pointerdown', () => {
-            this.scene.start('endScreen', {score: this.score, xCoord: this.xCoord, yCoord: this.yCoord});
+            this.scene.start('closeTheLids', {score: this.score, xCoord: this.xCoord, yCoord: this.yCoord});
         });
         this.score = 0;
         
