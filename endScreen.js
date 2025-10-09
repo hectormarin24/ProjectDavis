@@ -14,7 +14,7 @@ export default class endScreen extends Phaser.Scene {
   }
 
   create() {
-    this.background = this.add.image(this.xCoord / 2, this.yCoord / 2, 'background').setOrigin(0.5);
+    this.background = this.add.image(this.xCoord / 3 + 20, this.yCoord / 2, 'background').setOrigin(0.5);
     this.add.text(this.xCoord / 2, this.yCoord / 3, "You Win!", { fontSize: '156px', fontStyle: 'bold',fill: '#fff' }).setOrigin(0.5);
     this.add.text(this.xCoord / 2, this.yCoord / 2, `Score: ${this.score}`, { fontSize: '64px', fontStyle: 'bold', fill: '#fff' }).setOrigin(0.5);
 

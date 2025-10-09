@@ -18,7 +18,7 @@ export default class startScreen extends Phaser.Scene {
     this.xCoord = this.cameras.main.width;
     this.yCoord = this.cameras.main.height;
 
-    this.background = this.add.image(this.xCoord / 3, this.yCoord / 2, 'background').setOrigin(0.5);
+    this.background = this.add.image(this.xCoord / 3 + 20, this.yCoord / 2, 'background').setOrigin(0.5);
     this.add.text(this.xCoord / 2, this.yCoord / 3, "Welcome!", { fontSize: '156px', fontStyle: 'bold',fill: '#fff' }).setOrigin(0.5);
 
       // --- Define the idle animation ---

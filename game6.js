@@ -321,7 +321,7 @@ this.bin = this.add.image(this.W / 2, binY, 'compost_bin_img')
     }).setOrigin(0.5).setDepth(101);
 
     this.input.once('pointerdown', () => {
-      this.scene.start('endScreen', { score: this.score });
+      this.scene.start('Game5', {score: this.score, xCoord: this.W, yCoord: this.H});
     });
   }
 

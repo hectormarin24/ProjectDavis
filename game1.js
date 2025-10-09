@@ -25,7 +25,7 @@ export default class Game1 extends Phaser.Scene {
     }
 
   create() {
-        this.background = this.add.image(this.xCoord / 2, this.yCoord / 2, 'background').setOrigin(0.5);
+        this.background = this.add.image(this.xCoord / 3 + 20, this.yCoord / 2, 'background').setOrigin(0.5);
         this.background.on('pointerdown', () => {
             this.scene.start('closeTheLids', {score: this.score, xCoord: this.xCoord, yCoord: this.yCoord});
         });
