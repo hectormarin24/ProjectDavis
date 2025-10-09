@@ -1,7 +1,7 @@
 import Game1 from './game1.js';
 import Game2 from './game2.js';
 import Game9 from './game9.js';
-import closeTheLids from './closeTheLids.js';
+import CloseTheLids from './CloseTheLids.js';
 
 import endScreen from './endScreen.js';
 import startScreen from './startScreen.js';

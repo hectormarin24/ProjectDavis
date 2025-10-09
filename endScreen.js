@@ -31,3 +31,8 @@ export default class endScreen extends Phaser.Scene {
       });
   }
 }
+
+// expose if using script tags. This allows using consol to jump to the game
+if (typeof window !== 'undefined') {
+  window.Game9 = Game9;
+}
