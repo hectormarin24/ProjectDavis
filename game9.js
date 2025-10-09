@@ -19,6 +19,8 @@ class Game9 extends Phaser.Scene {
   }
 
   create() {
+    this.oilFillCount = 0;
+    this.maxOilFills = 3;
     const cx = this.cameras.main.centerX;
     const cy = this.cameras.main.centerY;
 
@@ -106,6 +108,39 @@ class Game9 extends Phaser.Scene {
     }
   }
 
+  handleOilFilled() {
+  this.oilFillCount++;
+
+  // quick message
+  const cx = this.cameras.main.centerX;
+  const cy = this.cameras.main.centerY - 200;
+  const msg = this.add.text(cx, cy, `Liquid filled: ${this.oilFillCount}/${this.maxOilFills}`, {
+    font: '30px Arial',
+    fill: '#2f4f4f'
+  }).setOrigin(0.5);
+  // fade out after 1s
+  this.tweens.add({
+    targets: msg,
+    alpha: 0,
+    duration: 1900,
+    onComplete: () => msg.destroy()
+  });
+
+  // decide whether to end the game
+  if (this.oilFillCount >= this.maxOilFills) {
+    this.endGame();
+  } else {
+    // proceed to next phase (previously you showed nextBtn here)
+    // call any function that resets the level / spawns new pipes / shows instructions
+    if (typeof this.startNextPhase === 'function') {
+      this.startNextPhase();
+    }
+    // otherwise, put whatever logic used to run after the "next" event here.
+  }
+}
+
+
+
   pourTo(target) {
     const liquidKey = (this.potContents === 'water') ? 'water' : 'oil';
     // position liquid at rim of pot
@@ -166,8 +201,8 @@ class Game9 extends Phaser.Scene {
 
         // show next button or finish
         this.time.delayedCall(600, () => {
-          this.nextBtn?.setVisible(true);
-        });
+          this.handleOilFilled();
+        }, [], this);
       }
     });
   }
@@ -193,8 +228,27 @@ class Game9 extends Phaser.Scene {
     this.message.setText('Click the correct container');
     this.sink.setInteractive({ cursor: 'pointer' });
     this.bucket.setInteractive({ cursor: 'pointer' });
-    this.nextBtn?.setVisible(false);
+    //this.nextBtn?.setVisible(false);
   }
+
+  endGame() {
+  // scene freeze
+  if (this.physics && this.physics.pause) this.physics.pause();
+  if (this.time && this.time.removeAllEvents) this.time.removeAllEvents();
+  this.input.enabled = false;
+
+  const cx = this.cameras.main.centerX;
+  const cy = this.cameras.main.centerY;
+  const style = { font: '48px Arial', fill: '#ffdddd', align: 'center' };
+  //this.add.rectangle(cx, cy, 400, 140, 0x000000, 0.7).setOrigin(0.5);
+  //this.add.text(cx, cy - 10, 'Game Over', style).setOrigin(0.5);
+  //this.add.text(cx, cy + 35, 'Moving to menu...', { font: '16px Arial', fill: '#fff' }).setOrigin(0.5);
+
+  // go back to menu or restart after a short delay
+  this.time.delayedCall(1800, () => {
+    this.scene.start('endScreen');
+  });
+}
 
   // if you need per-frame logic
   update() {}
