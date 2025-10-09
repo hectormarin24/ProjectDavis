@@ -236,7 +236,7 @@ export default class Game9 extends Phaser.Scene {
 
   // go back to menu or restart after a short delay
   this.time.delayedCall(1800, () => {
-    this.scene.start('endScreen');
+    this.scene.start('LeakyFaucet');
   });
 }
 

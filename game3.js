@@ -4,34 +4,75 @@ export default class LeakyFaucet extends Phaser.Scene {
     }
 
     preload() {
-        // No assets needed for now — using Phaser Graphics
+        this.load.image('faucet', 'assets/faucet.png');
+        this.load.image('sink', 'assets/sink2.png');
+        this.load.image('droplet', 'assets/droplet.png');
+        this.load.image('wrench', 'assets/wrench.png');
     }
 
     create() {
-        // Game state
-        this.waterLevel = 0;
-        this.dripTimer = 0;
-        this.wrenchRotation = 0;
-        this.leakFixed = false;
-        this.gameOver = false;
+        // Track game state
+        this.waterLevel = 0;        // Logical water level (0–100)
+        this.dripTimer = 0;         // Timer used for dripping cadence
+        this.wrenchRotation = 0;    // Accumulated rotation of the wrench
+        this.leakFixed = false;     // Flag set when leak is repaired
+        this.gameOver = false;      // Flag set once game ends
 
-        // Graphics object for drawing
-        this.graphics = this.add.graphics();
+        // Add the sink and faucet images to the scene.
+        const { width, height } = this.scale;
+        this.sink = this.add.image(width * 0.5, height * 0.55, 'sink');
+        // Increase the sink's scale so it appears larger on screen.
+        this.sink.setScale(0.6);
+        this.sink.setOrigin(0.5, 0.5);
 
-        // Keyboard input
+        this.faucet = this.add.image(width * 0.5, height * 0.35, 'faucet');
+        // Make the faucet larger as well for better visibility.
+        this.faucet.setScale(0.55);
+        this.faucet.setOrigin(0.5, 0.5);
+
+        // Create a graphics object to draw the water level bar.
+        this.waterGraphics = this.add.graphics();
+
+        // Add the wrench image.
+        this.wrench = this.add.image(this.faucet.x, this.faucet.y, 'wrench');
+        // Enlarge the wrench so it looks substantial next to the faucet.
+        this.wrench.setScale(0.4);
+        // Set origin to the top of the sprite.  When rotated, the top of
+        // the wrench remains anchored at the faucet position.
+        this.wrench.setOrigin(0.5, 0);
+
+        // Add a droplet that repeatedly falls from the faucet.
+        this.dropletStartY = this.faucet.y + (this.faucet.displayHeight * 0.5);
+        this.droplet = this.add.image(this.faucet.x, this.dropletStartY, 'droplet');
+        // Increase droplet size so it is more visible falling from the faucet.
+        this.droplet.setScale(0.25);
+        this.droplet.setOrigin(0.5, 0);
+
+        // Set up keyboard input handlers for rotating the wrench.
         this.input.keyboard.on('keydown', this.handleKey, this);
+
+        // The wrench's initial orientation will be set in update() based on
+        // the current rotation state.
     }
 
+    /**
+     * Respond to key presses.  The left arrow or 'A' rotates the wrench
+     * counter‑clockwise; the right arrow or 'D' rotates it clockwise.  Once
+     * the accumulated rotation reaches ±360 degrees the leak is considered
+     * fixed and the game ends successfully.
+     *
+     * @param {KeyboardEvent} e The key event
+     */
     handleKey(e) {
         if (this.gameOver) return;
-
-        if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') {
+        const key = e.key;
+        if (key === 'ArrowRight' || key.toLowerCase() === 'd') {
             this.wrenchRotation += 15;
-        } else if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') {
+        } else if (key === 'ArrowLeft' || key.toLowerCase() === 'a') {
             this.wrenchRotation -= 15;
         }
 
-        // Fix leak when rotated enough
+        // Check if the wrench has completed a full rotation
         if (Math.abs(this.wrenchRotation) >= 360) {
             this.leakFixed = true;
             this.endGame(true);
@@ -41,82 +82,65 @@ export default class LeakyFaucet extends Phaser.Scene {
     update() {
         if (this.gameOver) return;
 
-        this.dripTimer++;
+        // Reanchor the wrench on the faucet and rotate it.
+        this.wrench.setPosition(this.faucet.x, this.faucet.y);
+        this.wrench.setAngle(this.wrenchRotation + 90);
 
-        // Every few frames, add water if not fixed
-        if (!this.leakFixed && this.dripTimer % 40 === 0) {
-            this.waterLevel += 0.5;
-            if (this.waterLevel >= 100) {
+        // Drip logic: move the droplet downward
+        const sinkBottomY = this.sink.y + (this.sink.displayHeight * 0.3);
+        this.droplet.y += 4;
+        if (this.droplet.y >= sinkBottomY) {
+            this.droplet.y = this.dropletStartY;
+            this.waterLevel += 2; // Increase the logical water level
+            if (this.waterLevel >= 100 && !this.leakFixed) {
                 this.endGame(false);
             }
         }
 
-        this.drawScene();
+        // Draw water level bar inside the sink
+        this.waterGraphics.clear();
+        const barWidth = this.sink.displayWidth * 0.5;
+        const barHeightMax = this.sink.displayHeight * 0.4;
+        const waterHeight = (this.waterLevel / 100) * barHeightMax;
+        const barX = this.sink.x - barWidth / 2;
+        const barY = (this.sink.y + this.sink.displayHeight * 0.2) - waterHeight;
+        this.waterGraphics.fillStyle(0x4fc3f7);
+        this.waterGraphics.fillRect(barX, barY, barWidth, waterHeight);
     }
 
-    drawScene() {
-        const g = this.graphics;
-        g.clear();
-
-        // Background
-        g.fillStyle(0x222222);
-        g.fillRect(0, 0, this.game.config.width, this.game.config.height);
-
-        // Faucet
-        g.fillStyle(0x555555);
-        g.fillRect(160, 50, 80, 20);
-        g.fillRect(195, 20, 10, 30);
-
-        // Sink
-        g.fillStyle(0xb0bec5);
-        g.fillRect(120, 200, 160, 40);
-
-        // Water
-        g.fillStyle(0x4fc3f7);
-        g.fillRect(120, 240 - this.waterLevel, 160, this.waterLevel);
-
-        // Wrench (rotating visually)
-        const wrenchX = 300;
-        const wrenchY = 130;
-        const length = 80;
-        const angle = Phaser.Math.DegToRad(this.wrenchRotation);
-
-        const x1 = wrenchX - (length / 2) * Math.cos(angle);
-        const y1 = wrenchY - (length / 2) * Math.sin(angle);
-        const x2 = wrenchX + (length / 2) * Math.cos(angle);
-        const y2 = wrenchY + (length / 2) * Math.sin(angle);
-
-        g.lineStyle(8, 0x8d6e63);
-        g.beginPath();
-        g.moveTo(x1, y1);
-        g.lineTo(x2, y2);
-        g.strokePath();
-        g.fillStyle(0x8d6e63);
-        g.fillCircle(x2, y2, 12);
-    }
-
+    /**
+     * Called when the game has ended.  Displays a translucent overlay
+     * and a result message and then transitions to the `endScreen` scene
+     * after a short delay.
+     *
+     * @param {boolean} success Whether the leak was fixed before overflow
+     */
     endGame(success) {
         this.gameOver = true;
-
-        // Overlay
+        // Dark overlay
         this.add.rectangle(
-            this.game.config.width / 2,
-            this.game.config.height / 2,
-            this.game.config.width,
-            this.game.config.height,
+            this.scale.width / 2,
+            this.scale.height / 2,
+            this.scale.width,
+            this.scale.height,
             0x000000,
             0.6
         );
-
-        // Text message
+        // Result text
+        const message = success ? '✅ Leak Fixed!' : '💦 Sink Overflowed!';
         this.add.text(
-            this.game.config.width / 2,
-            this.game.config.height / 2,
-            success ? '✅ Leak Fixed!' : '💦 Sink Overflowed!',
+            this.scale.width / 2,
+            this.scale.height / 2,
+            message,
             {
-                font: '22px Arial',
+                font: '32px Arial',
                 color: '#ffffff',
             }
         ).setOrigin(0.5);
+        // After 2 seconds transition to the end screen
+        this.time.delayedCall(2000, () => {
+            this.scene.start('endScreen');
+        });
     }
+
 }
