@@ -4,8 +4,6 @@ export default class LeakyFaucet extends Phaser.Scene {
     }
 
     preload() {
-        // Preload image assets from the assets folder.  Ensure these files are
-        // placed in `<project root>/assets`.
         this.load.image('faucet', 'assets/faucet.png');
         this.load.image('sink', 'assets/sink2.png');
         this.load.image('droplet', 'assets/droplet.png');
@@ -20,9 +18,7 @@ export default class LeakyFaucet extends Phaser.Scene {
         this.leakFixed = false;     // Flag set when leak is repaired
         this.gameOver = false;      // Flag set once game ends
 
-        // Add the sink and faucet images to the scene.  Position them closer
-        // together vertically so the gameplay feels more compact.  Scale the
-        // sink slightly larger than before to better contain the rising water.
+        // Add the sink and faucet images to the scene.
         const { width, height } = this.scale;
         this.sink = this.add.image(width * 0.5, height * 0.55, 'sink');
         // Increase the sink's scale so it appears larger on screen.
@@ -34,42 +30,29 @@ export default class LeakyFaucet extends Phaser.Scene {
         this.faucet.setScale(0.55);
         this.faucet.setOrigin(0.5, 0.5);
 
-        // Create a graphics object to draw the water level bar.  We reuse
-        // this each frame instead of creating new rectangles.
+        // Create a graphics object to draw the water level bar.
         this.waterGraphics = this.add.graphics();
 
-        // Add the wrench image.  The wrench will orbit the faucet instead of
-        // sitting at a fixed location.  We'll compute its position dynamically
-        // in update() based on its rotation.
-        this.wrench = this.add.image(0, 0, 'wrench');
+        // Add the wrench image.
+        this.wrench = this.add.image(this.faucet.x, this.faucet.y, 'wrench');
         // Enlarge the wrench so it looks substantial next to the faucet.
         this.wrench.setScale(0.4);
-        this.wrench.setOrigin(0.5, 0.5);
+        // Set origin to the top of the sprite.  When rotated, the top of
+        // the wrench remains anchored at the faucet position.
+        this.wrench.setOrigin(0.5, 0);
 
-        // Determine the radius of the wrench's orbit.  Use a proportion of
-        // the faucet's width to produce a reasonable distance.  Store this
-        // value on the scene for later use.
-        // Determine the radius of the wrench's orbit.  Use a proportion of
-        // the faucet's width to produce a reasonable distance.  Larger
-        // multiplier draws the wrench closer to the faucet so it appears to
-        // tighten the valve.
-        this.wrenchRadius = this.faucet.displayWidth * 0.9;
-
-        // Add a droplet that repeatedly falls from the faucet.  We'll reset
-        // its position when it reaches the sink.  The starting Y offset is
-        // relative to the faucet image.
+        // Add a droplet that repeatedly falls from the faucet.
         this.dropletStartY = this.faucet.y + (this.faucet.displayHeight * 0.5);
         this.droplet = this.add.image(this.faucet.x, this.dropletStartY, 'droplet');
         // Increase droplet size so it is more visible falling from the faucet.
         this.droplet.setScale(0.25);
         this.droplet.setOrigin(0.5, 0);
 
-        // Set up keyboard input handlers for rotating the wrench.  We bind
-        // the handler to the scene so `this` refers to the scene instance.
+        // Set up keyboard input handlers for rotating the wrench.
         this.input.keyboard.on('keydown', this.handleKey, this);
 
-        // Position the wrench initially based on the current rotation state.
-        this.updateWrenchPosition();
+        // The wrench's initial orientation will be set in update() based on
+        // the current rotation state.
     }
 
     /**
@@ -99,17 +82,11 @@ export default class LeakyFaucet extends Phaser.Scene {
     update() {
         if (this.gameOver) return;
 
-        // Update the wrench sprite's angle so the user sees it rotate
-        // Position the wrench around the faucet and rotate it to follow the
-        // current rotation state.  This call sets both its position and
-        // orientation so that it visually orbits the faucet as the user
-        // turns it.
-        this.updateWrenchPosition();
+        // Reanchor the wrench on the faucet and rotate it.
+        this.wrench.setPosition(this.faucet.x, this.faucet.y);
+        this.wrench.setAngle(this.wrenchRotation + 90);
 
-        // Drip logic: move the droplet downward; when it reaches the sink,
-        // reset it to the faucet and increment the water level.  As the
-        // water level rises we update the blue bar.  If it reaches the
-        // threshold the game ends with a failure.
+        // Drip logic: move the droplet downward
         const sinkBottomY = this.sink.y + (this.sink.displayHeight * 0.3);
         this.droplet.y += 4;
         if (this.droplet.y >= sinkBottomY) {
@@ -120,9 +97,7 @@ export default class LeakyFaucet extends Phaser.Scene {
             }
         }
 
-        // Draw water level bar inside the sink.  We map the water level (0–100)
-        // to a pixel height.  The bar originates from the bottom of the sink
-        // and grows upward as the level rises.
+        // Draw water level bar inside the sink
         this.waterGraphics.clear();
         const barWidth = this.sink.displayWidth * 0.5;
         const barHeightMax = this.sink.displayHeight * 0.4;
@@ -168,21 +143,4 @@ export default class LeakyFaucet extends Phaser.Scene {
         });
     }
 
-    /**
-     * Updates the wrench's position and orientation based on the current
-     * rotation state.  The wrench orbits around the faucet at a fixed
-     * radius and is rotated tangentially so it appears to be tightening
-     * the valve.  Called from update() and after initial creation.
-     */
-    updateWrenchPosition() {
-        // Convert the stored rotation (degrees) to radians for trig functions.
-        const angleRad = Phaser.Math.DegToRad(this.wrenchRotation);
-        // Compute the wrench's centre based on the faucet position and orbit radius.
-        const x = this.faucet.x + Math.cos(angleRad) * this.wrenchRadius;
-        const y = this.faucet.y + Math.sin(angleRad) * this.wrenchRadius;
-        this.wrench.setPosition(x, y);
-        // Rotate the wrench so it stays tangential to its orbit.  Add 90 degrees
-        // so that the wrench's jaws face inward towards the faucet.
-        this.wrench.setAngle(this.wrenchRotation + 90);
-    }
 }
