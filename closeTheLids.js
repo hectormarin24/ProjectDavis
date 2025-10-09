@@ -22,7 +22,7 @@ create() {
     this.background.displayWidth = this.sys.game.config.width;
     this.background.displayHeight = this.sys.game.config.height;
     this.background.on('pointerdown', () => {
-        this.scene.start('game9', {score: this.score, xCoord: this.xCoord, yCoord: this.yCoord});
+        this.scene.start('Game9', {score: this.score, xCoord: this.xCoord, yCoord: this.yCoord});
     });
     this.score = 0;
 

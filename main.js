@@ -13,7 +13,7 @@ const config = {
   height: 900,
   backgroundColor: '#222222',
 
-  scene: [ startScreen, Game1, Game2, LeakyFaucet, Game9, endScreen, CloseTheLids ],
+  scene: [ startScreen, Game1, Game2, LeakyFaucet, Game9, endScreen, closeTheLids ],
 
   scale: {
     mode: Phaser.Scale.FIT,

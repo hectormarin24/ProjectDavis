@@ -3,6 +3,11 @@ export default class LeakyFaucet extends Phaser.Scene {
         super('LeakyFaucet');
     }
 
+    init(data){
+        this.xCoord = data.xCoord;
+        this.yCoord = data.yCoord;
+    }
+
     preload() {
         this.load.image('faucet', 'assets/faucet.png');
         this.load.image('sink', 'assets/sink2.png');
@@ -139,7 +144,7 @@ export default class LeakyFaucet extends Phaser.Scene {
         ).setOrigin(0.5);
         // After 2 seconds transition to the end screen
         this.time.delayedCall(2000, () => {
-            this.scene.start('endScreen');
+            this.scene.start('endScreen', {xCoord: this.xCoord, yCoord: this.yCoord});
         });
     }
 

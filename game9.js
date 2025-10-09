@@ -5,6 +5,11 @@ export default class Game9 extends Phaser.Scene {
     this.potContents = null; // "water" or "oil"
   }
 
+  init(data){
+    this.xCoord = data.xCoord;
+    this.yCoord = data.yCoord;
+  }
+
   preload() {
     this.load.image('bg', 'assets/bg.png');           
     this.load.image('pot', 'assets/pot.png');         
@@ -236,7 +241,7 @@ export default class Game9 extends Phaser.Scene {
 
   // go back to menu or restart after a short delay
   this.time.delayedCall(1800, () => {
-    this.scene.start('LeakyFaucet');
+    this.scene.start('LeakyFaucet', {xCoord: this.xCoord, yCoord: this.yCoord});
   });
 }
 
