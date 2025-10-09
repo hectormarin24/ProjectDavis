@@ -44,7 +44,7 @@ export default class startScreen extends Phaser.Scene {
       .on('pointerover', () => playBtn.setScale(0.23)) // hover = a bit bigger
       .on('pointerout',  () => playBtn.setScale(0.2))  // leave = back to base
       .on('pointerdown', () => {
-        this.scene.start('Game6', {xCoord: this.xCoord, yCoord: this.yCoord});
+        this.scene.start('Game1', {xCoord: this.xCoord, yCoord: this.yCoord});
       });
       // --- Shop Button ---
     const trophyBtn = this.add.image(this.xCoord / 2.7, (3 * this.yCoord) / 3.6, 'btnTrophy')
