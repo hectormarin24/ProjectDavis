@@ -1,7 +1,7 @@
 import Game1 from './game1.js';
 import Game2 from './game2.js';
 import Game9 from './game9.js';
-import CloseTheLids from './CloseTheLids.js';
+import closeTheLids from './closeTheLids.js';
 
 import endScreen from './endScreen.js';
 import startScreen from './startScreen.js';
@@ -11,7 +11,7 @@ const config = {
   width: 1000,
   height: 900,
   backgroundColor: '#222222',
-  scene: [ startScreen, Game1, Game2, Game9, endScreen, CloseTheLids ], 
+  scene: [ startScreen, Game1, Game2, Game9, endScreen, closeTheLids ], 
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH
