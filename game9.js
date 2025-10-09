@@ -1,8 +1,7 @@
 
-
-class Game9 extends Phaser.Scene {
+export default class Game9 extends Phaser.Scene {
   constructor() {
-    super({ key: 'game9' });
+    super({ key: 'Game9' });
     this.potContents = null; // "water" or "oil"
   }
 
@@ -72,14 +71,6 @@ class Game9 extends Phaser.Scene {
     this.sink.on('pointerdown', () => this.onTargetClicked('sink'));
     this.bucket.on('pointerdown', () => this.onTargetClicked('bucket'));
     
-    // next button
-    
-    //this.nextBtn = this.add.image(cx, cy + 320, 'button_next').setInteractive({ cursor: 'pointer' }).setVisible(false);
-    //this.nextBtn.setScale(0.4);
-    //this.nextBtn.on('pointerdown', () => {
-    //  this.nextBtn.setVisible(false);
-    //  this.scene.start('startScreen'); // default: back to start screen; change as you like
-    //});
     
     
     // keyboard testing
@@ -228,7 +219,6 @@ class Game9 extends Phaser.Scene {
     this.message.setText('Click the correct container');
     this.sink.setInteractive({ cursor: 'pointer' });
     this.bucket.setInteractive({ cursor: 'pointer' });
-    //this.nextBtn?.setVisible(false);
   }
 
   endGame() {
@@ -258,4 +248,4 @@ class Game9 extends Phaser.Scene {
 if (typeof window !== 'undefined') {
   window.Game9 = Game9;
 }
-export default Game9;
+

@@ -12,7 +12,9 @@ const config = {
   width: 1000,
   height: 900,
   backgroundColor: '#222222',
+
   scene: [ startScreen, Game1, Game2, LeakyFaucet, Game9, endScreen, CloseTheLids ],
+
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH
