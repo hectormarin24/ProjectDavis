@@ -4,21 +4,26 @@ export default class LeakyFaucet extends Phaser.Scene {
     }
 
     preload() {
-        // load assets here if needed
+        // No assets needed for now — using Phaser Graphics
     }
 
     create() {
+        // Game state
         this.waterLevel = 0;
         this.dripTimer = 0;
         this.wrenchRotation = 0;
         this.leakFixed = false;
+        this.gameOver = false;
 
+        // Graphics object for drawing
         this.graphics = this.add.graphics();
+
+        // Keyboard input
         this.input.keyboard.on('keydown', this.handleKey, this);
     }
 
     handleKey(e) {
-        if (this.leakFixed) return;
+        if (this.gameOver) return;
 
         if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') {
             this.wrenchRotation += 15;
@@ -26,6 +31,7 @@ export default class LeakyFaucet extends Phaser.Scene {
             this.wrenchRotation -= 15;
         }
 
+        // Fix leak when rotated enough
         if (Math.abs(this.wrenchRotation) >= 360) {
             this.leakFixed = true;
             this.endGame(true);
@@ -33,12 +39,16 @@ export default class LeakyFaucet extends Phaser.Scene {
     }
 
     update() {
-        if (this.leakFixed) return;
+        if (this.gameOver) return;
 
         this.dripTimer++;
-        if (this.dripTimer % 40 === 0) {
+
+        // Every few frames, add water if not fixed
+        if (!this.leakFixed && this.dripTimer % 40 === 0) {
             this.waterLevel += 0.5;
-            if (this.waterLevel >= 100) this.endGame(false);
+            if (this.waterLevel >= 100) {
+                this.endGame(false);
+            }
         }
 
         this.drawScene();
@@ -47,6 +57,10 @@ export default class LeakyFaucet extends Phaser.Scene {
     drawScene() {
         const g = this.graphics;
         g.clear();
+
+        // Background
+        g.fillStyle(0x222222);
+        g.fillRect(0, 0, this.game.config.width, this.game.config.height);
 
         // Faucet
         g.fillStyle(0x555555);
@@ -61,21 +75,48 @@ export default class LeakyFaucet extends Phaser.Scene {
         g.fillStyle(0x4fc3f7);
         g.fillRect(120, 240 - this.waterLevel, 160, this.waterLevel);
 
-        // Wrench
-        g.save();
-        g.translate(300, 130);
-        g.rotate((this.wrenchRotation * Math.PI) / 180);
+        // Wrench (rotating visually)
+        const wrenchX = 300;
+        const wrenchY = 130;
+        const length = 80;
+        const angle = Phaser.Math.DegToRad(this.wrenchRotation);
+
+        const x1 = wrenchX - (length / 2) * Math.cos(angle);
+        const y1 = wrenchY - (length / 2) * Math.sin(angle);
+        const x2 = wrenchX + (length / 2) * Math.cos(angle);
+        const y2 = wrenchY + (length / 2) * Math.sin(angle);
+
+        g.lineStyle(8, 0x8d6e63);
+        g.beginPath();
+        g.moveTo(x1, y1);
+        g.lineTo(x2, y2);
+        g.strokePath();
         g.fillStyle(0x8d6e63);
-        g.fillRect(-40, -10, 80, 20);
-        g.fillCircle(40, 0, 12);
-        g.restore();
+        g.fillCircle(x2, y2, 12);
     }
 
     endGame(success) {
-        this.add.rectangle(200, 150, 400, 300, 0x000000, 0.6);
-        this.add.text(200, 150, success ? '✅ Leak Fixed!' : '💦 Sink Overflowed!', {
-            font: '22px Arial',
-            color: '#fff',
-        }).setOrigin(0.5);
+        this.gameOver = true;
+
+        // Overlay
+        this.add.rectangle(
+            this.game.config.width / 2,
+            this.game.config.height / 2,
+            this.game.config.width,
+            this.game.config.height,
+            0x000000,
+            0.6
+        );
+
+        // Text message
+        this.add.text(
+            this.game.config.width / 2,
+            this.game.config.height / 2,
+            success ? '✅ Leak Fixed!' : '💦 Sink Overflowed!',
+            {
+                font: '22px Arial',
+                color: '#ffffff',
+            }
+        ).setOrigin(0.5);
     }
 }
