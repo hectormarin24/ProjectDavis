@@ -4,7 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="75f0b4c2-0777-41d2-a2c8-711c82dffe09" name="Changes" comment="" />
+    <list default="true" id="75f0b4c2-0777-41d2-a2c8-711c82dffe09" name="Changes" comment="modified Game3">
+      <change afterPath="$PROJECT_DIR$/assets/bathroom_bg.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/item_toilet_paper.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/item_toy.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/item_trash.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/item_wipes.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/toilet_bowl.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/game10.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/game5.js" beforeDir="false" afterPath="$PROJECT_DIR$/game5.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/main.js" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -18,8 +29,25 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="main" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;XplosiveCow&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/hectormarin24/ProjectDavis&quot;,
+    &quot;accountId&quot;: &quot;bdc818c9-238d-4cfb-9cb7-a54bc0d0ef5c&quot;
+  }
+}</component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 2
 }</component>
@@ -32,17 +60,19 @@
   "keyToString": {
     "JavaScript Debug.Leaky Faucet - Dimitry Visochin.html.executor": "Run",
     "JavaScript Debug.Run Leaky Faucet .executor": "Run",
+    "JavaScript Debug.index.html.executor": "Coverage",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "Node.js.Leaky Faucet: Dimitry Visochin.js.executor": "Debug",
     "Node.js.game1.js.executor": "Run",
-    "Node.js.main.js.executor": "Run",
+    "Node.js.main.js.executor": "Debug",
     "Node.js.startScreen.js.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "Game10",
     "junie.onboarding.icon.badge.shown": "true",
     "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/Users/dimitryvisochin/IdeaProjects/ProjectDavis/assets",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -54,14 +84,42 @@
   }
 }]]></component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/assets" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/node_modules" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="JavaScript Debug.index.html">
     <configuration name="Run Leaky Faucet " type="JavascriptDebugType" uri="http://localhost:63342/ProjectDavis/node_modules/Leaky Faucet - Dimitry Visochin.html" useBuiltInWebServerPort="true">
       <method v="2" />
     </configuration>
+    <configuration name="index.html" type="JavascriptDebugType" temporary="true" nameIsGenerated="true" uri="http://localhost:63342/ProjectDavis/index.html" useBuiltInWebServerPort="true">
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="ProjectDavis" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="ProjectDavis" />
+      <option name="filePath" />
+      <method v="2" />
+    </configuration>
+    <configuration name="main.js" type="NodeJSConfigurationType" temporary="true" nameIsGenerated="true" path-to-js-file="$PROJECT_DIR$/main.js" working-dir="$PROJECT_DIR$">
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="JavaScript Debug.index.html" />
+        <item itemvalue="Node.js.main.js" />
+        <item itemvalue="JavaScript Debug.index.html" />
+        <item itemvalue="JavaScript Debug.index.html" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
@@ -80,10 +138,84 @@
       <updated>1758752774115</updated>
       <workItem from="1758752775305" duration="3473000" />
       <workItem from="1759633457181" duration="122000" />
+      <workItem from="1760639062438" duration="730000" />
+      <workItem from="1760650116206" duration="2018000" />
+      <workItem from="1760894910871" duration="1637000" />
+      <workItem from="1761168656907" duration="888000" />
+      <workItem from="1761187624678" duration="2880000" />
     </task>
+    <task id="LOCAL-00001" summary="Adding my game to main branch">
+      <option name="closed" value="true" />
+      <created>1759967324972</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1759967324972</updated>
+    </task>
+    <task id="LOCAL-00002" summary="modified Game3">
+      <option name="closed" value="true" />
+      <created>1759968924220</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1759968924220</updated>
+    </task>
+    <task id="LOCAL-00003" summary="modified Game3">
+      <option name="closed" value="true" />
+      <created>1759971784205</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1759971784205</updated>
+    </task>
+    <task id="LOCAL-00004" summary="modified Game3">
+      <option name="closed" value="true" />
+      <created>1759972172187</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1759972172187</updated>
+    </task>
+    <task id="LOCAL-00005" summary="modified Game3">
+      <option name="closed" value="true" />
+      <created>1759974571172</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1759974571172</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="main" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Adding my game to main branch" />
+    <MESSAGE value="modified Game3" />
+    <option name="LAST_COMMIT_MESSAGE" value="modified Game3" />
   </component>
 </project>
