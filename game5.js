@@ -19,7 +19,7 @@ export default class Game5 extends Phaser.Scene {
   create() {
     this.background = this.add.image(this.xCoord / 3 + 20, this.yCoord / 2, 'background').setOrigin(0.5);
     this.background.on('pointerdown', () => {
-      this.scene.start('endScreen', {score: this.score, xCoord: this.xCoord, yCoord: this.yCoord});
+      this.scene.start('bugFriend', {score: this.score, xCoord: this.xCoord, yCoord: this.yCoord});
     });
 
     this.clickCount = 0;
