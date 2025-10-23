@@ -1,4 +1,4 @@
-import Game1 from './game1.js';
+import recycle from './recycle.js';
 import Game5 from './game5.js';
 import Game9 from './game9.js';
 import LeakyFaucet from './game3.js';
@@ -7,6 +7,7 @@ import Game6 from './game6.js';
 import Game10 from './game10.js';
 import endScreen from './endScreen.js';
 import startScreen from './startScreen.js';
+import bugFriend from './bugFriend.js';
 import Game11 from './game11.js';
 
 const config = {
@@ -15,9 +16,15 @@ const config = {
   height: 900,
   backgroundColor: '#222222',
 
+  physics:{
+    default: 'arcade',
+    arcade: {
+        debug: false,
+        gravity: {y:0}
+      }
+  },
 
-  scene: [ startScreen, Game1, Game5, Game6, LeakyFaucet, Game9, Game10, Game11, endScreen, closeTheLids ],
-
+  scene: [ startScreen, bugFriend, closeTheLids, Game5, recycle,  Game6, LeakyFaucet, Game9, Game11, endScreen ],
 
   scale: {
     mode: Phaser.Scale.FIT,

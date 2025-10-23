@@ -1,6 +1,6 @@
-export default class Game1 extends Phaser.Scene {
+export default class recycle extends Phaser.Scene {
   constructor() {
-    super('Game1');
+    super('recycle');
   }
 
     preload() {
@@ -25,9 +25,11 @@ export default class Game1 extends Phaser.Scene {
     }
 
   create() {
+        console.log("Recycle scene loaded in");
+        this.add.rectangle(400, 300, 200, 100, 0xff0000);
         this.background = this.add.image(this.xCoord / 3 + 20, this.yCoord / 2, 'background').setOrigin(0.5);
         this.background.on('pointerdown', () => {
-            this.scene.start('closeTheLids', {score: this.score, xCoord: this.xCoord, yCoord: this.yCoord});
+            this.scene.start('bugFriend', {score: this.score, xCoord: this.xCoord, yCoord: this.yCoord});
         });
         this.score = 0;
         

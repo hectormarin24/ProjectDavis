@@ -1,9 +1,9 @@
 export default class closeTheLids extends Phaser.Scene {
-  constructor() {
+    constructor() {
     super('closeTheLids');
   }
 
-preload(){
+    preload(){
     this.load.image('neighborhood', 'assets/neighborhoodStreetView.jpg');
     this.load.image('closedTrashCan', 'assets/closedTrashCan.png');
     this.load.image('openTrashCan', 'assets/openTrashCan.png');
@@ -22,7 +22,7 @@ create() {
     this.background.displayWidth = this.sys.game.config.width;
     this.background.displayHeight = this.sys.game.config.height;
     this.background.on('pointerdown', () => {
-        this.scene.start('Game9', {score: this.score, xCoord: this.xCoord, yCoord: this.yCoord});
+        this.scene.start('gmae9', {score: this.score, xCoord: this.xCoord, yCoord: this.yCoord});
     });
     this.score = 0;
 
@@ -45,7 +45,7 @@ create() {
                 this.checkScore(this.score);
             }
         });
-    this.H3X1Can = this.add.image(900,675, 'closedTrashCan').setScale(.15).setInteractive();
+    this.H3X1Can = this.add.image(900,675 , 'closedTrashCan').setScale(.15).setInteractive();
     this.H3X1Can.on('pointerdown', () => {
             console.log("House 3 Trash Can clicked!");
             if(this.H3X1Can.texture.key === 'openTrashCan')

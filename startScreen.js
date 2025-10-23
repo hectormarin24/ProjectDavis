@@ -17,7 +17,7 @@ export default class startScreen extends Phaser.Scene {
   create() {
     this.xCoord = this.cameras.main.width;
     this.yCoord = this.cameras.main.height;
-
+    console.log("main screen loaded");
     this.background = this.add.image(this.xCoord / 3 + 20, this.yCoord / 2, 'background').setOrigin(0.5);
     this.add.text(this.xCoord / 2, this.yCoord / 3, "Welcome!", { fontSize: '156px', fontStyle: 'bold',fill: '#fff' }).setOrigin(0.5);
 
@@ -44,7 +44,7 @@ export default class startScreen extends Phaser.Scene {
       .on('pointerover', () => playBtn.setScale(0.23)) // hover = a bit bigger
       .on('pointerout',  () => playBtn.setScale(0.2))  // leave = back to base
       .on('pointerdown', () => {
-        this.scene.start('Game1', {xCoord: this.xCoord, yCoord: this.yCoord});
+        this.scene.start('recycle', {xCoord: this.xCoord, yCoord: this.yCoord});
       });
       // --- Shop Button ---
     const trophyBtn = this.add.image(this.xCoord / 2.7, (3 * this.yCoord) / 3.6, 'btnTrophy')
