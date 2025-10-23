@@ -7,6 +7,7 @@ import Game6 from './game6.js';
 import Game10 from './game10.js';
 import endScreen from './endScreen.js';
 import startScreen from './startScreen.js';
+import Game11 from './game11.js';
 
 const config = {
   type: Phaser.AUTO,
@@ -14,7 +15,9 @@ const config = {
   height: 900,
   backgroundColor: '#222222',
 
-  scene: [ startScreen, Game1, Game5, Game6, LeakyFaucet, Game9, Game10, endScreen, closeTheLids ],
+
+  scene: [ startScreen, Game1, Game5, Game6, LeakyFaucet, Game9, Game10, Game11, endScreen, closeTheLids ],
+
 
   scale: {
     mode: Phaser.Scale.FIT,
@@ -25,3 +28,12 @@ const config = {
 // keep a reference for debugging in browser console
 const game = new Phaser.Game(config);
 window.game = game;
+
+// Status check for game9 and game11. For debug.
+if (typeof window !== 'undefined') {
+  Object.assign(window, {
+    startGame9: () => window.game.scene.start('Game9'),
+    startGame11: () => window.game.scene.start('Game11'),
+  });
+  console.log('startGame9() and startGame11() attached to window:', window.startGame11);
+}
