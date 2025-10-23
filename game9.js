@@ -193,7 +193,7 @@ export default class Game9 extends Phaser.Scene {
           ease: 'Sine.easeIn'
         });
         this.liquid.setAlpha(0);
-        this.message.setText('Nice!');
+        this.message.setText('Nice! Press R to continue');
 
         // show next button or finish
         this.time.delayedCall(600, () => {
@@ -241,7 +241,7 @@ export default class Game9 extends Phaser.Scene {
 
   // go back to menu or restart after a short delay
   this.time.delayedCall(1800, () => {
-    this.scene.start('LeakyFaucet', {xCoord: this.xCoord, yCoord: this.yCoord});
+    this.scene.start('Game11', {xCoord: this.xCoord, yCoord: this.yCoord});
   });
 }
 
