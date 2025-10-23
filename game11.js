@@ -1,6 +1,3 @@
-// game11.js (ES module)
-// Wildlife Snack Stopper — Don’t feed wild animals!
-// Adds: spawn-distance safety, robust click-sync, score system, end-screen transition.
 
 const WIDTH = 1000;
 const HEIGHT = 880;
@@ -67,7 +64,7 @@ class Game11Scene extends Phaser.Scene {
 
         // Play pop, increment score, remove food, update UI
         if (this.sound) {
-          this.sound.play('pop');
+          this.sound.play('pop', { volume: 0.25 });
         }
         this.incrementScore();
 
@@ -230,7 +227,7 @@ class Game11Scene extends Phaser.Scene {
   }
 }
 
-// Ensure we don't break ES module isolation — but still expose for quick console testing if desired
+
 if (typeof window !== 'undefined') {
   // The module may be evaluated before window.game is created; exposing the constructor and helper is harmless.
   window.Game11Scene = Game11Scene;
