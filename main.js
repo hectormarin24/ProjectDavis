@@ -3,7 +3,8 @@ import Game5 from './game5.js';
 import Game9 from './game9.js';
 import LeakyFaucet from './game3.js';
 import closeTheLids from './closeTheLids.js';
-import Game6 from './game6.js';  
+import Game6 from './game6.js';
+import Game10 from './game10.js';
 import endScreen from './endScreen.js';
 import startScreen from './startScreen.js';
 
@@ -13,7 +14,7 @@ const config = {
   height: 900,
   backgroundColor: '#222222',
 
-  scene: [ startScreen, Game1, Game5, Game6, LeakyFaucet, Game9, endScreen, closeTheLids ],
+  scene: [ startScreen, Game1, Game5, Game6, LeakyFaucet, Game9, Game10, endScreen, closeTheLids ],
 
   scale: {
     mode: Phaser.Scale.FIT,
