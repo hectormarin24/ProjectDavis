@@ -28,14 +28,19 @@ export default class Game9 extends Phaser.Scene {
     const cx = this.cameras.main.centerX;
     const cy = this.cameras.main.centerY;
 
-    
-    if (this.textures.exists('bg')) {
-      this.add.image(cx, cy, 'bg').setDisplaySize(this.cameras.main.width, this.cameras.main.height);
-    } else {
-      this.cameras.main.setBackgroundColor(0xf0f0f0);
-    }
 
-    // random pot contents
+      if (this.textures.exists('bg')) {
+          const bg = this.add.image(cx, cy, 'bg').setOrigin(0.5);
+          const scaleX = this.cameras.main.width / bg.width;
+          const scaleY = this.cameras.main.height / bg.height;
+          const scale = Math.max(scaleX, scaleY); // fill screen proportionally
+          bg.setScale(scale);
+          bg.setScrollFactor(0);
+      } else {
+          this.cameras.main.setBackgroundColor(0xf0f0f0);
+      }
+
+      // random pot contents
     this.potContents = (Math.random() < 0.5) ? 'water' : 'oil';
     console.log('Game9 potContents:', this.potContents);
 

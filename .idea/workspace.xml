@@ -5,15 +5,42 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="75f0b4c2-0777-41d2-a2c8-711c82dffe09" name="Changes" comment="modified Game3">
-      <change afterPath="$PROJECT_DIR$/assets/bathroom_bg.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/item_toilet_paper.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/item_toy.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/item_trash.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/item_wipes.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/toilet_bowl.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/game10.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game5.js" beforeDir="false" afterPath="$PROJECT_DIR$/game5.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/Big Box.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/Big Box.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/Davis streets-fotor-ai-art-effects-20250918131614.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/Davis streets-fotor-ai-art-effects-20250918131614.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/Medium Box.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/Medium Box.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/Recycle_can.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/Recycle_can.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/Small Box.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/Small Box.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/ant.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/ant.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/aphid.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/aphid.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/banana_peel.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/banana_peel.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/battery.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/battery.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/bucket.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/bucket.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/closedTrashCan.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/closedTrashCan.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/cockroach.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/cockroach.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/compost_can.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/compost_can.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/flatBox.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/flatBox.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/flie.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/flie.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/food.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/food.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/glass_bottle.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/glass_bottle.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/grasshopper.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/grasshopper.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/honeybee.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/honeybee.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/ladybug.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/ladybug.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/liquid_oil.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/liquid_oil.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/liquid_water.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/liquid_water.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/milk_carton.webp" beforeDir="false" afterPath="$PROJECT_DIR$/assets/milk_carton.webp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/neighborhoodStreetView.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/assets/neighborhoodStreetView.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/openTrashCan.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/openTrashCan.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/pileOfLeaves.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/pileOfLeaves.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/pot.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/pot.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/raccoon.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/raccoon.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/sink.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/sink.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/sink2.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/tin_can.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/tin_can.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/trash_can.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/trash_can.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/wasp.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/wasp.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/closeTheLids.js" beforeDir="false" afterPath="$PROJECT_DIR$/closeTheLids.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/game9.js" beforeDir="false" afterPath="$PROJECT_DIR$/game9.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/main.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -56,33 +83,33 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "JavaScript Debug.Leaky Faucet - Dimitry Visochin.html.executor": "Run",
-    "JavaScript Debug.Run Leaky Faucet .executor": "Run",
-    "JavaScript Debug.index.html.executor": "Coverage",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "Node.js.Leaky Faucet: Dimitry Visochin.js.executor": "Debug",
-    "Node.js.game1.js.executor": "Run",
-    "Node.js.main.js.executor": "Debug",
-    "Node.js.startScreen.js.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "Game10",
-    "junie.onboarding.icon.badge.shown": "true",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "/Users/dimitryvisochin/IdeaProjects/ProjectDavis/assets",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_interpreter_path": "/Users/dimitryvisochin/Library/Application Support/JetBrains/IntelliJIdea2025.2/node/versions/22.20.0/bin/node",
-    "nodejs_package_manager_path": "npm",
-    "to.speed.mode.migration.done": "true",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;JavaScript Debug.Leaky Faucet - Dimitry Visochin.html.executor&quot;: &quot;Run&quot;,
+    &quot;JavaScript Debug.Run Leaky Faucet .executor&quot;: &quot;Run&quot;,
+    &quot;JavaScript Debug.index.html.executor&quot;: &quot;Coverage&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Node.js.Leaky Faucet: Dimitry Visochin.js.executor&quot;: &quot;Debug&quot;,
+    &quot;Node.js.game1.js.executor&quot;: &quot;Run&quot;,
+    &quot;Node.js.main.js.executor&quot;: &quot;Debug&quot;,
+    &quot;Node.js.startScreen.js.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/dimitryvisochin/IdeaProjects/ProjectDavis/assets&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_interpreter_path&quot;: &quot;/Users/dimitryvisochin/Library/Application Support/JetBrains/IntelliJIdea2025.2/node/versions/22.20.0/bin/node&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/assets" />
@@ -117,6 +144,7 @@
         <item itemvalue="JavaScript Debug.index.html" />
         <item itemvalue="Node.js.main.js" />
         <item itemvalue="JavaScript Debug.index.html" />
+        <item itemvalue="Node.js.main.js" />
         <item itemvalue="JavaScript Debug.index.html" />
       </list>
     </recent_temporary>
@@ -143,6 +171,8 @@
       <workItem from="1760894910871" duration="1637000" />
       <workItem from="1761168656907" duration="888000" />
       <workItem from="1761187624678" duration="2880000" />
+      <workItem from="1761675320543" duration="4000" />
+      <workItem from="1762213350564" duration="7211000" />
     </task>
     <task id="LOCAL-00001" summary="Adding my game to main branch">
       <option name="closed" value="true" />
@@ -217,5 +247,8 @@
     <MESSAGE value="Adding my game to main branch" />
     <MESSAGE value="modified Game3" />
     <option name="LAST_COMMIT_MESSAGE" value="modified Game3" />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/ProjectDavis$index_html.dat" NAME="index.html Coverage Results" MODIFIED="1761241116440" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="WipCoverageRunner" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
   </component>
 </project>
