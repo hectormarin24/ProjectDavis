@@ -28,11 +28,7 @@ export default class Game9 extends Phaser.Scene {
     const cx = this.cameras.main.centerX;
     const cy = this.cameras.main.centerY;
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
+
     this.background = this.add.image(0, 0, 'bg').setOrigin(0,0);
     this.background.displayWidth = this.sys.game.config.width;
     this.background.displayHeight = this.sys.game.config.height;
@@ -41,10 +37,7 @@ export default class Game9 extends Phaser.Scene {
     } else {
       this.cameras.main.setBackgroundColor(0xf0f0f0);
     }*/
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
+
 
       if (this.textures.exists('bg')) {
           const bg = this.add.image(cx, cy, 'bg').setOrigin(0.5);
