@@ -23,7 +23,11 @@ create() {
     this.background.displayHeight = this.sys.game.config.height;
     this.background.on('pointerdown', () => {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         this.scene.start('Game9', {score: this.score, xCoord: this.xCoord, yCoord: this.yCoord});
+=======
+        this.scene.start('LeakyFaucet', {score: this.score, xCoord: this.xCoord, yCoord: this.yCoord});
+>>>>>>> Stashed changes
 =======
         this.scene.start('LeakyFaucet', {score: this.score, xCoord: this.xCoord, yCoord: this.yCoord});
 >>>>>>> Stashed changes
