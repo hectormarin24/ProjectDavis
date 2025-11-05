@@ -28,7 +28,7 @@ export default class bugFriend extends Phaser.Scene {
         this.background.displayWidth = this.sys.game.config.width;
         this.background.displayHeight = this.sys.game.config.height;
         this.background.on('pointerdown', () => {
-        this.scene.start('closeTheLids', {score: this.score, xCoord: this.xCoord, yCoord: this.yCoord});
+        this.scene.start('startScreen', {score: this.score, xCoord: this.xCoord, yCoord: this.yCoord});
         });
         
         //Ant

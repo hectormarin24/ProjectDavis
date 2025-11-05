@@ -24,7 +24,9 @@ const config = {
       }
   },
 
-  scene: [ startScreen, bugFriend, closeTheLids, Game5, recycle,  Game6, LeakyFaucet, Game9, Game11, endScreen, Game10 ],
+
+  scene: [bugFriend, startScreen,Game11,  closeTheLids, Game5, recycle,  Game6, LeakyFaucet, Game9, Game10, endScreen],
+
 
   scale: {
     mode: Phaser.Scale.FIT,

@@ -144,7 +144,7 @@ export default class LeakyFaucet extends Phaser.Scene {
         ).setOrigin(0.5);
         // After 2 seconds transition to the end screen
         this.time.delayedCall(2000, () => {
-            this.scene.start('Game6', {xCoord: this.xCoord, yCoord: this.yCoord});
+            this.scene.start('Game5', {xCoord: this.xCoord, yCoord: this.yCoord});
         });
     }
 

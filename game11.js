@@ -98,10 +98,10 @@ class Game11Scene extends Phaser.Scene {
       this.time.delayedCall(1200, () => {
         // Try likely scene keys; warn if not present
         try {
-          this.scene.start('LeakyFaucet');
+          this.scene.start('bugFriend');
         } catch (e1) {
           try {
-            this.scene.start('LeakyFaucet');
+            this.scene.start('bugFriend');
           } catch (e2) {
             console.warn('endScreen not found in scene manager; please ensure you have an end screen scene with key "endScreen" or "EndScreen".');
           }
