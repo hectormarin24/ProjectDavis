@@ -223,7 +223,7 @@ export default class Game10 extends Phaser.Scene {
         }).setOrigin(0.5);
 
         this.time.delayedCall(1000, () => {
-            this.scene.start('endScreen', {
+            this.scene.start('Game11', {
                 score: this.score + (won ? 10 : 0),
                 xCoord: this.xCoord,
                 yCoord: this.yCoord

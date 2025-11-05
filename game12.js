@@ -1,10 +1,15 @@
+export default class game12 extends Phaser.Scene {
+    constructor(){
+        super('Game12');
+    }
+
 /* ===================== Utilities ===================== */
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const rand  = (a, b) => Math.random() * (b - a) + a;
 const choose = (arr) => arr[(Math.random() * arr.length) | 0];
 
 /* ===================== Entities ===================== */
-const FRUITS = [
+ FRUITS = [
   { name: "apple",  color: "#ef4444", r: 14, air: 15, ground: 8 },
   { name: "orange", color: "#f97316", r: 15, air: 14, ground: 7 },
   { name: "lemon",  color: "#facc15", r: 12, air: 16, ground: 8 },
@@ -358,3 +363,5 @@ function fitCanvasToDisplaySize() {
 new ResizeObserver(() => { fitCanvasToDisplaySize(); game?.render(); }).observe(canvas);
 fitCanvasToDisplaySize();
 const game = new Game(canvas);
+
+}

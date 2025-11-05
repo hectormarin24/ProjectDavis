@@ -11,7 +11,7 @@ export default class Game9 extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image('bg', 'assets/bg.png');           
+    this.load.image('bg', 'assets/kitchenbg.png');           
     this.load.image('pot', 'assets/pot.png');         
     this.load.image('water', 'assets/liquid_water.png'); 
     this.load.image('oil', 'assets/liquid_oil.png');     
@@ -28,6 +28,17 @@ export default class Game9 extends Phaser.Scene {
     const cx = this.cameras.main.centerX;
     const cy = this.cameras.main.centerY;
 
+<<<<<<< Updated upstream
+=======
+    this.background = this.add.image(0, 0, 'bg').setOrigin(0,0);
+    this.background.displayWidth = this.sys.game.config.width;
+    this.background.displayHeight = this.sys.game.config.height;
+    /*if (this.textures.exists('bg')) {
+      this.add.image(cx, cy, 'bg').setDisplaySize(this.cameras.main.width, this.cameras.main.height);
+    } else {
+      this.cameras.main.setBackgroundColor(0xf0f0f0);
+    }*/
+>>>>>>> Stashed changes
 
       if (this.textures.exists('bg')) {
           const bg = this.add.image(cx, cy, 'bg').setOrigin(0.5);

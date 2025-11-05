@@ -12,7 +12,7 @@ export default class recycle extends Phaser.Scene {
         //Objects
         this.load.image('tin_can', "assets/tin_can.png");
         this.load.image('banana_peel', "assets/banana_peel.png");
-        this.load.image('battery', "assets/battery.png");
+        //this.load.image('battery', "assets/battery.png");
         this.load.image('pileOfLeaves', "assets/pileOfLeaves.png");
 
 
@@ -29,7 +29,7 @@ export default class recycle extends Phaser.Scene {
         this.add.rectangle(400, 300, 200, 100, 0xff0000);
         this.background = this.add.image(this.xCoord / 3 + 20, this.yCoord / 2, 'background').setOrigin(0.5);
         this.background.on('pointerdown', () => {
-            this.scene.start('bugFriend', {score: this.score, xCoord: this.xCoord, yCoord: this.yCoord});
+            this.scene.start('closeTheLids', {score: this.score, xCoord: this.xCoord, yCoord: this.yCoord});
         });
         this.score = 0;
         
@@ -67,7 +67,6 @@ export default class recycle extends Phaser.Scene {
         const objects = [
             {key: 'banana_peel', correct: 'compost'},
             {key: 'tin_can', correct: 'recycle'},
-            {key: 'battery', correct: 'recycle'},
             {key: 'pileOfLeaves', correct: 'compost'}
         ];
 
