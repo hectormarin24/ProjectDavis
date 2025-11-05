@@ -23,8 +23,8 @@ export default class Game9 extends Phaser.Scene {
   }
 
   create() {
-    this.oilFillCount = 0;
-    this.maxOilFills = 3;
+    this.successfulPourCount = 0;
+    this.maxSuccessfulPours = 3;
     const cx = this.cameras.main.centerX;
     const cy = this.cameras.main.centerY;
 
@@ -69,6 +69,11 @@ export default class Game9 extends Phaser.Scene {
     // text bottom
     this.message = this.add.text(cx, cy + 180, 'Click the correct container', { font: '20px Arial', color: '#222' }).setOrigin(0.5);
 
+    this.progressText = this.add.text(cx, cy + 210, `Rounds complete: ${this.successfulPourCount}/${this.maxSuccessfulPours}`, {
+      font: '18px Arial',
+      color: '#333'
+    }).setOrigin(0.5);
+
     this.pourSound = this.sound.add('pour', { volume: 0.1 });
     this.wrongSound = this.sound.add('wrong', { volume: 0.2 });
 
@@ -104,36 +109,30 @@ export default class Game9 extends Phaser.Scene {
     }
   }
 
-  handleOilFilled() {
-  this.oilFillCount++;
+  handleSuccessfulPour() {
+    this.successfulPourCount++;
 
-  // quick message
-  const cx = this.cameras.main.centerX;
-  const cy = this.cameras.main.centerY - 200;
-  const msg = this.add.text(cx, cy, `Liquid filled: ${this.oilFillCount}/${this.maxOilFills}`, {
-    font: '30px Arial',
-    fill: '#2f4f4f'
-  }).setOrigin(0.5);
-  // fade out after 1s
-  this.tweens.add({
-    targets: msg,
-    alpha: 0,
-    duration: 1900,
-    onComplete: () => msg.destroy()
-  });
+    const cx = this.cameras.main.centerX;
+    const cy = this.cameras.main.centerY - 200;
+    const msg = this.add.text(cx, cy, `Rounds complete: ${this.successfulPourCount}/${this.maxSuccessfulPours}`, {
+      font: '30px Arial',
+      fill: '#2f4f4f'
+    }).setOrigin(0.5);
+    this.tweens.add({
+      targets: msg,
+      alpha: 0,
+      duration: 1900,
+      onComplete: () => msg.destroy()
+    });
+    this.progressText.setText(`Rounds complete: ${this.successfulPourCount}/${this.maxSuccessfulPours}`);
 
-  // decide whether to end the game
-  if (this.oilFillCount >= this.maxOilFills) {
-    this.endGame();
-  } else {
-    // proceed to next phase (previously you showed nextBtn here)
-    // call any function that resets the level / spawns new pipes / shows instructions
-    if (typeof this.startNextPhase === 'function') {
-      this.startNextPhase();
+    if (this.successfulPourCount >= this.maxSuccessfulPours) {
+      this.endGame();
+    } else {
+      this.time.delayedCall(600, () => this.resetRound());
     }
-    // otherwise, put whatever logic used to run after the "next" event here.
   }
-}
+
 
 
 
@@ -193,11 +192,11 @@ export default class Game9 extends Phaser.Scene {
           ease: 'Sine.easeIn'
         });
         this.liquid.setAlpha(0);
-        this.message.setText('Nice! Press R to continue');
+        this.message.setText('Nice work! Setting up the next round...');
 
         // show next button or finish
         this.time.delayedCall(600, () => {
-          this.handleOilFilled();
+          this.handleSuccessfulPour();
         }, [], this);
       }
     });
@@ -218,12 +217,27 @@ export default class Game9 extends Phaser.Scene {
   }
 
   resetRound() {
-    // replay, broken
+
     this.potContents = (Math.random() < 0.5) ? 'water' : 'oil';
     this.hintText.setText('Pot contains: ' + this.potContents);
     this.message.setText('Click the correct container');
     this.sink.setInteractive({ cursor: 'pointer' });
     this.bucket.setInteractive({ cursor: 'pointer' });
+
+    const liquidKey = (this.potContents === 'water') ? 'water' : 'oil';
+    this.liquid.setTexture(liquidKey);
+    this.liquid.setAlpha(0);
+    this.liquid.setScale(0.3, 0.3);
+    this.liquid.x = this.pot.x;
+    this.liquid.y = this.pot.y + 30;
+    this.pot.setAngle(0);
+
+    this.sinkFillHeight = 0;
+    this.bucketFillHeight = 0;
+    this.sinkFill.setDisplaySize(120, 1);
+    this.sinkFill.y = this.sink.y + 60;
+    this.bucketFill.setDisplaySize(90, 1);
+    this.bucketFill.y = this.bucket.y + 80;    
   }
 
   endGame() {

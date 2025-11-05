@@ -12,6 +12,11 @@ class Game11Scene extends Phaser.Scene {
   constructor() {
     super({ key: 'Game11' });
   }
+  
+    init(data = {}) {
+    this.xCoord = data.xCoord ?? WIDTH;
+    this.yCoord = data.yCoord ?? HEIGHT;
+  }
 
   preload() {
     this.load.image('bgpark', 'assets/bg_park.png');
@@ -21,11 +26,17 @@ class Game11Scene extends Phaser.Scene {
     this.load.audio('pop', 'assets/pop.wav');
   }
 
+
   create() {
     // Basic state
     this.score = 0;
+    this.misses = 0;
+    this.maxMisses = 3;
     this.raccoonTween = null;
     this.food = null;
+    this.raccoonSpeedMultiplier = 1;
+    this.hasFinished = false;
+
 
     // Background
     if (this.textures.exists('bgpark')) {
@@ -48,12 +59,22 @@ class Game11Scene extends Phaser.Scene {
       backgroundColor: 'rgba(0,0,0,0.4)',
       padding: { x: 8, y: 6 },
     }).setDepth(10);
+    this.missText = this.add.text(16, 52, `Misses: ${this.misses}/${this.maxMisses}`, {
+      font: '20px Arial',
+      color: '#fff',
+      backgroundColor: 'rgba(0,0,0,0.3)',
+      padding: { x: 8, y: 4 },
+    }).setDepth(10);
 
     // Raccoon
     this.spawnRaccoon(true); // create raccoon immediately
 
     // Initial food
     this.spawnFood();
+    this.updateHUD();
+
+    // Start the raccoon chasing immediately once food is placed
+    this.moveRaccoon();
 
     // Input to click on food before raccoon reaches it
     this.input.on('gameobjectdown', (pointer, obj) => {
@@ -80,33 +101,33 @@ class Game11Scene extends Phaser.Scene {
 
         // spawn next food after a short delay and resume raccoon movement
         this.time.delayedCall(400, () => {
-          this.spawnFood();
-          this.moveRaccoon();
+          if (!this.hasFinished) {
+            this.spawnFood();
+            this.moveRaccoon();
+          }
         }, [], this);
       }
     });
   }
 
+  updateHUD() {
+    if (this.scoreText) {
+      this.scoreText.setText(`Score: ${this.score}`);
+    }
+    if (this.missText) {
+      this.missText.setText(`Misses: ${this.misses}/${this.maxMisses}`);
+    }
+  }
+
   incrementScore() {
     this.score += 1;
-    if (this.scoreText) this.scoreText.setText(`Score: ${this.score}`);
+    this.updateHUD();
 
     // Win condition
     if (this.score >= WIN_SCORE) {
       // Show congratulatory message then transition to end screen
-      this.showMessage('Good job! 🎉');
-      this.time.delayedCall(1200, () => {
-        // Try likely scene keys; warn if not present
-        try {
-          this.scene.start('LeakyFaucet');
-        } catch (e1) {
-          try {
-            this.scene.start('LeakyFaucet');
-          } catch (e2) {
-            console.warn('endScreen not found in scene manager; please ensure you have an end screen scene with key "endScreen" or "EndScreen".');
-          }
-        }
-      }, [], this);
+      this.showMessage('Good job!');
+      this.finishLevel();      
     }
   }
 
@@ -166,8 +187,8 @@ class Game11Scene extends Phaser.Scene {
 
     // Recompute duration proportional to distance so movement looks natural
     const distance = Phaser.Math.Distance.Between(this.raccoon.x, this.raccoon.y, this.food.x, this.food.y);
-    const baseSpeed = 600; // px per second baseline (tweakable)
-    const duration = Math.max(700, Math.round((distance / baseSpeed) * 1000) + 300);
+    const baseSpeed = 600 * this.raccoonSpeedMultiplier; // px per second baseline (tweakable)
+    const duration = Math.max(600, Math.round((distance / baseSpeed) * 1000) + 300);
 
     this.raccoonTween = this.tweens.add({
       targets: this.raccoon,
@@ -186,25 +207,84 @@ class Game11Scene extends Phaser.Scene {
             // Raccoon legitimately reaches the food
             this.food.destroy();
             this.food = null;
-            this.showMessage('Raccoon got the snack!');
-            this.time.delayedCall(1000, () => {
-              this.spawnFood();
-              this.moveRaccoon();
-            }, [], this);
+            const continueChase = this.registerMiss();
+            if (continueChase) {
+              this.time.delayedCall(1000, () => {
+                if (!this.hasFinished) {
+                  this.spawnFood();
+                  this.moveRaccoon();
+                }
+              }, [], this);
+            }            
             return;
           }
         }
 
         // If food is gone or not within reach, wait a moment and try again (this prevents false "got snack" messages)
         this.time.delayedCall(400, () => {
-          if (this.food) {
-            // Start moving toward the current food if it exists
+          if (this.food && !this.hasFinished) {
+          // Start moving toward the current food if it exists
             this.moveRaccoon();
           }
         }, [], this);
       },
     });
   }
+
+
+  registerMiss() {
+    this.misses += 1;
+    const hadPoints = this.score > 0;
+    if (hadPoints) {
+      this.score = Math.max(0, this.score - 1);
+    }
+    this.raccoonSpeedMultiplier = Math.min(this.raccoonSpeedMultiplier + 0.15, 2.5);
+    this.updateHUD();
+
+    const penaltyNote = hadPoints ? ' (-1 point)' : ' (score stays at 0)';
+    let message = `Raccoon got the snack! Misses: ${this.misses}/${this.maxMisses}${penaltyNote}`;
+
+    if (this.misses >= this.maxMisses) {
+      message += '\nToo many misses! Restarting...';
+    }
+
+    this.showMessage(message);
+
+    if (this.misses >= this.maxMisses) {
+      this.time.delayedCall(1200, () => {
+        if (!this.hasFinished) {
+          this.scene.restart({ xCoord: this.xCoord, yCoord: this.yCoord });
+        }
+      });
+      return false;
+    }
+
+    return true;
+  }
+
+  finishLevel() {
+    if (this.hasFinished) return;
+    this.hasFinished = true;
+
+    if (this.raccoonTween) {
+      this.raccoonTween.stop();
+      this.raccoonTween = null;
+    }
+    if (this.food && this.food.disableInteractive) {
+      this.food.disableInteractive();
+    }
+    this.input.enabled = false;
+
+    this.time.delayedCall(1200, () => {
+      this.scene.start('endScreen', {
+        score: this.score,
+        xCoord: this.xCoord,
+        yCoord: this.yCoord,
+      });
+    });
+  }
+
+
 
   showMessage(msg) {
     // Reuse a single message text to avoid stacking many texts
