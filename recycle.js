@@ -12,7 +12,6 @@ export default class recycle extends Phaser.Scene {
         //Objects
         this.load.image('tin_can', "assets/tin_can.png");
         this.load.image('banana_peel', "assets/banana_peel.png");
-        //this.load.image('battery', "assets/battery.png");
         this.load.image('pileOfLeaves', "assets/pileOfLeaves.png");
 
 
@@ -33,6 +32,7 @@ export default class recycle extends Phaser.Scene {
         });
         this.score = 0;
         
+
         // Recycle button
         this.recycleButton = this.add.image(this.xCoord / 4, (3 * this.yCoord) / 4, 'recycle_bin').setOrigin(0.5).setInteractive();
         this.recycleButton.setScale(0.5);
