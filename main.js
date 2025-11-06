@@ -9,6 +9,7 @@ import endScreen from './endScreen.js';
 import startScreen from './startScreen.js';
 import bugFriend from './bugFriend.js';
 import Game11 from './game11.js';
+import Game7 from './game7.js';
 
 const config = {
   type: Phaser.AUTO,
@@ -25,7 +26,7 @@ const config = {
   },
 
 
-  scene: [bugFriend, startScreen,Game11,  closeTheLids, Game5, recycle,  Game6, LeakyFaucet, Game9, Game10, endScreen],
+  scene: [startScreen, bugFriend, Game7 ,Game11,  closeTheLids, Game5, recycle,  Game6, LeakyFaucet, Game9, Game10, endScreen],
 
 
   scale: {
