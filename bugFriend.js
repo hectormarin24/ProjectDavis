@@ -76,6 +76,11 @@ export default class bugFriend extends Phaser.Scene {
       },
     });
     this.setDirections();
+    this.rulesText = this.add.text(500, 100, "Protect Your Garden, Squash The Unwelcome Bugs", {
+                        fontSize: '34px', fill: '#000000ff' }).setOrigin(0.5);
+    this.time.delayedCall(2000, () => {
+        this.rulesText.destroy();
+    });
     this.gameEnded = false;
   }
 
