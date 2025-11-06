@@ -1,151 +1,199 @@
+// game3.js (LeakyFaucet) — Fix the leaking faucet by tightening a wrench
+// before the sink overflows.  Once the mini game ends, proceed to the next
+// random scene from the global queue.
+
 export default class LeakyFaucet extends Phaser.Scene {
-    constructor() {
-        super('LeakyFaucet');
-    }
+  constructor() {
+    super('LeakyFaucet');
+  }
 
-    init(data){
-        this.xCoord = data.xCoord;
-        this.yCoord = data.yCoord;
-    }
+  init(data) {
+    // Carry over coordinates from the previous scene.  Score is managed
+    // globally and is not tracked here.
+    this.xCoord = data.xCoord;
+    this.yCoord = data.yCoord;
+    // Prevent multiple completions
+    this.finished = false;
+  }
 
-    preload() {
-        this.load.image('faucet', 'assets/faucet.png');
-        this.load.image('sink', 'assets/sink2.png');
-        this.load.image('droplet', 'assets/droplet.png');
-        this.load.image('wrench', 'assets/wrench.png');
-    }
+  preload() {
+    // Background and assets
+    this.load.image('faucet_bg', 'assets/g3_bg.png');
+    this.load.image('faucet', 'assets/faucet.png');
+    this.load.image('sink', 'assets/sink.png');
+    this.load.image('sink_25', 'assets/sink_25.png');
+    this.load.image('sink_50', 'assets/sink_50.png');
+    this.load.image('sink_75', 'assets/sink_75.png');
+    this.load.image('sink_full', 'assets/sink_full.png');
+    this.load.image('droplet', 'assets/droplet.png');
+    this.load.image('wrench', 'assets/wrench.png');
+  }
 
-    create() {
-        // Track game state
-        this.waterLevel = 0;        // Logical water level (0–100)
-        this.dripTimer = 0;         // Timer used for dripping cadence
-        this.wrenchRotation = 0;    // Accumulated rotation of the wrench
-        this.leakFixed = false;     // Flag set when leak is repaired
-        this.gameOver = false;      // Flag set once game ends
-
-        // Add the sink and faucet images to the scene.
-        const { width, height } = this.scale;
-        this.sink = this.add.image(width * 0.5, height * 0.55, 'sink');
-        // Increase the sink's scale so it appears larger on screen.
-        this.sink.setScale(0.6);
-        this.sink.setOrigin(0.5, 0.5);
-
-        this.faucet = this.add.image(width * 0.5, height * 0.35, 'faucet');
-        // Make the faucet larger as well for better visibility.
-        this.faucet.setScale(0.55);
-        this.faucet.setOrigin(0.5, 0.5);
-
-        // Create a graphics object to draw the water level bar.
-        this.waterGraphics = this.add.graphics();
-
-        // Add the wrench image.
-        this.wrench = this.add.image(this.faucet.x, this.faucet.y, 'wrench');
-        // Enlarge the wrench so it looks substantial next to the faucet.
-        this.wrench.setScale(0.4);
-        // Set origin to the top of the sprite.  When rotated, the top of
-        // the wrench remains anchored at the faucet position.
-        this.wrench.setOrigin(0.5, 0);
-
-        // Add a droplet that repeatedly falls from the faucet.
-        this.dropletStartY = this.faucet.y + (this.faucet.displayHeight * 0.5);
-        this.droplet = this.add.image(this.faucet.x, this.dropletStartY, 'droplet');
-        // Increase droplet size so it is more visible falling from the faucet.
-        this.droplet.setScale(0.25);
-        this.droplet.setOrigin(0.5, 0);
-
-        // Set up keyboard input handlers for rotating the wrench.
-        this.input.keyboard.on('keydown', this.handleKey, this);
-
-        // The wrench's initial orientation will be set in update() based on
-        // the current rotation state.
-    }
-
-    /**
-     * Respond to key presses.  The left arrow or 'A' rotates the wrench
-     * counter‑clockwise; the right arrow or 'D' rotates it clockwise.  Once
-     * the accumulated rotation reaches ±360 degrees the leak is considered
-     * fixed and the game ends successfully.
-     *
-     * @param {KeyboardEvent} e The key event
-     */
-    handleKey(e) {
-        if (this.gameOver) return;
-        const key = e.key;
-        if (key === 'ArrowRight' || key.toLowerCase() === 'd') {
-            this.wrenchRotation += 15;
-        } else if (key === 'ArrowLeft' || key.toLowerCase() === 'a') {
-            this.wrenchRotation -= 15;
+  create() {
+    this.waterLevel = 0;
+    this.leakFixed = false;
+    this.gameOver = false;
+    this.keyHeld = false;
+    this.isAnimating = false;
+    this.tightenCount = 0;
+    // HUD: display global time left and lives
+    const screenW = this.scale.width;
+    this.timerText = this.add
+      .text(20, 20, '', { fontSize: '32px', fill: '#ffffff' })
+      .setDepth(100);
+    this.livesText = this.add
+      .text(screenW - 180, 20, '', { fontSize: '32px', fill: '#ffffff' })
+      .setDepth(100);
+    this.time.addEvent({
+      delay: 200,
+      loop: true,
+      callback: () => {
+        const state = window.globalGameState;
+        const elapsed = this.time.now - state.startTime;
+        const timeLeft = Math.max(0, state.totalTime - elapsed);
+        const minutes = Math.floor(timeLeft / 60000);
+        const seconds = Math.floor((timeLeft % 60000) / 1000);
+        this.timerText.setText(`Time: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`);
+        this.livesText.setText(`Lives: ${state.lives}`);
+        if (!this.gameOver && (timeLeft <= 0 || state.lives <= 0)) {
+          this.gameOver = true;
+          window.finishMiniGame(false, this);
         }
+      },
+      callbackScope: this,
+    });
 
-        // Check if the wrench has completed a full rotation
-        if (Math.abs(this.wrenchRotation) >= 360) {
-            this.leakFixed = true;
-            this.endGame(true);
+    const { width, height } = this.scale;
+    // Background
+    this.add
+      .image(width / 2, height / 2, 'faucet_bg')
+      .setOrigin(0.5)
+      .setDisplaySize(width, height);
+    // Sink
+    this.sink = this.add.image(width * 0.5, height * 0.67, 'sink');
+    this.sink.setScale(0.72).setOrigin(0.5, 0.5);
+    // Faucet
+    this.faucet = this.add.image(width * 0.5, height * 0.35, 'faucet');
+    this.faucet.setScale(0.55).setOrigin(0.5, 0.5);
+    // Wrench container and image for rotation
+    const pivotX = this.faucet.x + this.faucet.displayWidth * 0.5;
+    const pivotY = this.faucet.y - this.faucet.displayHeight * -0.06;
+    this.wrenchContainer = this.add.container(pivotX, pivotY);
+    this.wrench = this.add.image(0, 0, 'wrench');
+    this.wrench.setScale(-0.4, 0.4);
+    this.wrench.x = 10;
+    this.wrench.y = 8;
+    this.wrench.setAngle(-35);
+    this.wrenchContainer.add(this.wrench);
+    // Make wrench interactive
+    this.wrench.setInteractive({ useHandCursor: true });
+    this.wrench.on('pointerdown', () => this.animateRatcheting());
+    // Keyboard controls
+    this.input.keyboard.on('keydown', (e) => {
+      if ((e.key.toLowerCase() === 'd' || e.key === 'ArrowRight') && !this.keyHeld) {
+        this.keyHeld = true;
+        this.animateRatcheting();
+      }
+    });
+    this.input.keyboard.on('keyup', (e) => {
+      if (e.key.toLowerCase() === 'd' || e.key === 'ArrowRight') {
+        this.keyHeld = false;
+      }
+    });
+    // Droplet
+    this.dropletStartY = this.faucet.y + this.faucet.displayHeight * 0.45;
+    this.droplet = this.add.image(this.faucet.x, this.dropletStartY, 'droplet');
+    this.droplet.setScale(0.25).setOrigin(0.5, 0);
+    // Continuous drip
+    // Drip frequency increases with difficulty.  Use a shorter delay as
+    // difficulty rises.
+    const difficulty = window.globalGameState?.difficulty || 1;
+    this.dripTimer = this.time.addEvent({
+      delay: 800 / difficulty,
+      loop: true,
+      callback: this.drip,
+      callbackScope: this,
+    });
+  }
+
+  animateRatcheting() {
+    if (this.gameOver || this.isAnimating) return;
+    this.isAnimating = true;
+    this.tweens.add({
+      targets: this.wrench,
+      angle: this.wrench.angle + 25,
+      duration: 180,
+      ease: 'Sine.easeOut',
+      yoyo: true,
+      repeat: 0,
+      onYoyo: () => {
+        this.tightenCount++;
+        if (this.tightenCount >= 6) {
+          this.leakFixed = true;
+          this.endGame(true);
         }
+      },
+      onComplete: () => {
+        this.wrench.angle = -35;
+        this.isAnimating = false;
+      },
+    });
+  }
+
+  drip() {
+    if (this.gameOver || this.leakFixed) return;
+    const sinkTopY = this.sink.y - this.sink.displayHeight * 0.05;
+    this.droplet.y = this.dropletStartY;
+    this.droplet.alpha = 1;
+    this.tweens.add({
+      targets: this.droplet,
+      y: sinkTopY,
+      duration: 700,
+      ease: 'Quad.easeIn',
+      onComplete: () => {
+        this.increaseWater();
+        this.droplet.alpha = 0;
+      },
+    });
+  }
+
+  increaseWater() {
+    this.waterLevel += 5;
+    if (this.waterLevel >= 100 && !this.leakFixed) {
+      this.endGame(false);
+      return;
     }
+    if (this.waterLevel >= 75) this.sink.setTexture('sink_75');
+    else if (this.waterLevel >= 50) this.sink.setTexture('sink_50');
+    else if (this.waterLevel >= 25) this.sink.setTexture('sink_25');
+    else this.sink.setTexture('sink');
+  }
 
-    update() {
-        if (this.gameOver) return;
-
-        // Reanchor the wrench on the faucet and rotate it.
-        this.wrench.setPosition(this.faucet.x, this.faucet.y);
-        this.wrench.setAngle(this.wrenchRotation + 90);
-
-        // Drip logic: move the droplet downward
-        const sinkBottomY = this.sink.y + (this.sink.displayHeight * 0.3);
-        this.droplet.y += 4;
-        if (this.droplet.y >= sinkBottomY) {
-            this.droplet.y = this.dropletStartY;
-            this.waterLevel += 2; // Increase the logical water level
-            if (this.waterLevel >= 100 && !this.leakFixed) {
-                this.endGame(false);
-            }
-        }
-
-        // Draw water level bar inside the sink
-        this.waterGraphics.clear();
-        const barWidth = this.sink.displayWidth * 0.5;
-        const barHeightMax = this.sink.displayHeight * 0.4;
-        const waterHeight = (this.waterLevel / 100) * barHeightMax;
-        const barX = this.sink.x - barWidth / 2;
-        const barY = (this.sink.y + this.sink.displayHeight * 0.2) - waterHeight;
-        this.waterGraphics.fillStyle(0x4fc3f7);
-        this.waterGraphics.fillRect(barX, barY, barWidth, waterHeight);
-    }
-
-    /**
-     * Called when the game has ended.  Displays a translucent overlay
-     * and a result message and then transitions to the `endScreen` scene
-     * after a short delay.
-     *
-     * @param {boolean} success Whether the leak was fixed before overflow
-     */
-    endGame(success) {
-        this.gameOver = true;
-        // Dark overlay
-        this.add.rectangle(
-            this.scale.width / 2,
-            this.scale.height / 2,
-            this.scale.width,
-            this.scale.height,
-            0x000000,
-            0.6
-        );
-        // Result text
-        const message = success ? '✅ Leak Fixed!' : '💦 Sink Overflowed!';
-        this.add.text(
-            this.scale.width / 2,
-            this.scale.height / 2,
-            message,
-            {
-                font: '32px Arial',
-                color: '#ffffff',
-            }
-        ).setOrigin(0.5);
-        // After 2 seconds transition to the end screen
-        this.time.delayedCall(2000, () => {
-            this.scene.start('Game5', {xCoord: this.xCoord, yCoord: this.yCoord});
-        });
-    }
-
+  endGame(success) {
+    // Mark the game as over to stop further interactions
+    this.gameOver = true;
+    this.sink.setTexture(success ? 'sink' : 'sink_full');
+    if (this.dripTimer) this.dripTimer.remove(false);
+    // Darken screen and show result message
+    this.add.rectangle(
+      this.scale.width / 2,
+      this.scale.height / 2,
+      this.scale.width,
+      this.scale.height,
+      0x000000,
+      0.6,
+    );
+    this.add
+      .text(
+        this.scale.width / 2,
+        this.scale.height / 2,
+        success ? '✅ Leak Fixed!' : ' Sink Overflowed!',
+        { font: '32px Arial', color: '#ffffff' },
+      )
+      .setOrigin(0.5);
+    // After a short delay, invoke finishMiniGame to update global state
+    this.time.delayedCall(1200, () => {
+      window.finishMiniGame(success, this);
+    });
+  }
 }

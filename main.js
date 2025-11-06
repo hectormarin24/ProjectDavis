@@ -9,38 +9,50 @@ import endScreen from './endScreen.js';
 import startScreen from './startScreen.js';
 import bugFriend from './bugFriend.js';
 import Game11 from './game11.js';
+import Game7 from './game7.js';
+import Game12 from './game12.js';
 
+
+// Phaser game configuration.  All scenes are registered here but their order
+// is irrelevant because the start screen shuffles the mini games using
+// window.gameQueue.  Each scene pops the next game from the queue when
+// finished.  If the queue is empty the end screen is shown.
 const config = {
   type: Phaser.AUTO,
   width: 1000,
   height: 900,
   backgroundColor: '#222222',
-
-  physics:{
+  physics: {
     default: 'arcade',
     arcade: {
-        debug: false,
-        gravity: {y:0}
-      }
+      debug: false,
+      gravity: { y: 0 },
+    },
   },
 
-  scene: [ startScreen,closeTheLids, bugFriend, Game11,  Game5, recycle,  Game6, LeakyFaucet, Game9, Game10, endScreen],
+  scene: [
+     startScreen,
+    recycle,
+    closeTheLids,
+    LeakyFaucet,
+    Game5,
+    Game6,
+    Game9,
+    Game10,
+    Game11,
+    bugFriend,
+    Game7,
+      Game12,
+    endScreen,
+  ],
 
   scale: {
     mode: Phaser.Scale.FIT,
-    autoCenter: Phaser.Scale.CENTER_BOTH
+    autoCenter: Phaser.Scale.CENTER_BOTH,
   },
 };
 
-// keep a reference for debugging in browser console
+// Create and expose the Phaser game instance.  Keeping a reference on
+// window makes it easy to debug scenes from the browser console.
 const game = new Phaser.Game(config);
 window.game = game;
-
-// Status check for game9 and game11. For debug.
-if (typeof window !== 'undefined') {
-  Object.assign(window, {
-    startGame9: () => window.game.scene.start('Game9'),
-    startGame11: () => window.game.scene.start('Game11'),
-  });
-  console.log('startGame9() and startGame11() attached to window:', window.startGame11);
-}

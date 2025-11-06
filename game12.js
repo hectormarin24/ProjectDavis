@@ -1,367 +1,297 @@
-export default class game12 extends Phaser.Scene {
-    constructor(){
-        super('Game12');
-    }
+/* global Phaser */
+// ===========================================================
+// Game12.js — Fruit Picker (Collect fruit before it spoils)
+//
+// This scene implements a mini-game where apples fall from a tree and the
+// player must drag a basket to collect them before they spoil.  If any
+// apple spoils, the player loses one life and the mini‑game ends after a
+// brief delay, automatically advancing to the next randomized scene.
+// The basket can be controlled with the mouse (drag) or with the A and D
+// keys on the keyboard.  A status message appears when fruit spoils to
+// reinforce why picking up fruit promptly is important.
 
-/* ===================== Utilities ===================== */
-const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
-const rand  = (a, b) => Math.random() * (b - a) + a;
-const choose = (arr) => arr[(Math.random() * arr.length) | 0];
-
-/* ===================== Entities ===================== */
- FRUITS = [
-  { name: "apple",  color: "#ef4444", r: 14, air: 15, ground: 8 },
-  { name: "orange", color: "#f97316", r: 15, air: 14, ground: 7 },
-  { name: "lemon",  color: "#facc15", r: 12, air: 16, ground: 8 },
-  { name: "plum",   color: "#8b5cf6", r: 13, air: 18, ground: 9 },
-  { name: "cherry", color: "#dc2626", r: 10, air: 20, ground: 10 },
-];
-
-class Fruit {
-  constructor(c, level, groundY) {
-    this.c = c;
-    this.ctx = c.getContext("2d");
-    Object.assign(this, choose(FRUITS));
-
-    // Spawn under canopy (leave space near tree at right)
-    const maxX = c.width - 120;
-    this.x = rand(this.r, maxX);
-    this.y = -rand(20, 80);
-    this.vx = rand(-25, 25) * (0.25 + 0.03 * level);
-    this.vy = rand(90, 120) * (0.9 + 0.06 * level);
-    this.spin = rand(-1.4, 1.4);
-    this.rot = rand(0, Math.PI * 2);
-
-    this.state = "falling"; // falling | ground | spoiled | collected
-    this.groundY = groundY;
-    this.targetBug = null; // bug assigned after landing
+export default class Game12 extends Phaser.Scene {
+  constructor() {
+    super('Game12');
   }
 
-  update(dt) {
-    if (this.state !== "falling") return;
-    this.vy += 240 * dt;
-    this.x += this.vx * dt;
-    this.y += this.vy * dt;
-    this.rot += this.spin * dt;
-
-    if (this.x < this.r) { this.x = this.r; this.vx *= -0.9; }
-    if (this.x > this.c.width - this.r) { this.x = this.c.width - this.r; this.vx *= -0.9; }
-
-    if (this.y + this.r >= this.groundY) {
-      this.y = this.groundY - this.r;
-      this.vx = 0; this.vy = 0;
-      this.state = "ground";
-    }
+  /**
+   * Receive initial data such as accumulated score and screen dimensions.
+   */
+  init(data) {
+    this.score = data?.score ?? 0;
+    this.xCoord = data?.xCoord ?? this.scale.width;
+    this.yCoord = data?.yCoord ?? this.scale.height;
+    this.lives = window.globalGameState?.lives ?? 3;
+    this.difficulty = window.globalGameState?.difficulty ?? 1;
   }
 
-  draw() {
-    const ctx = this.ctx;
-    ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.rot);
-    ctx.beginPath(); ctx.arc(0, 0, this.r, 0, Math.PI * 2); ctx.fillStyle = this.color; ctx.fill();
-    // highlight
-    ctx.beginPath(); ctx.arc(-this.r * 0.35, -this.r * 0.35, this.r * 0.33, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(255,255,255,.25)"; ctx.fill();
-    // stem + leaf
-    ctx.fillStyle = "#0b5d1e"; ctx.fillRect(-2, -this.r - 6, 4, 7);
-    ctx.beginPath(); ctx.ellipse(6, -this.r - 4, 8, 4, Math.PI / 6, 0, Math.PI * 2);
-    ctx.fillStyle = "#22c55e"; ctx.fill();
-    ctx.restore();
-
-    if (this.state === "spoiled") {
-      ctx.save(); ctx.strokeStyle = "rgba(239,68,68,.9)"; ctx.lineWidth = 3;
-      ctx.beginPath(); ctx.moveTo(this.x - this.r, this.y - this.r); ctx.lineTo(this.x + this.r, this.y + this.r); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(this.x + this.r, this.y - this.r); ctx.lineTo(this.x - this.r, this.y + this.r); ctx.stroke();
-      ctx.restore();
-    }
+  /**
+   * Preload the assets required for this mini‑game.  Images are stored
+   * within the project's assets folder.  A spoiled version of the apple is
+   * used to visually indicate when the fruit has been ruined by bugs.
+   */
+  preload() {
+    this.load.image('tree', 'assets/tree.png');
+    this.load.image('basket', 'assets/basket.png');
+    this.load.image('fruit', 'assets/apple.png');
+    this.load.image('apple_spoiled', 'assets/apple_spoiled.png');
+    this.load.image('bug', 'assets/bug.png');
+    this.load.image('ff_bg', 'assets/fruit_field_bg.png');
   }
 
-  rect() { return { x: this.x - this.r, y: this.y - this.r, w: this.r * 2, h: this.r * 2 }; }
-}
+  /**
+   * Create and configure all game objects, timers and input handlers.
+   */
+  create() {
+    console.log('Game12 loaded');
 
-class Bug {
-  constructor(c, fruit, level, groundY) {
-    this.c = c; this.ctx = c.getContext("2d");
-    this.target = fruit; this.alive = true;
-    this.y = groundY - 6; // hover slightly above ground
-    this.x = (fruit.x < c.width / 2) ? -20 : c.width + 20; // nearest edge
-    this.speed = 50 + level * 12;
-    this.phase = 0; // leg wiggle
-    this.w = 14; this.h = 8;
-  }
+    // Draw the background and tree.  The tree is purely decorative.
+    this.add.image(this.xCoord / 2, this.yCoord / 2, 'ff_bg')
+      .setDisplaySize(this.xCoord, this.yCoord);
+    this.add.image(this.xCoord / 2, this.yCoord / 2.5, 'tree')
+      .setScale(2);
 
-  update(dt) {
-    if (!this.alive) return;
-    if (!this.target || this.target.state !== "ground") { this.alive = false; return; }
-    const dir = Math.sign(this.target.x - this.x) || 1;
-    this.x += dir * this.speed * dt;
-    this.phase += 12 * dt;
+    // Create the draggable basket.  Use Arcade physics so that we can
+    // constrain movement easily and detect overlaps, but disable gravity.
+    this.basket = this.add.image(this.xCoord / 2, this.yCoord - 100, 'basket')
+      .setScale(1.2);
+    this.physics.add.existing(this.basket);
+    this.basket.body.setAllowGravity(false);
+    this.basket.body.setImmovable(true);
 
-    if (Math.abs(this.x - this.target.x) <= (this.target.r - 1)) {
-      this.target.state = "spoiled";
-      this.alive = false;
-    }
-  }
-
-  draw() {
-    if (!this.alive) return;
-    const ctx = this.ctx;
-    ctx.save(); ctx.translate(this.x, this.y);
-    ctx.fillStyle = "#111827";
-    ctx.beginPath(); ctx.ellipse(0, 0, this.w / 2, this.h / 2, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(-6, 0, 4, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = "#f43f5e"; ctx.fillRect(-2, -2, 4, 4);
-    // legs
-    ctx.strokeStyle = "rgba(255,255,255,.25)"; ctx.lineWidth = 1.5;
-    const k = Math.sin(this.phase) * 3;
-    for (let i = -1; i <= 1; i++) {
-      ctx.beginPath(); ctx.moveTo(2 * i, 2);  ctx.lineTo(2 * i + 6,  6 + k);  ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(2 * i,-2);  ctx.lineTo(2 * i + 6, -6 - k); ctx.stroke();
-    }
-    ctx.restore();
-  }
-}
-
-class Basket {
-  constructor(c, groundY) {
-    this.c = c; this.ctx = c.getContext("2d");
-    this.w = 120; this.h = 26;
-    this.x = (c.width - this.w) / 2;
-    this.y = groundY - 34;
-    this.speed = 420; this.moveDir = 0; this.targetX = this.x;
-  }
-
-  update(dt) {
-    if (this.moveDir) this.x += this.moveDir * this.speed * dt;
-    else this.x += (this.targetX - this.x) * Math.min(1, 12 * dt);
-    this.x = clamp(this.x, 0, this.c.width - this.w);
-  }
-
-  draw() {
-    const ctx = this.ctx; ctx.save(); ctx.translate(this.x, this.y);
-    ctx.fillStyle = "#b45309"; ctx.fillRect(0, 0, this.w, this.h);
-    ctx.fillStyle = "#92400e"; ctx.fillRect(-6, -6, this.w + 12, 10);
-    ctx.strokeStyle = "rgba(0,0,0,.25)"; ctx.lineWidth = 2;
-    for (let i = 6; i < this.w; i += 12) {
-      ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i - 8, this.h); ctx.stroke();
-    }
-    ctx.restore();
-  }
-
-  rect() { return { x: this.x, y: this.y - 6, w: this.w, h: this.h + 6 }; }
-}
-
-/* ===================== Game ===================== */
-class Game {
-  constructor(canvas) {
-    this.c = canvas; this.ctx = canvas.getContext("2d");
-    this.hud = {
-      score: document.getElementById("score"),
-      lives: document.getElementById("lives"),
-      level: document.getElementById("level"),
-      grounded: document.getElementById("grounded"),
-    };
-    this.groundH = 90;
-    this.groundY = this.c.height - this.groundH + 10;
-
-    this.bindInput();
-    this.reset(true);
-    this.drawTitle();
-  }
-
-  bindInput() {
-    window.addEventListener("keydown", (e) => {
-      const k = e.key.toLowerCase();
-      if (k === "arrowleft" || k === "a") { this.basket.moveDir = -1; e.preventDefault(); }
-      if (k === "arrowright" || k === "d") { this.basket.moveDir =  1; e.preventDefault(); }
-      if (k === "p") this.paused = !this.paused;
-      if (k === " " || k === "enter") this.start();
+    // Register keyboard input for A/D movement.  These keys allow
+    // horizontal movement in addition to mouse dragging.
+    this.keys = this.input.keyboard.addKeys({
+      left: Phaser.Input.Keyboard.KeyCodes.A,
+      right: Phaser.Input.Keyboard.KeyCodes.D,
     });
-    window.addEventListener("keyup", (e) => {
-      const k = e.key.toLowerCase();
-      if ((k === "arrowleft"  || k === "a") && this.basket.moveDir < 0) this.basket.moveDir = 0;
-      if ((k === "arrowright" || k === "d") && this.basket.moveDir > 0) this.basket.moveDir = 0;
-    });
-    this.c.addEventListener("mousemove", (e) => {
-      const r = this.c.getBoundingClientRect();
-      const mx = (e.clientX - r.left) * (this.c.width / r.width);
-      this.basket.targetX = clamp(mx - this.basket.w / 2, 0, this.c.width - this.basket.w);
-    });
-  }
 
-  reset(hard = false) {
-    this.basket = new Basket(this.c, this.groundY);
+    // Enable dragging of the basket with the mouse.  Limit its horizontal
+    // movement to within the play area.
+    this.basket.setInteractive({ draggable: true });
+    this.input.setDraggable(this.basket);
+    this.input.on('drag', (_, gameObject, dragX) => {
+      gameObject.x = Phaser.Math.Clamp(dragX, 100, this.xCoord - 100);
+    });
+
+    // Initialise arrays for spawned fruit.  Difficulty influences spawn
+    // speed and spoil delay.  Track how many fruits have been collected
+    // this session to determine when to automatically end on success.
     this.fruits = [];
-    this.bugs = [];
+    this.fruitFallSpeed = 280 * this.difficulty;
+    this.spawnDelay = 2200 / this.difficulty;
+    this.fruitCaught = 0;
+    this.basketSpeed = 400;
 
-    this.spawnTimer = 0;  this.spawnEvery = 1.05;
-    this.level = 1;       this.levelTimer = 0;
-    this.score = 0;       this.lives = 3;
-    this.running = false; this.paused = false;
-    if (hard) this.last = performance.now();
-    this.updateHud();
-  }
+    // HUD: display timer and lives.  A transient message appears when
+    // fruit spoils so players understand why they lost the mini‑game.
+    this.timeLeft = 25;
+    this.timerText = this.add.text(40, 40, `Time: ${this.timeLeft}`, {
+      fontSize: '32px',
+      color: '#fff',
+    });
+    this.livesText = this.add.text(this.xCoord - 180, 40, `Lives: ${this.lives}`, {
+      fontSize: '32px',
+      color: '#fff',
+    });
+    this.messageText = this.add.text(this.xCoord / 2, 80, '', {
+      fontSize: '32px',
+      color: '#ff4f4f',
+      fontStyle: 'bold',
+    }).setOrigin(0.5);
 
-  start() {
-    if (!this.running) {
-      this.running = true; this.paused = false;
-      this.last = performance.now();
-      this.loop();
-    }
-  }
-
-  loop() {
-    if (!this.running) return;
-    const now = performance.now();
-    const dt = Math.min(0.033, (now - this.last) / 1000);
-    this.last = now;
-    if (!this.paused) { this.update(dt); this.render(); }
-    requestAnimationFrame(() => this.loop());
-  }
-
-  update(dt) {
-    // level ramp
-    this.levelTimer += dt;
-    if (this.levelTimer >= 12) {
-      this.levelTimer = 0; this.level += 1;
-      this.spawnEvery = Math.max(0.4, this.spawnEvery * 0.9);
-      this.updateHud();
-    }
-
-    // spawns
-    this.spawnTimer += dt;
-    if (this.spawnTimer >= this.spawnEvery) {
-      this.spawnTimer = 0;
-      this.fruits.push(new Fruit(this.c, this.level, this.groundY));
-    }
-
-    // entities
-    this.basket.update(dt);
-    for (const f of this.fruits) f.update(dt);
-
-    // grounded fruit → spawn bugs
-    for (const f of this.fruits) {
-      if (f.state === "ground" && !f.targetBug) {
-        const bug = new Bug(this.c, f, this.level, this.groundY);
-        f.targetBug = bug; this.bugs.push(bug);
-      }
-    }
-    for (const b of this.bugs) b.update(dt);
-
-    // catches / pickups
-    const br = this.basket.rect();
-    for (const f of this.fruits) {
-      if (f.state !== "falling" && f.state !== "ground") continue;
-      const cx = clamp(f.x, br.x, br.x + br.w);
-      const cy = clamp(f.y, br.y, br.y + br.h);
-      const dx = f.x - cx, dy = f.y - cy;
-      const hit = dx * dx + dy * dy <= f.r * f.r;
-      if (hit) {
-        const pts = (f.state === "falling")
-          ? f.air + Math.floor(this.level * 0.5)
-          : f.ground + Math.floor(this.level * 0.3);
-        this.score += pts;
-        if (f.targetBug) f.targetBug.alive = false;
-        f.state = "collected";
-        this.updateHud();
-      }
-    }
-
-    // spoiled → lose lives
-    let lost = false;
-    for (const f of this.fruits) {
-      if (f.state === "spoiled") {
-        f.state = "removed";
-        this.lives -= 1; lost = true;
-      }
-    }
-    if (lost) {
-      this.updateHud(true);
-      if (this.lives <= 0) { this.gameOver(); return; }
-    }
-
-    // prune
-    this.fruits = this.fruits.filter(f => !["collected", "removed"].includes(f.state));
-    this.bugs   = this.bugs.filter(b => b.alive);
-  }
-
-  render() {
-    const ctx = this.ctx;
-    ctx.clearRect(0, 0, this.c.width, this.c.height);
-
-    // ground band
-    const gTop = this.c.height - this.groundH;
-    const grd = ctx.createLinearGradient(0, gTop, 0, this.c.height);
-    grd.addColorStop(0, "#145214"); grd.addColorStop(1, "#0b3d0b");
-    ctx.fillStyle = grd; ctx.fillRect(0, gTop, this.c.width, this.c.height - gTop);
-
-    // tree on right
-    ctx.fillStyle = "#4b2e12"; ctx.fillRect(this.c.width - 96, gTop - 130, 30, 130);
-    const cx = this.c.width - 80, cy = gTop - 170;
-    ctx.fillStyle = "#166534";
-    [60, 50, 46, 42, 40].forEach((r, i) => {
-      ctx.beginPath();
-      ctx.arc(cx + (i - 2) * 24, cy + (i % 2 ? 16 : -2), r, 0, Math.PI * 2);
-      ctx.fill();
+    // Spawn fruits at regular intervals.  The spawn loop stops when the
+    // mini‑game finishes early due to a spoiled fruit or time running out.
+    this.spawnLoop = this.time.addEvent({
+      delay: this.spawnDelay,
+      callback: this.spawnFruit,
+      callbackScope: this,
+      loop: true,
     });
 
-    // entities
-    for (const f of this.fruits) f.draw();
-    for (const b of this.bugs) b.draw();
-    this.basket.draw();
-
-    // HUD derived
-    document.getElementById("grounded").textContent =
-      this.fruits.filter(f => f.state === "ground").length;
-
-    if (this.paused) this.overlay("Paused");
+    // Countdown timer: decreases every second and ends the mini‑game if
+    // time reaches zero.  The mini‑game can also end earlier if a fruit
+    // spoils or enough fruits are collected.
+    this.timerEvent = this.time.addEvent({
+      delay: 1000,
+      callback: () => {
+        this.timeLeft--;
+        this.timerText.setText(`Time: ${this.timeLeft}`);
+        if (this.timeLeft <= 0) {
+          this.finish(true);
+        }
+      },
+      loop: true,
+    });
   }
 
-  overlay(text) {
-    const ctx = this.ctx;
-    ctx.save();
-    ctx.fillStyle = "rgba(0,0,0,.45)";
-    ctx.fillRect(0, 0, this.c.width, this.c.height);
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "700 40px system-ui, sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText(text, this.c.width / 2, this.c.height / 2);
-    ctx.restore();
+  /**
+   * Spawn a new fruit falling from the top of the screen.  When the fruit
+   * touches the ground it stops moving and a spoil timer begins.  Fruits
+   * are stored in an array so they can be checked for basket overlap in
+   * update().
+   */
+  spawnFruit() {
+    const fruitX = Phaser.Math.Between(150, this.xCoord - 150);
+    const fruit = this.physics.add.image(fruitX, 150, 'fruit').setScale(1);
+    fruit.setVelocityY(this.fruitFallSpeed);
+    fruit.body.setAllowGravity(true);
+    fruit.state = 'falling';
+    fruit.isSpoiled = false;
+
+    const groundY = this.yCoord - 130;
+    // Continuously check if the fruit has reached the ground.  Once it
+    // lands, freeze it and schedule it to spoil if not collected in time.
+    this.time.addEvent({
+      delay: 30,
+      loop: true,
+      callback: () => {
+        if (!fruit.active) return;
+        if (fruit.y >= groundY && fruit.state === 'falling') {
+          fruit.y = groundY;
+          fruit.body.setVelocity(0, 0);
+          fruit.body.setAllowGravity(false);
+          fruit.state = 'grounded';
+          this.scheduleSpoil(fruit);
+        }
+      },
+    });
+    this.fruits.push(fruit);
   }
 
-  drawTitle() {
-    this.render();
-    this.overlay("Press Space to Start");
+  /**
+   * Schedule a fruit to spoil after a short delay.  The delay decreases
+   * with higher difficulty to make the mini‑game progressively harder.
+   */
+  scheduleSpoil(fruit) {
+    const spoilDelay = Phaser.Math.Clamp(2000 / this.difficulty, 700, 2000);
+    this.time.delayedCall(spoilDelay, () => {
+      if (fruit.active && fruit.state === 'grounded' && !fruit.isSpoiled) {
+        this.spawnBugOnFruit(fruit);
+      }
+    });
   }
 
-  updateHud(flash = false) {
-    this.hud.score.textContent = this.score;
-    this.hud.lives.textContent = this.lives;
-    this.hud.level.textContent = this.level;
-    if (flash) {
-      this.hud.lives.style.color = "#ef4444";
-      setTimeout(() => (this.hud.lives.style.color = ""), 180);
+  /**
+   * Spawn a bug directly on the apple to indicate it has spoiled.  The
+   * message is shown and after a short delay the mini‑game ends with a
+   * failure state.  No further fruit are processed once finish() is called.
+   */
+  spawnBugOnFruit(fruit) {
+    if (!fruit.active) return;
+    // Place the bug at the same coordinates as the fruit.  The bug is
+    // decorative and does not need physics since it will be destroyed
+    // shortly after.
+    const bug = this.add.image(fruit.x, fruit.y, 'bug').setScale(1);
+    fruit.setTexture('apple_spoiled');
+    fruit.isSpoiled = true;
+    this.showMessage('Fruit spoiled due to bugs!');
+    // After a brief pause, end the mini‑game with failure.  Calling
+    // finish(false) will deduct a life via finishMiniGame and move to
+    // the next scene.  We intentionally do not call loseLife() here to
+    // avoid decrementing lives twice (once here and once in finish()).
+    this.time.delayedCall(2000, () => {
+      if (bug.active) bug.destroy();
+      this.finish(false);
+    });
+  }
+
+  /**
+   * Update runs on every frame.  This method handles keyboard movement
+   * for the basket and checks for collisions between the basket and
+   * grounded, unspoiled fruit.  Collected fruits increase the score and
+   * when enough are collected the mini‑game ends successfully.
+   */
+  update(_, delta) {
+    // Keyboard controls: adjust basket position based on A/D keys.
+    if (this.keys.left.isDown) {
+      this.basket.x -= this.basketSpeed * (delta / 1000);
+    } else if (this.keys.right.isDown) {
+      this.basket.x += this.basketSpeed * (delta / 1000);
+    }
+    // Constrain basket within bounds.
+    this.basket.x = Phaser.Math.Clamp(this.basket.x, 100, this.xCoord - 100);
+
+    // Check for overlap between basket and each grounded fruit.  Only
+    // collect fruit that have not spoiled.  If enough are collected,
+    // finish the mini‑game successfully.
+    for (const fruit of this.fruits) {
+      if (fruit.active && fruit.state === 'grounded' && !fruit.isSpoiled) {
+        const dist = Phaser.Math.Distance.Between(
+          fruit.x,
+          fruit.y,
+          this.basket.x,
+          this.basket.y
+        );
+        if (dist < 100) {
+          this.collectFruit(fruit);
+        }
+      }
     }
   }
 
-  gameOver() {
-    this.running = false;
-    this.overlay(`Game Over — Score: ${this.score}`);
+  /**
+   * Remove a collected fruit, increase the score and check if enough
+   * fruits have been caught to finish with success.  The message is
+   * cleared when a fruit is collected.
+   */
+  collectFruit(fruit) {
+    if (!fruit.active || fruit.isSpoiled) return;
+    fruit.destroy();
+    this.score += 100;
+    this.fruitCaught++;
+    this.clearMessage();
+    // End successfully after collecting five fruits.  Adjust this
+    // threshold as desired for game length.
+    if (this.fruitCaught >= 5) {
+      this.finish(true);
+    }
   }
-}
 
-/* ===================== Boot & HiDPI Fit ===================== */
-const canvas = document.getElementById("game");
-function fitCanvasToDisplaySize() {
-  const rect = canvas.getBoundingClientRect();
-  const dpr = Math.min(2, window.devicePixelRatio || 1);
-  const w = Math.round(rect.width * dpr);
-  const h = Math.round(rect.height * dpr);
-  if (canvas.width !== w || canvas.height !== h) {
-    canvas.width = w; canvas.height = h;
+  /**
+   * Display a temporary message to the player.  The message clears after
+   * a short duration.  This is used to notify about spoiled fruit.
+   */
+  showMessage(text) {
+    this.messageText.setText(text);
+    this.time.delayedCall(1800, () => this.clearMessage());
   }
-}
-new ResizeObserver(() => { fitCanvasToDisplaySize(); game?.render(); }).observe(canvas);
-fitCanvasToDisplaySize();
-const game = new Game(canvas);
 
+  /**
+   * Clear any displayed message.  Called automatically after messages
+   * expire or when a fruit is collected.
+   */
+  clearMessage() {
+    this.messageText.setText('');
+  }
+
+  /**
+   * Finish the mini‑game.  Remove timers and destroy sprites.  If
+   * success is true, the next scene is loaded and the score is
+   * incremented; otherwise a life is deducted and the next scene is
+   * started.  Lives are managed via finishMiniGame, so local lives do
+   * not need to be decremented here.
+   */
+  finish(success) {
+    if (this.spawnLoop) {
+      this.spawnLoop.remove();
+    }
+    if (this.timerEvent) {
+      this.timerEvent.remove();
+    }
+    // Destroy remaining fruits.
+    for (const f of this.fruits) {
+      if (f && f.active) {
+        f.destroy();
+      }
+    }
+    // If a finishMiniGame helper exists (set in startScreen) use it to
+    // transition.  Otherwise revert to start screen for development.
+    if (window.finishMiniGame) {
+      window.finishMiniGame(success, this);
+    } else {
+      this.scene.start('startScreen');
+    }
+  }
 }
