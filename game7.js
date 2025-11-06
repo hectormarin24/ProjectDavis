@@ -12,13 +12,13 @@ export default class Game7 extends Phaser.Scene {
 
     init(data){
         this.score = 0;
-        this.xCoord = data.xCoord;
-        this.yCoord = data.yCoord;
-        this.timeLeft = 15;
+        this.xCoord = this.cameras.main.width;
+        this.yCoord = this.cameras.main.height;
+        this.timeLeft = 5;
     }
 
     create() {
-        this.background = this.add.image(this.xCoord / 3 + 20, this.yCoord / 2, 'background').setOrigin(0.5);
+        this.background = this.add.image(0, 0, 'background').setOrigin(0,0);
 
         this.scoreText = this.add.text(20, 20, 'Score: 0', { fontSize: '36px', color: '#000', fontStyle: 'bold'});
         this.timerText = this.add.text(20, 70, 'Time: ' + this.timeLeft, { fontSize: '36px', color: '#000', fontStyle: 'bold'});
@@ -107,6 +107,9 @@ export default class Game7 extends Phaser.Scene {
             color: '#000', 
             fontStyle: 'bold' 
         }).setOrigin(0.5);
+
+
+        console.log('text gone');
 
         this.button = this.add.text(this.xCoord / 2, this.yCoord / 2 + 50, 'Next', {
             fontSize: '32px',
