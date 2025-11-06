@@ -181,7 +181,7 @@ class Game11Scene extends Phaser.Scene {
     const destX = this.food.x;
     const destY = this.food.y;
     const dist = Phaser.Math.Distance.Between(this.raccoon.x, this.raccoon.y, destX, destY);
-    const speed = 80 * this.raccoonSpeedMultiplier;
+    const speed = 150 * this.raccoonSpeedMultiplier;
     const duration = (dist / speed) * 1000;
     this.raccoonTween = this.tweens.add({
       targets: this.raccoon,

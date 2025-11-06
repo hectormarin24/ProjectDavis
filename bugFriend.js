@@ -17,6 +17,7 @@ export default class bugFriend extends Phaser.Scene {
     this.load.image('bg', 'assets/flowerfieldbg.png');
     this.load.image('aphid', 'assets/aphid.png');
     this.load.image('grasshopper', 'assets/grasshopper.png');
+    this.load.image('butterfly', 'assets/butterfly.png');
   }
 
   init(data) {
@@ -42,7 +43,7 @@ export default class bugFriend extends Phaser.Scene {
       // Background no longer advances scenes; finishMiniGame handles progression
     });
     // Create insects
-    this.createInsect('ant', 400, 300, false);
+    this.createInsect('butterfly', 400, 300, false);
     this.createInsect('wasp', 600, 500, true);
     this.createInsect('cockroach', 800, 800, true);
     this.createInsect('ladybug', 200, 100, false);
@@ -86,12 +87,12 @@ export default class bugFriend extends Phaser.Scene {
     const scales = {
       ant: 0.4,
       wasp: 0.5,
-      cockroach: 0.7,
-      ladybug: 0.7,
-      fly: 0.5,
-      bee: 0.5,
-      aphid: 0.5,
-      grasshopper: 0.5,
+      cockroach: 0.5,
+      ladybug: 0.3,
+      fly: 0.3,
+      bee: 0.3,
+      aphid: 0.3,
+      grasshopper: 0.7,
     };
     insect.setScale(scales[key] ?? 0.5);
     insect.setCollideWorldBounds(true);
