@@ -44,7 +44,7 @@ export default class Game5 extends Phaser.Scene {
         this.add.image(imageX, imageY, 'flatBox').setScale(randomImage.scale / 3);
         this.score++;
         if(this.score == 5){
-          this.scene.start('Game10', {score: this.score, xCoord: this.xCoord, yCoord: this.yCoord});
+          this.scene.start('Game6', {score: this.score, xCoord: this.xCoord, yCoord: this.yCoord});
         } else {
           this.nextObject();
           this.clickCount = 0;
