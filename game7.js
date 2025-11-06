@@ -11,7 +11,7 @@ export default class Game7 extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image('bag', 'assets/recycle_bag.png');
+    this.load.image('rbag', 'assets/recycle_bag.png');
     this.load.image('bottle', 'assets/game6assets/bottle.png');
     this.load.image('can', 'assets/tin_can.png');
     this.load.image('paper', 'assets/crumpled_paper.png');
@@ -79,9 +79,9 @@ export default class Game7 extends Phaser.Scene {
   spawnItem() {
     if (this.isGameOver) return;
     const types = [
-      { key: 'bag', bad: true, scale: 0.5 },
-      { key: 'bag', bad: true, scale: 0.5 },
-      { key: 'bag', bad: true, scale: 0.5 },
+      { key: 'rbag', bad: true, scale: 0.5 },
+      { key: 'rbag', bad: true, scale: 0.5 },
+      { key: 'rbag', bad: true, scale: 0.5 },
       { key: 'bottle', bad: false, scale: 0.1 },
       { key: 'can', bad: false, scale: 0.5 },
       { key: 'paper', bad: false, scale: 0.5 },
