@@ -20,6 +20,8 @@ export default class recycle extends Phaser.Scene {
     this.load.image('tin_can', 'assets/tin_can.png');
     this.load.image('banana_peel', 'assets/banana_peel.png');
     this.load.image('pileOfLeaves', 'assets/pileOfLeaves.png');
+    this.load.image('smallBox', 'assets/Small Box.png');
+    this.load.image('milkCarton', 'assets/milk_carton.webp');
   }
 
   init(data) {
@@ -107,8 +109,10 @@ export default class recycle extends Phaser.Scene {
     // screens).  Use a plain random index instead.
     const objects = [
       { key: 'banana_peel', correct: 'compost' },
-      { key: 'tin_can', correct: 'recycle' },
+      { key: 'tin_can', correct: 'trash' },
       { key: 'pileOfLeaves', correct: 'compost' },
+      { key: 'smallBox', correct: 'recycle' },
+      { key: 'milkCarton', correct: 'recycle' },
     ];
     const idx = Math.floor(Math.random() * objects.length);
     this.current = objects[idx];
