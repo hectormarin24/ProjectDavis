@@ -1,16 +1,16 @@
 import recycle from './recycle.js';
-import Game5 from './boxFlatten.js';
-import Game9 from './oilAndWater.js';
-import LeakyFaucet from './leakyFaucet.js';
+import boxFlatten from './boxFlatten.js';
+import oilAndWater from './oilAndWater.js';
+import leakyFaucet from './leakyFaucet.js';
 import closeTheLids from './closeTheLids.js';
-import Game6 from './compostSort.js';
-import Game10 from './bathroomSort.js';
+import compostSort from './compostSort.js';
+import bathroomSort from './bathroomSort.js';
 import endScreen from './endScreen.js';
 import startScreen from './startScreen.js';
 import bugFriend from './bugFriend.js';
-import Game11 from './raccoon.js';
-import Game7 from './catchRec.js';
-import Game12 from './fruitPicker.js';
+import raccoon from './raccoon.js';
+import catchRec from './catchRec.js';
+import fruitPicker from './fruitPicker.js';
 
 
 // Phaser game configuration.  All scenes are registered here but their order
@@ -31,7 +31,7 @@ const config = {
   },
 
   scene: [
-     startScreen,
+    startScreen,
     recycle,
     closeTheLids,
     leakyFaucet,

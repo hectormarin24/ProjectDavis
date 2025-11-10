@@ -118,14 +118,15 @@ export default class startScreen extends Phaser.Scene {
     const miniGames = [
       'recycle',
       'closeTheLids',
-      'LeakyFaucet',
-      'Game5',
-      'Game6',
-      'Game9',
-      'Game10',
-      'Game11',
-      'bugFriend', 'Game12',
-      'Game7',
+      'leakyFaucet',
+      'raccoon',
+      'fruitPicker',
+      'compostSort',
+      'oilAndWater',
+      'boxFlatten',
+      'bugFriend',
+      'bathroomSort',
+      'catchRec',
     ];
     const shuffled = Phaser.Utils.Array.Shuffle(miniGames.slice());
     // Save the full list of mini games globally so that if the queue runs

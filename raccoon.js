@@ -248,4 +248,4 @@ class raccoon extends Phaser.Scene {
   }
 }
 
-export default Game11Scene;
+export default raccoon;
