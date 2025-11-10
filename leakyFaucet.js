@@ -2,9 +2,9 @@
 // before the sink overflows.  Once the mini game ends, proceed to the next
 // random scene from the global queue.
 
-export default class LeakyFaucet extends Phaser.Scene {
+export default class leakyFaucet extends Phaser.Scene {
   constructor() {
-    super('LeakyFaucet');
+    super('leakyFaucet');
   }
 
   init(data) {

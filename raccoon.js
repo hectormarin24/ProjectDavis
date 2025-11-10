@@ -9,9 +9,9 @@ const MIN_FOOD_DISTANCE_FROM_RACCOON = 180;
 // Score needed to finish the level
 const WIN_SCORE = 5;
 
-class Game11Scene extends Phaser.Scene {
+class raccoon extends Phaser.Scene {
   constructor() {
-    super({ key: 'Game11' });
+    super({ key: 'raccoon' });
   }
 
   init(data = {}) {

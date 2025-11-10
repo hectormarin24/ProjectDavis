@@ -3,9 +3,9 @@
 // objects.  This version uses the global gameQueue to decide the next
 // scene after winning or losing and carries forward the cumulative score.
 
-export default class Game10 extends Phaser.Scene {
+export default class bathroomSort extends Phaser.Scene {
   constructor() {
-    super({ key: 'Game10' });
+    super({ key: 'bathroomSort' });
   }
 
   init(data) {

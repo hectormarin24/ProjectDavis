@@ -5,9 +5,9 @@
 // difficulty.  The HUD shows the global timer and lives.  When the
 // mini game ends finishMiniGame() is invoked to update global state.
 
-export default class Game9 extends Phaser.Scene {
+export default class oilAndWater extends Phaser.Scene {
   constructor() {
-    super({ key: 'Game9' });
+    super({ key: 'oilAndWater' });
   }
 
   init(data) {

@@ -5,9 +5,9 @@
 // triggers a loss.  At the end, finishMiniGame() is called to update
 // global score/lives and start the next random mini game.
 
-export default class Game5 extends Phaser.Scene {
+export default class boxFlatten extends Phaser.Scene {
   constructor() {
-    super('Game5');
+    super('boxFlatten');
   }
 
   preload() {

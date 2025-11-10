@@ -5,9 +5,9 @@
 // the end, finishMiniGame() is called with success if the score is
 // nonnegative, otherwise failure.  The HUD shows global timer and lives.
 
-export default class Game7 extends Phaser.Scene {
+export default class catchRec extends Phaser.Scene {
   constructor() {
-    super('Game7');
+    super('catchRec');
   }
 
   preload() {

@@ -10,9 +10,9 @@
 // keys on the keyboard.  A status message appears when fruit spoils to
 // reinforce why picking up fruit promptly is important.
 
-export default class Game12 extends Phaser.Scene {
+export default class fruitPicker extends Phaser.Scene {
   constructor() {
-    super('Game12');
+    super('fruitPicker');
   }
 
   /**

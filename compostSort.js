@@ -20,9 +20,9 @@ const FRUIT_KEYS = [
 
 const PLASTIC_KEYS = ['bag', 'bottle', 'cup', 'Tray', 'utensil'];
 
-export default class Game6 extends Phaser.Scene {
+export default class compostSort extends Phaser.Scene {
   constructor() {
-    super('Game6');
+    super('compostSort');
   }
 
   init(data) {
