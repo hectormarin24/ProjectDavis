@@ -37,6 +37,8 @@ export default class compostSort extends Phaser.Scene {
     // Local score target for this mini game
     this.targetScore = 5;
     this.gameOver = false;
+    this.finalScore = data.score;
+    this.lives = data.lives;
   }
 
   preload() {
@@ -124,7 +126,7 @@ export default class compostSort extends Phaser.Scene {
         this.livesText.setText(`Lives: ${state.lives}`);
         if (!this.gameOver && (timeLeft <= 0 || state.lives <= 0)) {
           this.gameOver = true;
-          window.finishMiniGame(false, this);
+          window.finishMiniGame(false, this, 0);
         }
       },
     });
@@ -323,7 +325,14 @@ export default class compostSort extends Phaser.Scene {
       .setOrigin(0.5);
     // After a short pause, call finishMiniGame
     this.time.delayedCall(800, () => {
-      window.finishMiniGame(won, this);
+      this.scene.start('transitionScreen', {
+        lives: this.lives,
+        score: this.finalScore,
+        xCoord: this.xCoord,
+        yCoord: this.yCoord,
+        won: won,
+        elapsedTime: this.time.now
+      });
     });
   }
 }

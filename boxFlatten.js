@@ -23,6 +23,8 @@ export default class boxFlatten extends Phaser.Scene {
     this.yCoord = data.yCoord;
     this.isGameOver = false;
     this.localScore = 0;
+    this.score = data.score;
+    this.lives = data.lives;
   }
 
   create() {
@@ -50,7 +52,7 @@ export default class boxFlatten extends Phaser.Scene {
         this.livesText.setText(`Lives: ${state.lives}`);
         if (!this.isGameOver && (timeLeft <= 0 || state.lives <= 0)) {
           this.isGameOver = true;
-          window.finishMiniGame(false, this);
+          window.finishMiniGame(false, this, 0);
         }
       },
     });
@@ -126,7 +128,14 @@ export default class boxFlatten extends Phaser.Scene {
       })
       .setOrigin(0.5);
     this.time.delayedCall(800, () => {
-      window.finishMiniGame(true, this);
+      this.scene.start('transitionScreen', {
+        lives: this.lives,
+        score: this.score,
+        xCoord: this.xCoord,
+        yCoord: this.yCoord,
+        won: true,
+        elapsedTime: this.time.now
+      });
     });
   }
 
@@ -141,7 +150,14 @@ export default class boxFlatten extends Phaser.Scene {
       })
       .setOrigin(0.5);
     this.time.delayedCall(800, () => {
-      window.finishMiniGame(false, this);
+      this.scene.start('transitionScreen', {
+        lives: this.lives,
+        score: this.score,
+        xCoord: this.xCoord,
+        yCoord: this.yCoord,
+        won: false,
+        elapsedTime: this.time.now
+      });
     });
   }
 }

@@ -11,6 +11,7 @@ import bugFriend from './bugFriend.js';
 import raccoon from './raccoon.js';
 import catchRec from './catchRec.js';
 import fruitPicker from './fruitPicker.js';
+import tranistionScreen from './transitionScreen.js';
 
 
 // Phaser game configuration.  All scenes are registered here but their order
@@ -44,6 +45,7 @@ const config = {
     catchRec,
     fruitPicker,
     endScreen,
+    tranistionScreen
   ],
 
   scale: {

@@ -19,6 +19,8 @@ class raccoon extends Phaser.Scene {
     this.yCoord = data.yCoord ?? HEIGHT;
     // Track whether the game has finished
     this.finished = false;
+    this.score = data.score;
+    this.lives = data.lives;
   }
 
   preload() {
@@ -58,7 +60,7 @@ class raccoon extends Phaser.Scene {
         this.livesText.setText(`Lives: ${state.lives}`);
         if (!this.finished && (timeLeft <= 0 || state.lives <= 0)) {
           this.finished = true;
-          window.finishMiniGame(false, this);
+          window.finishMiniGame(false, this, 0);
         }
       },
     });
@@ -198,7 +200,14 @@ class raccoon extends Phaser.Scene {
             // Immediately end the mini game with failure
             this.hasFinished = true;
             this.time.delayedCall(600, () => {
-              window.finishMiniGame(false, this);
+              this.scene.start('transitionScreen', {
+                lives: this.lives,
+                score: this.score,
+                xCoord: this.xCoord,
+                yCoord: this.yCoord,
+                won: false,
+                elapsedTime: this.time.now
+              });
             });
             return;
           }
@@ -243,7 +252,14 @@ class raccoon extends Phaser.Scene {
     // Determine success based on scoreLocal relative to required WIN_SCORE
     const success = this.scoreLocal >= WIN_SCORE;
     this.time.delayedCall(800, () => {
-      window.finishMiniGame(success, this);
+      this.scene.start('transitionScreen', {
+        lives: this.lives,
+        score: this.score,
+        xCoord: this.xCoord,
+        yCoord: this.yCoord,
+        won: true,
+        elapsedTime: this.time.now
+      });
     });
   }
 }

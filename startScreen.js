@@ -36,9 +36,17 @@ export default class startScreen extends Phaser.Scene {
       .text(this.xCoord / 2, this.yCoord / 3, 'Welcome!', {
         fontSize: '156px',
         fontStyle: 'bold',
-        fill: '#fff',
+        fill: '#000',
       })
-      .setOrigin(0.5);
+      .setOrigin(0.5)
+      .setDepth(100);
+
+      this.add
+        .graphics()
+        .fillStyle(0xf9cb9c, 1)
+        .fillRoundedRect(this.xCoord / 2 - 400, this.yCoord / 3 - 75, 775, 150, 20)
+        .lineStyle(4, 0x000000, 1)
+        .strokeRoundedRect(this.xCoord / 2 - 400, this.yCoord / 3 - 75, 775, 150, 20);
 
     // Create a simple idle animation for the frog so the start screen feels
     // animated.  Re‑use the existing spritesheet frames.
@@ -71,8 +79,8 @@ export default class startScreen extends Phaser.Scene {
     // successfully or false if they failed.  On success the score is
     // incremented by 100 points; on failure a life is removed.  After
     // updating the global state the next scene (or end screen) is started.
-    window.finishMiniGame = (success, scene) => {
-      const state = window.globalGameState;
+    const state = window.globalGameState;
+    window.finishMiniGame = (success, scene, time) => {
       if (success) {
         state.score += 100;
       } else {
@@ -82,6 +90,7 @@ export default class startScreen extends Phaser.Scene {
       // shorter/spawns faster.  Cap the multiplier to prevent games from
       // becoming unplayable for younger players.
       state.difficulty = Math.min(3, state.difficulty + 0.1);
+      state.startTime += time;
       const elapsed = scene.time.now - state.startTime;
       const timeLeft = state.totalTime - elapsed;
       if (state.lives <= 0 || timeLeft <= 0) {
@@ -105,6 +114,7 @@ export default class startScreen extends Phaser.Scene {
           : 'endScreen';
       scene.scene.start(nextScene, {
         score: state.score,
+        lives: state.lives,
         xCoord: scene.xCoord,
         yCoord: scene.yCoord,
       });
@@ -126,7 +136,7 @@ export default class startScreen extends Phaser.Scene {
       'boxFlatten',
       'bugFriend',
       'bathroomSort',
-      'catchRec',
+      'catchRec'
     ];
     const shuffled = Phaser.Utils.Array.Shuffle(miniGames.slice());
     // Save the full list of mini games globally so that if the queue runs
@@ -152,10 +162,12 @@ export default class startScreen extends Phaser.Scene {
           window.gameQueue && window.gameQueue.length > 0
             ? window.gameQueue.shift()
             : 'endScreen';
+        state.startTime = this.time.now;
         this.scene.start(nextScene, {
           score: 0,
+          lives: 3,
           xCoord: this.xCoord,
-          yCoord: this.yCoord,
+          yCoord: this.yCoord
         });
       });
 
