@@ -34,32 +34,62 @@ export default class endScreen extends Phaser.Scene {
     }
     // Title and score text
     this.add
-      .text(w / 2, h / 3, 'Game Over', {
+      .text(this.xCoord / 2 , this.yCoord / 4, 'Game Over', {
         fontSize: '96px',
         fontStyle: 'bold',
-        fill: '#ffffff',
-      })
-      .setOrigin(0.5);
-    this.add
-      .text(w / 2, h / 2, `Score: ${this.score}`, {
-        fontSize: '64px',
-        fontStyle: 'bold',
-        fill: '#ffffff',
-      })
-      .setOrigin(0.5);
-    // Menu button returns to the start screen
-    const button = this.add
-      .text(w / 2, (3 * h) / 4, 'Menu', {
-        fontSize: '48px',
         fill: '#000',
-        backgroundColor: '#cccccc',
-        padding: { x: 20, y: 10 },
-        align: 'center',
       })
       .setOrigin(0.5)
-      .setInteractive({ useHandCursor: true })
-      .on('pointerdown', () => {
-        this.scene.start('startScreen');
-      });
+      .setDepth(100);
+
+    this.add
+        .graphics()
+        .fillStyle(0xf9cb9c, 1)
+        .fillRoundedRect(this.xCoord / 2 - 275, this.yCoord / 4 - 75, 550, 150, 20)
+        .lineStyle(4, 0x000000, 1)
+        .strokeRoundedRect(this.xCoord / 2 - 275, this.yCoord / 4 - 75, 550, 150, 20);
+
+    this.add
+      .text(this.xCoord / 2, this.yCoord / 2, `Score: ${this.score}`, {
+        fontSize: '64px',
+        fontStyle: 'bold',
+        fill: '#000',
+      })
+      .setOrigin(0.5)
+      .setDepth(100);
+
+      this.add
+        .graphics()
+        .fillStyle(0xffffff, 1)
+        .fillRoundedRect(this.xCoord / 2 - 225, this.yCoord / 2 - 40, 450, 80, 20)
+        .lineStyle(4, 0x000000, 1)
+        .strokeRoundedRect(this.xCoord / 2 - 225, this.yCoord / 2 - 40, 450, 80, 20);
+
+      this.menuButton = this.add
+        .text(this.xCoord / 2, this.yCoord / 2 + 300, 'Next Game', { 
+            fontSize: '36px', 
+            color: '#000', 
+            stroke: '#000',
+            strokeThickness: 2
+        })
+        .setOrigin(0.5)
+        .setDepth(100)
+        .setInteractive({ useHandCursor: true })
+        .on('pointerover', () => this.menuButton.setScale(1.1))
+        .on('pointerout', () => this.menuButton.setScale(1))
+        .on('pointerdown', () => {
+            this.scene.start('startScreen');
+        });
+
+        this.input.keyboard.on('keydown-SPACE', () => {
+            this.scene.start('startScreen');
+        });
+
+        this.add
+        .graphics()
+        .fillStyle(0xc3c3c3, 1)
+        .fillRoundedRect(this.xCoord / 2 - 125, this.yCoord / 2 + 260, 250, 80, 20)
+        .lineStyle(4, 0x000000, 1)
+        .strokeRoundedRect(this.xCoord / 2 - 125, this.yCoord / 2 + 260, 250, 80, 20)
   }
 }

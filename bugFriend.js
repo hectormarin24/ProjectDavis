@@ -26,6 +26,8 @@ export default class bugFriend extends Phaser.Scene {
     this.yCoord = data.yCoord;
     this.isGameOver = false;
     this.goodSquashed = 0;
+    this.score = data.score;
+    this.lives = data.lives;
   }
 
   create() {
@@ -71,7 +73,7 @@ export default class bugFriend extends Phaser.Scene {
         this.livesText.setText(`Lives: ${state.lives}`);
         if (!this.isGameOver && (timeLeft <= 0 || state.lives <= 0)) {
           this.isGameOver = true;
-          window.finishMiniGame(false, this);
+          window.finishMiniGame(false, this, 0);
         }
       },
     });
@@ -170,7 +172,14 @@ export default class bugFriend extends Phaser.Scene {
       })
       .setOrigin(0.5);
     this.time.delayedCall(800, () => {
-      window.finishMiniGame(won, this);
+      this.scene.start('transitionScreen', {
+        lives: this.lives,
+        score: this.score,
+        xCoord: this.xCoord,
+        yCoord: this.yCoord,
+        won: won,
+        elapsedTime: this.time.now
+      });
     });
   }
 }

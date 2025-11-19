@@ -19,10 +19,10 @@ export default class fruitPicker extends Phaser.Scene {
    * Receive initial data such as accumulated score and screen dimensions.
    */
   init(data) {
-    this.score = data?.score ?? 0;
     this.xCoord = data?.xCoord ?? this.scale.width;
     this.yCoord = data?.yCoord ?? this.scale.height;
-    this.lives = window.globalGameState?.lives ?? 3;
+    this.finalScore = data.score;
+    this.lives = data.lives;
     this.difficulty = window.globalGameState?.difficulty ?? 1;
   }
 
@@ -192,8 +192,14 @@ export default class fruitPicker extends Phaser.Scene {
     // the next scene.  We intentionally do not call loseLife() here to
     // avoid decrementing lives twice (once here and once in finish()).
     this.time.delayedCall(2000, () => {
-      if (bug.active) bug.destroy();
-      this.finish(false);
+      this.scene.start('transitionScreen', {
+        lives: this.lives,
+        score: this.finalScore,
+        xCoord: this.xCoord,
+        yCoord: this.yCoord,
+        won: false,
+        elapsedTime: this.time.now
+      });
     });
   }
 
@@ -286,12 +292,14 @@ export default class fruitPicker extends Phaser.Scene {
         f.destroy();
       }
     }
-    // If a finishMiniGame helper exists (set in startScreen) use it to
-    // transition.  Otherwise revert to start screen for development.
-    if (window.finishMiniGame) {
-      window.finishMiniGame(success, this);
-    } else {
-      this.scene.start('startScreen');
-    }
+
+    this.scene.start('transitionScreen', {
+        lives: this.lives,
+        score: this.finalScore,
+        xCoord: this.xCoord,
+        yCoord: this.yCoord,
+        won: true,
+        elapsedTime: this.time.now
+      });
   }
 }
