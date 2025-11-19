@@ -63,8 +63,10 @@ export default class startScreen extends Phaser.Scene {
       totalTime: 5 * 60 * 1000,
       lives: 3,
       score: 0,
-      difficulty: 1,
+      difficulty: 1,          // lowest difficulty
+      difficultyEnabled: true // difficulty scaling ON by default
     };
+
     // Helper to finish a mini game.  Scenes should call this to either
     // advance to the next random game or end the entire session.  The
     // parameter `success` should be true if the player completed the game
@@ -78,10 +80,15 @@ export default class startScreen extends Phaser.Scene {
       } else {
         state.lives -= 1;
       }
-      // Increase difficulty slightly after every game to make timers
-      // shorter/spawns faster.  Cap the multiplier to prevent games from
-      // becoming unplayable for younger players.
-      state.difficulty = Math.min(3, state.difficulty + 0.1);
+      // Increase difficulty slightly after every game, *only if* enabled, to make tiers shorter/spawns faster
+      // cap the multiplier to prevent games from becoming unplayable for younger players
+      // Otherwise, keep it at the lowest level (1).
+      if (state.difficultyEnabled) {
+        state.difficulty = Math.min(3, state.difficulty + 0.1);
+      } else {
+        state.difficulty = 1; // always stay at easiest level
+      }
+
       const elapsed = scene.time.now - state.startTime;
       const timeLeft = state.totalTime - elapsed;
       if (state.lives <= 0 || timeLeft <= 0) {
@@ -136,6 +143,33 @@ export default class startScreen extends Phaser.Scene {
     window.allMiniGames = miniGames.slice();
     window.gameQueue = shuffled;
 
+// Difficulty toggle button (top-right)
+this.difficultyButton = this.add
+  .text(this.xCoord - 20, 20, '', {
+    fontSize: '32px',
+    fill: '#ffffff',
+    backgroundColor: '#000000',
+  })
+  .setOrigin(1, 0)          // right aligned at top
+  .setPadding(8, 4, 8, 4)
+  .setDepth(10)
+  .setInteractive({ useHandCursor: true });
+
+this.difficultyButton.on('pointerup', () => {
+  const state = window.globalGameState;
+  state.difficultyEnabled = !state.difficultyEnabled;
+
+  // If turning difficulty OFF, lock to easiest setting
+  if (!state.difficultyEnabled) {
+    state.difficulty = 1;
+  }
+
+  this.updateDifficultyButtonText();
+});
+
+this.updateDifficultyButtonText();
+
+
     // Play button.  The callback grabs the next scene from the queue and
     // starts it.  If the queue has been exhausted it falls back to
     // endScreen.  A score of 0 is passed at the beginning.
@@ -179,4 +213,12 @@ export default class startScreen extends Phaser.Scene {
       .on('pointerover', () => settingsBtn.setScale(0.28))
       .on('pointerout', () => settingsBtn.setScale(0.25));
   }
+  updateDifficultyButtonText() {
+    const state = window.globalGameState;
+    const label = state.difficultyEnabled
+      ? 'Difficulty: ON'
+      : 'Difficulty: OFF (Easy)';
+    this.difficultyButton.setText(label);
+}
+
 }
