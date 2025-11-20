@@ -37,6 +37,15 @@ export default class compostSort extends Phaser.Scene {
     // Local score target for this mini game
     this.targetScore = 5;
     this.gameOver = false;
+    this.cursors = null;
+    this.dropKey = null;
+ 
+    // Accessibility mode (subtitles, no fail on mistake)
+    this.accessibilityEnabled = !!(data && data.accessibilityEnabled);
+
+    // Subtitle helpers
+    this.subtitleText = null;
+    this.subtitleTimer = null;
     this.finalScore = data.score;
     this.lives = data.lives;
   }
@@ -77,6 +86,30 @@ export default class compostSort extends Phaser.Scene {
   }
 
   create() {
+       // Accessibility toggle button (top-right)
+    this.accessibilityButton = this.add
+      .text(this.W - 16, 16, '', {
+        fontSize: '20px',
+        color: '#ffffff',
+        backgroundColor: '#000000',
+      })
+      .setOrigin(1, 0)
+      .setPadding(6, 4, 6, 4)
+      .setDepth(200)
+      .setInteractive({ useHandCursor: true });
+
+    this.accessibilityButton.on('pointerup', () => {
+      const newAccessibilityState = !this.accessibilityEnabled;
+
+      // Restart scene with the NEW state explicitly passed
+      this.scene.restart({
+        xCoord: this.W,
+        yCoord: this.H,
+        accessibilityEnabled: newAccessibilityState,
+      });
+    });
+
+    this.updateAccessibilityButtonText();
     // Background
     const bg = this.add.image(this.W / 2, this.H / 2, 'garden_bg');
     bg.setOrigin(0.5);
@@ -109,19 +142,45 @@ export default class compostSort extends Phaser.Scene {
         const minutes = Math.floor(timeLeft / 60000);
         const seconds = Math.floor((timeLeft % 60000) / 1000);
         this.timerText.setText(`Time: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`);
-        this.livesText.setText(`Lives: ${state.lives}`);
-        if (!this.gameOver && (timeLeft <= 0 || state.lives <= 0)) {
-          this.gameOver = true;
-          window.finishMiniGame(false, this, 0);
+        if (this.accessibilityEnabled) {
+          // Lives are effectively disabled in this mode
+          this.livesText.setText('Lives: ∞');
+          if (!this.gameOver && timeLeft <= 0) {
+            this.gameOver = true;
+            window.finishMiniGame(false, this);
+          }
+        } else {
+          // Normal behavior
+          this.livesText.setText(`Lives: ${state.lives}`);
+          if (!this.gameOver && (timeLeft <= 0 || state.lives <= 0)) {
+            this.gameOver = true;
+            window.finishMiniGame(false, this);
+          }
         }
       },
     });
+        // Keyboard controls (arrows + space)
+    this.cursors = this.input.keyboard.createCursorKeys();
+    this.dropKey = this.input.keyboard.addKey(
+      Phaser.Input.Keyboard.KeyCodes.SPACE
+    );
     // Compost bin
     const binY = this.H - 100;
     this.bin = this.add
       .image(this.W / 2, binY, 'compost_bin_img')
       .setOrigin(0.5, 0.5)
       .setScale(1.4);
+     // Subtitle text for accessibility feedback (top center)
+    this.subtitleText = this.add
+      .text(this.W / 2, 70, '', {
+        fontSize: '24px',
+        color: '#ffffff',
+        backgroundColor: '#000000',
+      })
+      .setOrigin(0.5, 0)   // center horizontally, stick to top vertically
+      .setDepth(200);
+
+    this.subtitleText.setVisible(this.accessibilityEnabled);
     // Spawn first piece
     this.spawnNextPiece();
   }
@@ -142,7 +201,25 @@ export default class compostSort extends Phaser.Scene {
     this.makeDraggable(piece);
     this.startStepFall(piece);
     this.activePiece = piece;
+    // Accessibility: announce falling item
+    if (this.accessibilityEnabled) {
+      this.announceFallingPiece(piece);
+    }
   }
+  announceFallingPiece(item) {
+    if (!this.accessibilityEnabled) return;
+
+    const key = item.texture.key || '';
+    const type = item.getData('type');
+    const niceName = key.replace(/[-_]/g, ' ');
+    const itemTypeLabel = type === 'compost' ? 'compost item' : 'plastic item';
+
+    const message = `${niceName}, ${itemTypeLabel}, falling.`;
+
+    this.showSubtitle(message);
+  }
+
+
 
   // Gravity simulation
   startStepFall(item) {
@@ -230,14 +307,23 @@ export default class compostSort extends Phaser.Scene {
   // Called when an item is dropped onto the bin
   handleDrop(item) {
     if (this.gameOver) return;
+
     const type = item.getData('type');
+
     // Remove any fall timers and destroy the item
     this.stopStepFall(item);
     item.destroy();
+
     if (type === 'compost') {
+      // Correct choice
+      if (this.accessibilityEnabled) {
+        this.showSubtitle('Correct: compost item in bin!');
+      }
+
       // Increase local score
       this.score++;
       this.scoreText.setText(`Score: ${this.score} / ${this.targetScore}`);
+
       if (this.score >= this.targetScore) {
         // Player wins this mini game
         this.endGame(true);
@@ -245,10 +331,29 @@ export default class compostSort extends Phaser.Scene {
         this.spawnNextPiece();
       }
     } else {
-      // Dropping plastic into the bin counts as a failure
-      this.endGame(false);
+// Wrong choice (plastic in bin)
+if (this.accessibilityEnabled) {
+  // Accessibility ON: feedback only, DO NOT end game
+  this.showSubtitle("Don't put plastic in the compost bin!");
+
+  // Wait a bit so the player can read the message,
+  // THEN spawn the next piece (which will overwrite the subtitle)
+  this.time.delayedCall(3500, () => {
+    if (!this.gameOver) {
+      this.spawnNextPiece();
+    }
+  });
+} else {
+  // Accessibility OFF: normal fail behavior
+  this.endGame(false);
+}
+
+
     }
   }
+
+
+
 
   // Shake the camera briefly on errors
   flashCamera(color, duration) {
@@ -289,6 +394,92 @@ export default class compostSort extends Phaser.Scene {
     this.time.delayedCall(500, () => {
       this.spawnNextPiece();
     });
+  }
+  update(time, delta) {
+    if (this.gameOver || !this.activePiece) return;
+    if (!this.cursors) return;
+
+    const piece = this.activePiece;
+    const moveStep = 8;
+
+    // LEFT / RIGHT move
+    if (this.cursors.left.isDown) {
+      piece.x -= moveStep;
+    } else if (this.cursors.right.isDown) {
+      piece.x += moveStep;
+    }
+
+    // Keep on screen
+    piece.x = Phaser.Math.Clamp(piece.x, 0, this.W);
+
+    const bottomLimit = this.H - 10;
+
+    // ---- DOWN ARROW: smooth fast fall while held ----
+    const wasFastFalling = piece.getData('fastFalling') === true;
+
+    if (this.cursors.down.isDown) {
+      // Just entered fast-fall mode: stop the step-based fall
+      if (!wasFastFalling) {
+        piece.setData('fastFalling', true);
+        this.stopStepFall(piece);
+      }
+    } else {
+      // Released DOWN: if we were fast-falling, go back to normal step fall
+      if (wasFastFalling) {
+        piece.setData('fastFalling', false);
+        if (!this.gameOver && piece.active) {
+          this.startStepFall(piece);
+        }
+      }
+    }
+
+    // If we are in fast-fall mode, move smoothly every frame
+    if (piece.getData('fastFalling') === true) {
+      const fallSpeed = 450; // pixels per second – tweak this!
+      const dy = (fallSpeed * delta) / 1000; // delta is ms
+
+      piece.y += dy;
+
+      if (piece.y >= bottomLimit) {
+        // Clamp to bottom and trigger bounce exactly once
+        piece.y = bottomLimit;
+
+        // Clear fast-fall state so we don't re-enter this block
+        piece.setData('fastFalling', false);
+
+        if (!this.gameOver && piece.active && !piece.getData('hitBottom')) {
+          piece.setData('hitBottom', true);
+          this.startBounce(piece);
+        }
+      }
+    }
+
+    // SPACE = drop if over bin
+    if (Phaser.Input.Keyboard.JustDown(this.dropKey)) {
+      if (this.isOverBin(piece)) {
+        this.handleDrop(piece);
+      }
+    }
+  }
+
+  updateAccessibilityButtonText() {
+    if (!this.accessibilityButton) return;
+    const label = this.accessibilityEnabled ? 'Accessibility: ON' : 'Accessibility: OFF';
+    this.accessibilityButton.setText(label);
+
+    if (this.subtitleText) {
+      this.subtitleText.setVisible(this.accessibilityEnabled);
+    }
+  }
+
+
+  showSubtitle(message) {
+    if (!this.subtitleText) return;
+    if (!this.accessibilityEnabled) return;
+
+    // Just set the text and leave it there
+    this.subtitleText.setText(message);
+    this.subtitleText.setVisible(true);
   }
 
   endGame(won) {

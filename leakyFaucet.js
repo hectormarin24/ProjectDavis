@@ -1,5 +1,5 @@
 // game3.js (LeakyFaucet) — Fix the leaking faucet by tightening a wrench
-// before the sink overflows.  Once the mini game ends, proceed to the next
+// before the sink overflows. Once the mini game ends, proceed to the next
 // random scene from the global queue.
 
 export default class leakyFaucet extends Phaser.Scene {
@@ -8,12 +8,23 @@ export default class leakyFaucet extends Phaser.Scene {
   }
 
   init(data) {
-    // Carry over coordinates from the previous scene.  Score is managed
+    // Carry over coordinates from the previous scene. Score is managed
     // globally and is not tracked here.
     this.xCoord = data.xCoord;
     this.yCoord = data.yCoord;
     // Prevent multiple completions
     this.finished = false;
+
+    // Slow mode flag
+    this.slowModeEnabled = false;
+
+    // Drip timing
+    this.dripBaseDelay = 0;
+
+    // Water UI
+    this.waterWarningText = null;
+    this.waterBarBg = null;
+    this.waterBarFill = null;
     this.score = data.score;
     this.lives = data.lives;
   }
@@ -38,6 +49,9 @@ export default class leakyFaucet extends Phaser.Scene {
     this.keyHeld = false;
     this.isAnimating = false;
     this.tightenCount = 0;
+
+    const { width, height } = this.scale;
+
     // HUD: display global time left and lives
     const screenW = this.scale.width;
     this.timerText = this.add
@@ -46,6 +60,7 @@ export default class leakyFaucet extends Phaser.Scene {
     this.livesText = this.add
       .text(screenW - 180, 20, '', { fontSize: '32px', fill: '#ffffff' })
       .setDepth(100);
+
     this.time.addEvent({
       delay: 200,
       loop: true,
@@ -55,7 +70,9 @@ export default class leakyFaucet extends Phaser.Scene {
         const timeLeft = Math.max(0, state.totalTime - elapsed);
         const minutes = Math.floor(timeLeft / 60000);
         const seconds = Math.floor((timeLeft % 60000) / 1000);
-        this.timerText.setText(`Time: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`);
+        this.timerText.setText(
+          `Time: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`
+        );
         this.livesText.setText(`Lives: ${state.lives}`);
         if (!this.gameOver && (timeLeft <= 0 || state.lives <= 0)) {
           this.gameOver = true;
@@ -65,18 +82,83 @@ export default class leakyFaucet extends Phaser.Scene {
       callbackScope: this,
     });
 
-    const { width, height } = this.scale;
+    // Slow Mode toggle button (top-left under timer)
+    this.slowModeButton = this.add
+      .text(20, 60, '', {
+        fontSize: '24px',
+        color: '#ffffff',
+        backgroundColor: '#000000',
+      })
+      .setOrigin(0, 0)
+      .setPadding(6, 4, 6, 4)
+      .setDepth(110)
+      .setInteractive({ useHandCursor: true });
+
+    this.slowModeButton.on('pointerup', () => {
+      this.slowModeEnabled = !this.slowModeEnabled;
+      this.updateSlowModeButtonText();
+      this.createDripTimer(); // restart with new delay
+    });
+
+    this.updateSlowModeButtonText();
+  // ─────────────── Instructions Text ───────────────
+  this.instructionsText = this.add
+    .text(
+      width / 2,
+      height * 0.18, // adjust up/down if you want
+      'Tighten the wrench to stop the leak!\nPress D or → Arrow to fix it.',
+      {
+        fontSize: '26px',
+        fill: '#ffffff',
+        align: 'center',
+        fontFamily: 'Arial',
+        stroke: '#000000',
+        strokeThickness: 4,
+      }
+    )
+    .setOrigin(0.5)
+    .setDepth(115);
+
     // Background
     this.add
       .image(width / 2, height / 2, 'faucet_bg')
       .setOrigin(0.5)
       .setDisplaySize(width, height);
+
     // Sink
     this.sink = this.add.image(width * 0.5, height * 0.67, 'sink');
     this.sink.setScale(0.72).setOrigin(0.5, 0.5);
+
     // Faucet
     this.faucet = this.add.image(width * 0.5, height * 0.35, 'faucet');
     this.faucet.setScale(0.55).setOrigin(0.5, 0.5);
+
+    // Water level bar (right side)
+    const barWidth = 24;
+    const barHeight = 200;
+    const barX = width - 40;
+    const barY = height * 0.3;
+
+    this.waterBarBg = this.add.graphics().setDepth(90);
+    this.waterBarBg.fillStyle(0x000000, 0.6);
+    this.waterBarBg.fillRect(barX, barY, barWidth, barHeight);
+
+    this.waterBarFill = this.add.graphics().setDepth(91);
+
+    // Warning text for high water level
+    this.waterWarningText = this.add
+      .text(width / 2, height * 0.15, '', {
+        fontSize: '28px',
+        fill: '#ff5555',
+        fontFamily: 'Arial',
+        align: 'center',
+        stroke: '#000000',
+        strokeThickness: 4,
+      })
+      .setOrigin(0.5)
+      .setDepth(120)
+      .setVisible(false);
+
     // Wrench container and image for rotation
     const pivotX = this.faucet.x + this.faucet.displayWidth * 0.5;
     const pivotY = this.faucet.y - this.faucet.displayHeight * -0.06;
@@ -87,31 +169,68 @@ export default class leakyFaucet extends Phaser.Scene {
     this.wrench.y = 8;
     this.wrench.setAngle(-35);
     this.wrenchContainer.add(this.wrench);
+
     // Make wrench interactive
     this.wrench.setInteractive({ useHandCursor: true });
     this.wrench.on('pointerdown', () => this.animateRatcheting());
+
     // Keyboard controls
     this.input.keyboard.on('keydown', (e) => {
-      if ((e.key.toLowerCase() === 'd' || e.key === 'ArrowRight') && !this.keyHeld) {
+      if (
+        (e.key.toLowerCase() === 'd' || e.key === 'ArrowRight') &&
+        !this.keyHeld
+      ) {
         this.keyHeld = true;
         this.animateRatcheting();
       }
     });
+
     this.input.keyboard.on('keyup', (e) => {
       if (e.key.toLowerCase() === 'd' || e.key === 'ArrowRight') {
         this.keyHeld = false;
       }
     });
+
     // Droplet
     this.dropletStartY = this.faucet.y + this.faucet.displayHeight * 0.45;
-    this.droplet = this.add.image(this.faucet.x, this.dropletStartY, 'droplet');
+    this.droplet = this.add.image(
+      this.faucet.x,
+      this.dropletStartY,
+      'droplet'
+    );
     this.droplet.setScale(0.25).setOrigin(0.5, 0);
+
     // Continuous drip
-    // Drip frequency increases with difficulty.  Use a shorter delay as
-    // difficulty rises.
     const difficulty = window.globalGameState?.difficulty || 1;
+    this.dripBaseDelay = 800 / difficulty;
+
+    this.createDripTimer();
+
+    // Initialize water bar at 0
+    this.updateWaterUI();
+  }
+
+  updateSlowModeButtonText() {
+    if (!this.slowModeButton) return;
+    const label = this.slowModeEnabled ? 'Slow Mode: ON' : 'Slow Mode: OFF';
+    this.slowModeButton.setText(label);
+  }
+
+  createDripTimer() {
+    // Clear existing timer if any
+    if (this.dripTimer && this.dripTimer.remove) {
+      this.dripTimer.remove(false);
+      this.dripTimer = null;
+    }
+    if (this.gameOver || this.leakFixed) return;
+
+    // Slow mode = much slower drip
+    const delay = this.slowModeEnabled
+      ? this.dripBaseDelay * 2.5
+      : this.dripBaseDelay;
+
     this.dripTimer = this.time.addEvent({
-      delay: 800 / difficulty,
+      delay,
       loop: true,
       callback: this.drip,
       callbackScope: this,
@@ -161,21 +280,75 @@ export default class leakyFaucet extends Phaser.Scene {
 
   increaseWater() {
     this.waterLevel += 5;
+
     if (this.waterLevel >= 100 && !this.leakFixed) {
       this.endGame(false);
       return;
     }
+
     if (this.waterLevel >= 75) this.sink.setTexture('sink_75');
     else if (this.waterLevel >= 50) this.sink.setTexture('sink_50');
     else if (this.waterLevel >= 25) this.sink.setTexture('sink_25');
     else this.sink.setTexture('sink');
+
+    // Update the water UI (bar + warning text)
+    this.updateWaterUI();
+  }
+
+  updateWaterUI() {
+    if (!this.waterBarFill || !this.waterBarBg) return;
+
+    // Water fraction [0, 1]
+    const fraction = Phaser.Math.Clamp(this.waterLevel / 100, 0, 1);
+
+    const { width, height } = this.scale;
+    const barWidth = 24;
+    const barHeight = 200;
+    const barX = width - 40;
+    const barY = height * 0.3;
+
+    this.waterBarFill.clear();
+
+    if (fraction > 0) {
+      const filledHeight = barHeight * fraction;
+      const fillY = barY + barHeight - filledHeight;
+
+      // Blue when safe, red when high
+      const color = fraction >= 0.7 ? 0xff5555 : 0x4287f5;
+
+      this.waterBarFill.fillStyle(color, 1);
+      this.waterBarFill.fillRect(barX, fillY, barWidth, filledHeight);
+    }
+
+    // Warning text when > 70% and leak not fixed
+    if (this.waterWarningText) {
+      if (fraction >= 0.7 && !this.leakFixed && !this.gameOver) {
+        this.waterWarningText.setText('WARNING: Sink nearly full!');
+        this.waterWarningText.setVisible(true);
+      } else {
+        this.waterWarningText.setVisible(false);
+      }
+    }
   }
 
   endGame(success) {
     // Mark the game as over to stop further interactions
     this.gameOver = true;
     this.sink.setTexture(success ? 'sink' : 'sink_full');
-    if (this.dripTimer) this.dripTimer.remove(false);
+
+    if (this.dripTimer && this.dripTimer.remove) {
+      this.dripTimer.remove(false);
+      this.dripTimer = null;
+    }
+
+    // Clear water UI
+    if (this.waterBarFill) {
+      this.waterBarFill.clear();
+    }
+    if (this.waterWarningText) {
+      this.waterWarningText.setVisible(false);
+    }
+
     // Darken screen and show result message
     this.add.rectangle(
       this.scale.width / 2,
@@ -183,16 +356,17 @@ export default class leakyFaucet extends Phaser.Scene {
       this.scale.width,
       this.scale.height,
       0x000000,
-      0.6,
+      0.6
     );
     this.add
       .text(
         this.scale.width / 2,
         this.scale.height / 2,
         success ? '✅ Leak Fixed!' : ' Sink Overflowed!',
-        { font: '32px Arial', color: '#ffffff' },
+        { font: '32px Arial', color: '#ffffff' }
       )
       .setOrigin(0.5);
+
     // After a short delay, invoke finishMiniGame to update global state
     this.time.delayedCall(1200, () => {
       if(success) {
