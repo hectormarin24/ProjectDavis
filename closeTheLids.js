@@ -25,6 +25,8 @@ export default class closeTheLids extends Phaser.Scene {
     this.yCoord = data.yCoord;
     this.isGameOver = false;
     this.localScore = 0;
+    this.finalScore = data.score;
+    this.lives = data.lives;
   }
 
   create() {
@@ -34,15 +36,7 @@ export default class closeTheLids extends Phaser.Scene {
       .setOrigin(0, 0);
     this.background.displayWidth = this.sys.game.config.width;
     this.background.displayHeight = this.sys.game.config.height;
-
-    this.background.on('pointerdown', () => {
-
-        this.scene.start('LeakyFaucet', {score: this.score, xCoord: this.xCoord, yCoord: this.yCoord});
-
-    });
     this.score = 0;
-
-    
 
     //House trash cans set
     this.H1X1Can = this.add.sprite(100,675, 'closedTrashCan').setScale(.25).setInteractive();
@@ -112,6 +106,7 @@ export default class closeTheLids extends Phaser.Scene {
         callback: () => {
             this.wind();
             this.loseCon();
+  }})
 
     // HUD for timer and lives
     this.timerText = this.add
@@ -133,15 +128,10 @@ export default class closeTheLids extends Phaser.Scene {
         this.livesText.setText(`Lives: ${state.lives}`);
         if (!this.isGameOver && (timeLeft <= 0 || state.lives <= 0)) {
           this.isGameOver = true;
-          window.finishMiniGame(false, this);
+          window.finishMiniGame(false, this, 0);
         }
       },
     });
-
-        }
-      });
-      
-
 
     this.rulesText = this.add.text(500, 200, "Don't Let All The Lids Open!", {
                         fontSize: '38px', fill: '#000000ff' }).setOrigin(0.5);
@@ -188,22 +178,21 @@ loseCon(){
         this.H2X2Can.texture.key === 'openRecCan' &&
         this.H3X1Can.texture.key === 'openTrashCan' &&
         this.H3X2Can.texture.key === 'openRecCan' ){
-            this.add.text(this.xCoord / 2, this.yCoord / 2, "You Lose!", { fontSize: '64px', fill: '#000000ff' }).setOrigin(0.5);
             this.H1X1Can.disableInteractive().setAlpha(0.5);
             this.H2X1Can.disableInteractive().setAlpha(0.5);
             this.H3X1Can.disableInteractive().setAlpha(0.5);
-            this.background.setInteractive();
+            this.failGame();
     }
 }
 
 checkScore(score){
     this.score++;
     if(score == 7){
-        this.add.text(this.xCoord / 2, this.yCoord / 2, "You Win!", { fontSize: '64px', fill: '#000000ff' }).setOrigin(0.5);
         this.H1X1Can.disableInteractive().setAlpha(0.5);
         this.H2X1Can.disableInteractive().setAlpha(0.5);
         this.H3X1Can.disableInteractive().setAlpha(0.5);
-        this.background.setInteractive();
+        this.winGame();
+    }
 
     // Wind timer to open lids periodically; speed increases with difficulty
     const difficulty = window.globalGameState?.difficulty || 1;
@@ -222,19 +211,9 @@ checkScore(score){
       }
     });
   }
-}
 
-  handleClose() {
-    this.localScore++;
-    if (this.localScore >= 5) {
-      this.winGame();
-
-    }
-  }
 
   winGame() {
-    if (this.isGameOver) return;
-    this.isGameOver = true;
     // Stop timers
     if (this.windTimer) this.windTimer.remove();
     if (this.miniTimer) this.miniTimer.remove();
@@ -246,13 +225,18 @@ checkScore(score){
       })
       .setOrigin(0.5);
     this.time.delayedCall(800, () => {
-      window.finishMiniGame(true, this);
+      this.scene.start('transitionScreen', {
+        lives: this.lives,
+        score: this.finalScore,
+        xCoord: this.xCoord,
+        yCoord: this.yCoord,
+        won: true,
+        elapsedTime: this.time.now
+      });
     });
   }
 
   failGame() {
-    if (this.isGameOver) return;
-    this.isGameOver = true;
     if (this.windTimer) this.windTimer.remove();
     if (this.miniTimer) this.miniTimer.remove();
     this.add
@@ -262,7 +246,14 @@ checkScore(score){
       })
       .setOrigin(0.5);
     this.time.delayedCall(800, () => {
-      window.finishMiniGame(false, this);
+      this.scene.start('transitionScreen', {
+        lives: this.lives,
+        score: this.finalScore,
+        xCoord: this.xCoord,
+        yCoord: this.yCoord,
+        won: false,
+        elapsedTime: this.time.now
+      });
     });
   }
 }

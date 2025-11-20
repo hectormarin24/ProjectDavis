@@ -13,6 +13,8 @@ export default class bathroomSort extends Phaser.Scene {
     this.xCoord = data?.xCoord ?? this.scale.width;
     this.yCoord = data?.yCoord ?? this.scale.height;
     this.isGameOver = false;
+    this.score = data.score;
+    this.lives = data.lives;
   }
 
   preload() {
@@ -46,7 +48,7 @@ export default class bathroomSort extends Phaser.Scene {
         this.livesText.setText(`Lives: ${state.lives}`);
         if (!this.isGameOver && (timeLeft <= 0 || state.lives <= 0)) {
           this.isGameOver = true;
-          window.finishMiniGame(false, this);
+          window.finishMiniGame(false, this, 0);
         }
       },
     });
@@ -242,7 +244,14 @@ export default class bathroomSort extends Phaser.Scene {
       .setOrigin(0.5);
     // After a short delay, call finishMiniGame to update global state.
     this.time.delayedCall(800, () => {
-      window.finishMiniGame(won, this);
+      this.scene.start('transitionScreen', {
+        lives: this.lives,
+        score: this.score,
+        xCoord: this.xCoord,
+        yCoord: this.yCoord,
+        won: won,
+        elapsedTime: this.time.now
+      });
     });
   }
 }

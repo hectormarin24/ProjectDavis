@@ -46,13 +46,11 @@ export default class compostSort extends Phaser.Scene {
     // Subtitle helpers
     this.subtitleText = null;
     this.subtitleTimer = null;
+    this.finalScore = data.score;
+    this.lives = data.lives;
   }
 
   preload() {
-    this.load.spritesheet('frog', 'assets/frog_idle_sheet_horizontal.png', {
-      frameWidth: 64,
-      frameHeight: 64,
-    });
     FRUIT_KEYS.forEach((name) => {
       this.load.image(name, `assets/game6assets/${name}.png`);
     });
@@ -120,17 +118,7 @@ export default class compostSort extends Phaser.Scene {
     const scaleY = this.H / bg.height;
     const scale = Math.max(scaleX, scaleY);
     bg.setScale(scale);
-    // Frog idle animation to match other scenes
-    this.anims.create({
-      key: 'frog-idle',
-      frames: this.anims.generateFrameNumbers('frog', { start: 0, end: 3 }),
-      frameRate: 6,
-      repeat: -1,
-    });
-    const frog = this.add.sprite(150, 700, 'frog');
-    frog.setScale(4);
-    frog.setDepth(1);
-    frog.play('frog-idle');
+
     // Score display shows global and target score for this mini game
     this.scoreText = this.add.text(16, 16, `Score: ${this.score} / ${this.targetScore}`, {
       fontSize: '26px',
@@ -514,7 +502,14 @@ if (this.accessibilityEnabled) {
       .setOrigin(0.5);
     // After a short pause, call finishMiniGame
     this.time.delayedCall(800, () => {
-      window.finishMiniGame(won, this);
+      this.scene.start('transitionScreen', {
+        lives: this.lives,
+        score: this.finalScore,
+        xCoord: this.xCoord,
+        yCoord: this.yCoord,
+        won: won,
+        elapsedTime: this.time.now
+      });
     });
   }
 }

@@ -28,6 +28,8 @@ export default class recycle extends Phaser.Scene {
     // Dimensions passed from the previous scene
     this.xCoord = data.xCoord;
     this.yCoord = data.yCoord;
+    this.score = data.score;
+    this.lives = data.lives;
     // Prevent multiple finish calls
     this.isGameOver = false;
     // Track correct answers within this mini game
@@ -70,7 +72,7 @@ export default class recycle extends Phaser.Scene {
         this.livesText.setText(`Lives: ${state.lives}`);
         if (!this.isGameOver && (timeLeft <= 0 || state.lives <= 0)) {
           this.isGameOver = true;
-          window.finishMiniGame(false, this);
+          window.finishMiniGame(false, this, 0);
         }
       },
       callbackScope: this,
@@ -137,7 +139,14 @@ export default class recycle extends Phaser.Scene {
           .setOrigin(0.5);
         // Trigger finishMiniGame after a short delay to allow the message to display
         this.time.delayedCall(500, () => {
-          window.finishMiniGame(false, this);
+          this.scene.start('transitionScreen', {
+            lives: this.lives,
+            score: this.score,
+            xCoord: this.xCoord,
+            yCoord: this.yCoord,
+            won: false,
+            elapsedTime: this.time.now
+          });
         });
       }
     });
@@ -161,7 +170,14 @@ export default class recycle extends Phaser.Scene {
           })
           .setOrigin(0.5);
         this.time.delayedCall(800, () => {
-          window.finishMiniGame(true, this);
+          this.scene.start('transitionScreen', {
+            lives: this.lives,
+            score: this.score,
+            xCoord: this.xCoord,
+            yCoord: this.yCoord,
+            won: true,
+            elapsedTime: this.time.now
+          });
         });
       } else {
         // Continue to next item
@@ -177,7 +193,14 @@ export default class recycle extends Phaser.Scene {
         })
         .setOrigin(0.5);
       this.time.delayedCall(800, () => {
-        window.finishMiniGame(false, this);
+        this.scene.start('transitionScreen', {
+          lives: this.lives,
+          score: this.score,
+          xCoord: this.xCoord,
+          yCoord: this.yCoord,
+          won: false,
+          elapsedTime: this.time.now
+        });
       });
     }
   }

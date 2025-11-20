@@ -25,6 +25,8 @@ export default class leakyFaucet extends Phaser.Scene {
     this.waterWarningText = null;
     this.waterBarBg = null;
     this.waterBarFill = null;
+    this.score = data.score;
+    this.lives = data.lives;
   }
 
   preload() {
@@ -74,7 +76,7 @@ export default class leakyFaucet extends Phaser.Scene {
         this.livesText.setText(`Lives: ${state.lives}`);
         if (!this.gameOver && (timeLeft <= 0 || state.lives <= 0)) {
           this.gameOver = true;
-          window.finishMiniGame(false, this);
+          window.finishMiniGame(false, this, 0);
         }
       },
       callbackScope: this,
@@ -367,7 +369,20 @@ export default class leakyFaucet extends Phaser.Scene {
 
     // After a short delay, invoke finishMiniGame to update global state
     this.time.delayedCall(1200, () => {
-      window.finishMiniGame(success, this);
+      if(success) {
+        this.won = true;
+      } else {
+        this.won = false;
+      }
+
+      this.scene.start('transitionScreen', {
+        lives: this.lives,
+        score: this.score,
+        xCoord: this.xCoord,
+        yCoord: this.yCoord,
+        won: this.won,
+        elapsedTime: this.time.now
+      });
     });
   }
 }

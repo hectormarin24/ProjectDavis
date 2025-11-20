@@ -21,6 +21,8 @@ export default class catchRec extends Phaser.Scene {
   init(data) {
     this.xCoord = data?.xCoord ?? this.cameras.main.width;
     this.yCoord = data?.yCoord ?? this.cameras.main.height;
+    this.score = data.score;
+    this.lives = data.lives;
     this.scoreLocal = 0;
     this.isGameOver = false;
   }
@@ -48,7 +50,7 @@ export default class catchRec extends Phaser.Scene {
         this.livesText.setText(`Lives: ${state.lives}`);
         if (!this.isGameOver && (timeLeft <= 0 || state.lives <= 0)) {
           this.isGameOver = true;
-          window.finishMiniGame(false, this);
+          window.finishMiniGame(false, this, 0);
         }
       },
     });
@@ -79,7 +81,6 @@ export default class catchRec extends Phaser.Scene {
   spawnItem() {
     if (this.isGameOver) return;
     const types = [
-      { key: 'rbag', bad: true, scale: 0.5 },
       { key: 'rbag', bad: true, scale: 0.5 },
       { key: 'rbag', bad: true, scale: 0.5 },
       { key: 'bottle', bad: false, scale: 0.1 },
@@ -147,7 +148,14 @@ export default class catchRec extends Phaser.Scene {
       .setOrigin(0.5);
     // Show short message before finishing
     this.time.delayedCall(800, () => {
-      window.finishMiniGame(won, this);
+      this.scene.start('transitionScreen', {
+        lives: this.lives,
+        score: this.score,
+        xCoord: this.xCoord,
+        yCoord: this.yCoord,
+        won: won,
+        elapsedTime: this.time.now
+      });
     });
   }
 }
