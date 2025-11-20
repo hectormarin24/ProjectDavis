@@ -74,48 +74,59 @@ export default class startScreen extends Phaser.Scene {
     // incremented by 100 points; on failure a life is removed.  After
     // updating the global state the next scene (or end screen) is started.
     window.finishMiniGame = (success, scene) => {
-      const state = window.globalGameState;
-      if (success) {
-        state.score += 100;
-      } else {
-        state.lives -= 1;
-      }
-      // Increase difficulty slightly after every game, *only if* enabled, to make tiers shorter/spawns faster
-      // cap the multiplier to prevent games from becoming unplayable for younger players
-      // Otherwise, keep it at the lowest level (1).
-      if (state.difficultyEnabled) {
-        state.difficulty = Math.min(3, state.difficulty + 0.1);
-      } else {
-        state.difficulty = 1; // always stay at easiest level
-      }
+    const state = window.globalGameState;
 
-      const elapsed = scene.time.now - state.startTime;
-      const timeLeft = state.totalTime - elapsed;
-      if (state.lives <= 0 || timeLeft <= 0) {
-        scene.scene.start('endScreen', {
-          score: state.score,
-          xCoord: scene.xCoord,
-          yCoord: scene.yCoord,
-        });
-        return;
-      }
-      // When there are no games left in the queue, reshuffle the master
-      // list to allow the player to loop through the mini games again.
-      if (!window.gameQueue || window.gameQueue.length === 0) {
-        const allList = window.allMiniGames || [];
-        const newOrder = Phaser.Utils.Array.Shuffle(allList.slice());
-        window.gameQueue = newOrder;
-      }
-      const nextScene =
-        window.gameQueue && window.gameQueue.length > 0
-          ? window.gameQueue.shift()
-          : 'endScreen';
-      scene.scene.start(nextScene, {
+    // Score always increases on success
+    if (success) {
+      state.score += 100;
+    } 
+    else {
+    // Only lose lives if difficulty is ON
+    if (state.difficultyEnabled) {
+      state.lives -= 1;
+    }
+    }
+
+    // Only ramp difficulty if enabled; otherwise keep it at 1
+    if (state.difficultyEnabled) {
+      state.difficulty = Math.min(3, state.difficulty + 0.1);
+    } else {
+      state.difficulty = 1; // always easiest
+    }
+
+    const elapsed = scene.time.now - state.startTime;
+    const timeLeft = state.totalTime - elapsed;
+
+    // Game over from lives only if difficulty is ON
+    const outOfLives =
+    state.difficultyEnabled && state.lives <= 0;
+
+    if (outOfLives || timeLeft <= 0) {
+      scene.scene.start('endScreen', {
         score: state.score,
         xCoord: scene.xCoord,
         yCoord: scene.yCoord,
-      });
-    };
+    });
+    return;
+    }
+
+    // Queue / next scene logic unchanged
+    if (!window.gameQueue || window.gameQueue.length === 0) {
+      const allList = window.allMiniGames || [];
+      const newOrder = Phaser.Utils.Array.Shuffle(allList.slice());
+      window.gameQueue = newOrder;
+    }
+    const nextScene =
+      window.gameQueue && window.gameQueue.length > 0
+      ? window.gameQueue.shift()
+      : 'endScreen';
+    scene.scene.start(nextScene, {
+      score: state.score,
+      xCoord: scene.xCoord,
+      yCoord: scene.yCoord,
+    });
+  };
+
 
     // Prepare the list of mini game scene keys.  These keys should match the
     // scene names exported in their respective files.  When the player
@@ -142,32 +153,6 @@ export default class startScreen extends Phaser.Scene {
     // one round through the queue.
     window.allMiniGames = miniGames.slice();
     window.gameQueue = shuffled;
-
-// Difficulty toggle button (top-right)
-this.difficultyButton = this.add
-  .text(this.xCoord - 20, 20, '', {
-    fontSize: '32px',
-    fill: '#ffffff',
-    backgroundColor: '#000000',
-  })
-  .setOrigin(1, 0)          // right aligned at top
-  .setPadding(8, 4, 8, 4)
-  .setDepth(10)
-  .setInteractive({ useHandCursor: true });
-
-this.difficultyButton.on('pointerup', () => {
-  const state = window.globalGameState;
-  state.difficultyEnabled = !state.difficultyEnabled;
-
-  // If turning difficulty OFF, lock to easiest setting
-  if (!state.difficultyEnabled) {
-    state.difficulty = 1;
-  }
-
-  this.updateDifficultyButtonText();
-});
-
-this.updateDifficultyButtonText();
 
 
     // Play button.  The callback grabs the next scene from the queue and
@@ -205,20 +190,105 @@ this.updateDifficultyButtonText();
       .on('pointerout', () => trophyBtn.setScale(0.25));
 
     const settingsBtn = this.add
-      .image(this.xCoord / 1.6, (3 * this.yCoord) / 3.6, 'btnSettings')
-      .setDepth(10)
-      .setScale(0.25)
-      .setScrollFactor(0)
-      .setInteractive({ useHandCursor: true })
-      .on('pointerover', () => settingsBtn.setScale(0.28))
-      .on('pointerout', () => settingsBtn.setScale(0.25));
-  }
-  updateDifficultyButtonText() {
-    const state = window.globalGameState;
-    const label = state.difficultyEnabled
+  .image(this.xCoord / 1.6, (3 * this.yCoord) / 3.6, 'btnSettings')
+  .setDepth(10)
+  .setScale(0.25)
+  .setScrollFactor(0)
+  .setInteractive({ useHandCursor: true })
+  .on('pointerover', () => settingsBtn.setScale(0.28))
+  .on('pointerout', () => settingsBtn.setScale(0.25))
+  .on('pointerup', () => {
+    // open the settings panel when the gear is clicked
+    this.showSettingsMenu();
+  });
+
+    // SETTINGS PANEL (initially hidden)
+    this.settingsPanel = this.add.rectangle(
+    this.xCoord / 2,
+    this.yCoord / 2,
+    this.xCoord * 0.6,
+    this.yCoord * 0.5,
+      0x000000,
+      0.5
+    );
+    this.settingsPanel.setDepth(20).setVisible(false);
+
+    // Difficulty text toggle (inside settings panel)
+    this.difficultyText = this.add
+  .text(
+    this.xCoord / 2,
+    this.yCoord / 2 - 40,
+    '',
+    {
+      fontSize: '40px',
+      fill: '#ffffff',
+      align: 'center',
+      fontStyle: 'bold',
+      wordWrap: {
+        width: this.xCoord * 0.5, 
+        useAdvancedWrap: true
+      }
+    }
+  )
+  .setOrigin(0.5)
+  .setDepth(21)
+  .setInteractive({ useHandCursor: true })
+  .setVisible(false);
+
+
+// Close button (X)
+this.closeSettings = this.add
+  .text(
+    this.xCoord / 2,
+    this.yCoord / 2 + 90,
+    'Close',
+    {
+      fontSize: '32px',
+      fill: '#ffffff',
+      backgroundColor: '#333',
+    }
+  )
+  .setOrigin(0.5)
+  .setDepth(21)
+  .setPadding(8, 4, 8, 4)
+  .setInteractive({ useHandCursor: true })
+  .setVisible(false);
+
+  this.updateDifficultyText = () => {
+  const state = window.globalGameState;
+  this.difficultyText.setText(
+    state.difficultyEnabled
       ? 'Difficulty: ON'
-      : 'Difficulty: OFF (Easy)';
-    this.difficultyButton.setText(label);
+      : 'Difficulty: OFF (Easy Mode)'
+  );
+};
+
+this.difficultyText.on('pointerup', () => {
+    const state = window.globalGameState;
+    state.difficultyEnabled = !state.difficultyEnabled;
+    if (!state.difficultyEnabled) {
+      state.difficulty = 1;
+    }
+    this.updateDifficultyText();
+  });
+  this.closeSettings.on('pointerup', () => {
+  this.settingsPanel.setVisible(false);
+  this.difficultyText.setVisible(false);
+  this.closeSettings.setVisible(false);
+});
+
+
+
+  }
+
+  showSettingsMenu() {
+  this.settingsPanel.setVisible(true);
+  this.difficultyText.setVisible(true);
+  this.closeSettings.setVisible(true);
+  this.updateDifficultyText();
 }
+
+
+
 
 }
