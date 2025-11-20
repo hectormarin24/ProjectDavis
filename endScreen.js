@@ -66,7 +66,7 @@ export default class endScreen extends Phaser.Scene {
         .strokeRoundedRect(this.xCoord / 2 - 225, this.yCoord / 2 - 40, 450, 80, 20);
 
       this.menuButton = this.add
-        .text(this.xCoord / 2, this.yCoord / 2 + 300, 'Next Game', { 
+        .text(this.xCoord / 2, this.yCoord / 2 + 300, 'Main Menu', {
             fontSize: '36px', 
             color: '#000', 
             stroke: '#000',

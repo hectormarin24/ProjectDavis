@@ -4,21 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="75f0b4c2-0777-41d2-a2c8-711c82dffe09" name="Changes" comment="modified Game3">
-      <change beforePath="$PROJECT_DIR$/bugFriend.js" beforeDir="false" afterPath="$PROJECT_DIR$/bugFriend.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/closeTheLids.js" beforeDir="false" afterPath="$PROJECT_DIR$/closeTheLids.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/endScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/endScreen.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game10.js" beforeDir="false" afterPath="$PROJECT_DIR$/game10.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game11.js" beforeDir="false" afterPath="$PROJECT_DIR$/game11.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game12.js" beforeDir="false" afterPath="$PROJECT_DIR$/game12.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game13.js" beforeDir="false" afterPath="$PROJECT_DIR$/game13.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game3.js" beforeDir="false" afterPath="$PROJECT_DIR$/game3.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game5.js" beforeDir="false" afterPath="$PROJECT_DIR$/game5.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game6.js" beforeDir="false" afterPath="$PROJECT_DIR$/game6.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game7.js" beforeDir="false" afterPath="$PROJECT_DIR$/game7.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game9.js" beforeDir="false" afterPath="$PROJECT_DIR$/game9.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/main.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/recycle.js" beforeDir="false" afterPath="$PROJECT_DIR$/recycle.js" afterDir="false" />
+    <list default="true" id="75f0b4c2-0777-41d2-a2c8-711c82dffe09" name="Changes" comment="Randomized Games, Added Timer and Life System, Fixed Game 12, Fixed background">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/flowerfieldbg.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/flowerfieldbg.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/compostSort.js" beforeDir="false" afterPath="$PROJECT_DIR$/compostSort.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/oilAndWater.js" beforeDir="false" afterPath="$PROJECT_DIR$/oilAndWater.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/raccoon.js" beforeDir="false" afterPath="$PROJECT_DIR$/raccoon.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/startScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/startScreen.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -71,11 +62,13 @@
     "Node.js.game1.js.executor": "Run",
     "Node.js.game12.js.executor": "Debug",
     "Node.js.main.js.executor": "Debug",
+    "Node.js.oilAndWater.js.executor": "Run",
+    "Node.js.raccoon.js.executor": "Debug",
     "Node.js.startScreen.js.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "Asset-Update",
     "junie.onboarding.icon.badge.shown": "true",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "/Users/dimitryvisochin/IdeaProjects/ProjectDavis/assets",
@@ -121,12 +114,18 @@
     <configuration name="main.js" type="NodeJSConfigurationType" temporary="true" nameIsGenerated="true" path-to-js-file="$PROJECT_DIR$/main.js" working-dir="$PROJECT_DIR$">
       <method v="2" />
     </configuration>
+    <configuration name="oilAndWater.js" type="NodeJSConfigurationType" temporary="true" nameIsGenerated="true" path-to-js-file="$PROJECT_DIR$/oilAndWater.js" working-dir="$PROJECT_DIR$">
+      <method v="2" />
+    </configuration>
+    <configuration name="raccoon.js" type="NodeJSConfigurationType" temporary="true" nameIsGenerated="true" path-to-js-file="$PROJECT_DIR$/raccoon.js" working-dir="$PROJECT_DIR$">
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
         <item itemvalue="JavaScript Debug.index.html" />
+        <item itemvalue="Node.js.oilAndWater.js" />
+        <item itemvalue="Node.js.raccoon.js" />
         <item itemvalue="Node.js.game12.js" />
-        <item itemvalue="Node.js.main.js" />
-        <item itemvalue="JavaScript Debug.index.html" />
         <item itemvalue="Node.js.main.js" />
       </list>
     </recent_temporary>
@@ -155,6 +154,8 @@
       <workItem from="1761187624678" duration="2880000" />
       <workItem from="1761675320543" duration="4000" />
       <workItem from="1762213350564" duration="7211000" />
+      <workItem from="1763242893265" duration="18000" />
+      <workItem from="1763450520604" duration="10707000" />
     </task>
     <task id="LOCAL-00001" summary="Adding my game to main branch">
       <option name="closed" value="true" />
@@ -196,7 +197,31 @@
       <option name="project" value="LOCAL" />
       <updated>1759974571172</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Randomized Games, Added Timer and Life System, Fixed Game 12, Fixed background">
+      <option name="closed" value="true" />
+      <created>1762423788237</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1762423788237</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Randomized Games, Added Timer and Life System, Fixed Game 12, Fixed background">
+      <option name="closed" value="true" />
+      <created>1762455200942</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1762455200942</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Randomized Games, Added Timer and Life System, Fixed Game 12, Fixed background">
+      <option name="closed" value="true" />
+      <created>1762455355878</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1762455355878</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -213,7 +238,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="main" />
+                        <option value="Asset-Update" />
                       </list>
                     </value>
                   </entry>
@@ -228,7 +253,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Adding my game to main branch" />
     <MESSAGE value="modified Game3" />
-    <option name="LAST_COMMIT_MESSAGE" value="modified Game3" />
+    <MESSAGE value="Randomized Games, Added Timer and Life System, Fixed Game 12, Fixed background" />
+    <option name="LAST_COMMIT_MESSAGE" value="Randomized Games, Added Timer and Life System, Fixed Game 12, Fixed background" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/ProjectDavis$index_html.dat" NAME="index.html Coverage Results" MODIFIED="1761241116440" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="WipCoverageRunner" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
