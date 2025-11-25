@@ -135,7 +135,14 @@ export default class startScreen extends Phaser.Scene {
             .setScrollFactor(0)
             .setInteractive({ useHandCursor: true })
             .on('pointerover', () => trophyBtn.setScale(0.28))
-            .on('pointerout', () => trophyBtn.setScale(0.25));
+            .on('pointerout', () => trophyBtn.setScale(0.25))
+            .on('pointerdown', () => {
+                    this.scene.start('helpScene', {
+                    xCoord: this.xCoord,
+                    yCoord: this.yCoord
+                });
+            });
+            
 
         // Settings Button
         const settingsBtn = this.add
@@ -145,6 +152,7 @@ export default class startScreen extends Phaser.Scene {
             .setScrollFactor(0)
             .setInteractive({ useHandCursor: true })
             .on('pointerover', () => settingsBtn.setScale(0.28))
-            .on('pointerout', () => settingsBtn.setScale(0.25));
+            .on('pointerout', () => settingsBtn.setScale(0.25))
+            
     }
 }
