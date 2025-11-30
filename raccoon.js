@@ -20,7 +20,6 @@ class raccoon extends Phaser.Scene {
 
     preload() {
         this.load.image('bgpark', 'assets/bg_park.png');
-        // REMOVED: this.load.image('hand', 'assets/hand.png');
         this.load.image('food', 'assets/food.png');
         this.load.image('raccoon', 'assets/raccoon.png');
         this.load.audio('pop', 'assets/pop.wav');
@@ -44,7 +43,6 @@ class raccoon extends Phaser.Scene {
             .text(WIDTH - 180, 20, '', { fontSize: '28px', fill: '#ffffff' })
             .setDepth(100);
 
-        // Centered Misses Counter
         this.missText = this.add
             .text(WIDTH / 2, 20, `Misses: ${this.misses}/${this.maxMisses}`, {
                 fontSize: '28px',
@@ -53,7 +51,7 @@ class raccoon extends Phaser.Scene {
             .setOrigin(0.5, 0)
             .setDepth(100);
 
-        // Timer/lives update
+        // Timer & lives updater
         this.time.addEvent({
             delay: 200,
             loop: true,
@@ -81,17 +79,13 @@ class raccoon extends Phaser.Scene {
             this.cameras.main.setBackgroundColor('#a7d3a6');
         }
 
-        // === REMOVED HAND COMPLETELY ===
-        // no handX, handY, hand sprite
-
-        // Spawn raccoon + food
+        // === Spawn Raccoon + Food ===
         this.spawnRaccoon(true);
         this.spawnFood();
         this.updateHUD();
-
         this.moveRaccoon();
 
-        // Click food
+        // === Mouse click handler ===
         this.input.on('gameobjectdown', (pointer, obj) => {
             if (!obj || !obj.texture) return;
             if (obj.texture.key === 'food' && obj.active) {
@@ -114,8 +108,30 @@ class raccoon extends Phaser.Scene {
                 });
             }
         });
+
+        // ================================
+        //      ACCESSIBILITY: KEYBOARD
+        // ================================
+        this.selector = this.add.circle(WIDTH / 2, HEIGHT / 2, 30, 0xffff00, 0.35)
+            .setDepth(50);
+
+        this.cursorSpeed = 6;
+
+        this.keys = this.input.keyboard.addKeys({
+            up: 'W',
+            down: 'S',
+            left: 'A',
+            right: 'D',
+            up2: 'UP',
+            down2: 'DOWN',
+            left2: 'LEFT',
+            right2: 'RIGHT',
+            activate: 'SPACE',
+            activate2: 'ENTER'
+        });
     }
 
+    // === HUD ===
     updateHUD() {
         this.missText.setText(`Misses: ${this.misses}/${this.maxMisses}`);
     }
@@ -128,6 +144,7 @@ class raccoon extends Phaser.Scene {
         }
     }
 
+    // === Spawning ===
     spawnFood() {
         let x, y;
         const maxAttempts = 50;
@@ -201,6 +218,64 @@ class raccoon extends Phaser.Scene {
                 }
             },
         });
+    }
+
+    // === KEYBOARD MOVEMENT LOGIC ===
+    update() {
+        if (this.selector && !this.hasFinished) {
+
+            if (this.keys.left.isDown || this.keys.left2.isDown)
+                this.selector.x -= this.cursorSpeed;
+
+            if (this.keys.right.isDown || this.keys.right2.isDown)
+                this.selector.x += this.cursorSpeed;
+
+            if (this.keys.up.isDown || this.keys.up2.isDown)
+                this.selector.y -= this.cursorSpeed;
+
+            if (this.keys.down.isDown || this.keys.down2.isDown)
+                this.selector.y += this.cursorSpeed;
+
+            // bounds
+            this.selector.x = Phaser.Math.Clamp(this.selector.x, 0, WIDTH);
+            this.selector.y = Phaser.Math.Clamp(this.selector.y, 0, HEIGHT);
+
+            // ================================
+            //   FIXED KEYBOARD CLICK LOGIC
+            // ================================
+            if (
+                Phaser.Input.Keyboard.JustDown(this.keys.activate) ||
+                Phaser.Input.Keyboard.JustDown(this.keys.activate2)
+            ) {
+                if (this.food && this.food.active) {
+                    const dist = Phaser.Math.Distance.Between(
+                        this.selector.x, this.selector.y,
+                        this.food.x, this.food.y
+                    );
+
+                    if (dist < 50) {
+                        // This directly performs the same behavior as a real click
+                        if (this.sound) this.sound.play('pop', { volume: 0.25 });
+                        this.incrementScore();
+
+                        if (this.raccoonTween) {
+                            this.raccoonTween.stop();
+                            this.raccoonTween = null;
+                        }
+
+                        this.food.destroy();
+                        this.food = null;
+
+                        this.time.delayedCall(400, () => {
+                            if (!this.hasFinished) {
+                                this.spawnFood();
+                                this.moveRaccoon();
+                            }
+                        });
+                    }
+                }
+            }
+        }
     }
 
     showMessage(msg) {
