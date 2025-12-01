@@ -115,7 +115,7 @@ class raccoon extends Phaser.Scene {
         this.selector = this.add.circle(WIDTH / 2, HEIGHT / 2, 30, 0xffff00, 0.35)
             .setDepth(50);
 
-        this.cursorSpeed = 6;
+        this.cursorSpeed = 8;
 
         this.keys = this.input.keyboard.addKeys({
             up: 'W',
