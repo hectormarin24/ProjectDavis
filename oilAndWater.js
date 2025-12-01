@@ -1,4 +1,3 @@
-// game9.js — Oil vs. water mini game.
 export default class oilAndWater extends Phaser.Scene {
     constructor() {
         super({ key: 'oilAndWater' });
@@ -12,6 +11,8 @@ export default class oilAndWater extends Phaser.Scene {
         this.maxSuccessfulPours = 3;
         this.finalScore = data.score;
         this.lives = data.lives;
+
+        this.keyboardSelection = null;
     }
 
     preload() {
@@ -30,16 +31,19 @@ export default class oilAndWater extends Phaser.Scene {
         if (this.textures.exists('oil_bg')) {
             this.add.image(cx, cy, 'oil_bg')
                 .setDisplaySize(this.cameras.main.width, this.cameras.main.height);
-        } else {
-            this.cameras.main.setBackgroundColor(0xf0f0f0);
         }
 
-        this.timerText = this.add.text(20, 20, '', { fontSize: '28px', fill: '#ffffff' })
-            .setDepth(100);
+        const hudStyle = {
+            fontFamily: 'Arial',
+            fontSize: '28px',
+            fontStyle: 'bold',
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 4
+        };
 
-        this.livesText = this.add.text(this.cameras.main.width - 180, 20, '', {
-            fontSize: '28px', fill: '#ffffff'
-        }).setDepth(100);
+        this.timerText = this.add.text(24, 24, '', hudStyle).setDepth(100);
+        this.livesText = this.add.text(this.cameras.main.width - 200, 24, '', hudStyle).setDepth(100);
 
         this.time.addEvent({
             delay: 200,
@@ -50,58 +54,119 @@ export default class oilAndWater extends Phaser.Scene {
                 const timeLeft = Math.max(0, state.totalTime - elapsed);
                 const minutes = Math.floor(timeLeft / 60000);
                 const seconds = Math.floor((timeLeft % 60000) / 1000);
-                this.timerText.setText(`Time: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`);
+
+                this.timerText.setText(
+                    `Time: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`
+                );
                 this.livesText.setText(`Lives: ${state.lives}`);
+
                 if (!this.isGameOver && (timeLeft <= 0 || state.lives <= 0)) {
                     this.isGameOver = true;
                     window.finishMiniGame(false, this, 0);
                 }
-            },
+            }
         });
 
-        // EDIT: Move pot higher + smaller for proper stovetop placement
         this.pot = this.add.image(cx - 8, cy - 170, 'pot')
-            .setScale(0.22);
+            .setScale(0.22)
+            .setDepth(5);
 
         this.sink = this.add.image(cx - 220, cy + 60, 'osink')
             .setScale(0.2)
             .setInteractive({ useHandCursor: true });
 
-        // Bucket now correct — unchanged
-        this.bucket = this.add.image(cx + 180, cy - 10, 'bucket')
-            .setScale(0.2)
+        this.bucket = this.add.image(cx + 180, cy + 10, 'bucket')
+            .setScale(0.22)
             .setInteractive({ useHandCursor: true });
 
-        this.message = this.add.text(cx, cy + 180, 'Click the correct container', {
-            font: '20px Arial',
-            color: '#222',
-        }).setOrigin(0.5);
+        const txtStyle = {
+            fontFamily: 'Arial',
+            fontSize: '24px',
+            fontStyle: 'bold',
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 4
+        };
+
+        this.hintText = this.add.text(cx, cy + 120, '', txtStyle).setOrigin(0.5);
+        this.message = this.add.text(cx, cy + 160, 'Click the correct container', txtStyle).setOrigin(0.5);
+
+        const addHover = (sprite) => {
+            const baseX = sprite.scaleX;
+            const baseY = sprite.scaleY;
+
+            sprite.on("pointerover", () => {
+                this.tweens.add({
+                    targets: sprite,
+                    scaleX: baseX * 1.08,
+                    scaleY: baseY * 1.08,
+                    duration: 100
+                });
+            });
+
+            sprite.on("pointerout", () => {
+                this.tweens.add({
+                    targets: sprite,
+                    scaleX: baseX,
+                    scaleY: baseY,
+                    duration: 100
+                });
+            });
+        };
+
+        addHover(this.sink);
+        addHover(this.bucket);
 
         this.startRound();
 
         this.sink.on('pointerdown', () => this.onTarget('osink'));
         this.bucket.on('pointerdown', () => this.onTarget('bucket'));
+
+        this.input.keyboard.on('keydown', (key) => {
+            if (this.isGameOver) return;
+
+            if (key.code === "ArrowLeft" || key.code === "KeyA") {
+                this.setKeyboardSelection("osink");
+            }
+
+            if (key.code === "ArrowRight" || key.code === "KeyD") {
+                this.setKeyboardSelection("bucket");
+            }
+
+            if (key.code === "Space") {
+                if (this.keyboardSelection) {
+                    this.onTarget(this.keyboardSelection);
+                }
+            }
+        });
+    }
+
+    setKeyboardSelection(optionKey) {
+        this.keyboardSelection = optionKey;
+
+        this.sink.setScale(0.2);
+        this.bucket.setScale(0.22);
+
+        if (optionKey === "osink") {
+            this.sink.setScale(0.25);
+        } else if (optionKey === "bucket") {
+            this.bucket.setScale(0.27);
+        }
     }
 
     startRound() {
         if (this.isGameOver) return;
 
+        this.keyboardSelection = null;
+        this.sink.setScale(0.2);
+        this.bucket.setScale(0.22);
+
         this.potContents = Math.random() < 0.5 ? 'water' : 'oil';
-
-        if (this.hintText && this.hintText.destroy) this.hintText.destroy();
-
-        const cx = this.cameras.main.centerX;
-        const cy = this.cameras.main.centerY;
-
-        this.hintText = this.add.text(cx, cy + 130, 'Pot contains: ' + this.potContents, {
-            font: '28px Arial',
-            color: '#000',
-            fontStyle: 'bold',
-        }).setOrigin(0.5);
-
+        this.hintText.setText('Pot contains: ' + this.potContents);
         this.message.setText('Click the correct container');
 
         if (this.roundTimer && this.roundTimer.remove) this.roundTimer.remove();
+
         const difficulty = window.globalGameState?.difficulty || 1;
         const delay = 6000 / difficulty;
 
@@ -114,15 +179,17 @@ export default class oilAndWater extends Phaser.Scene {
         if (this.isGameOver) return;
         if (this.roundTimer && this.roundTimer.remove) this.roundTimer.remove();
 
-        const correct = this.potContents === 'water' ? 'osink' : 'bucket';
+        const correctKey = this.potContents === 'water' ? 'osink' : 'bucket';
+        const isCorrect = target === correctKey;
 
-        if (target === correct) {
+        if (isCorrect) {
             this.successfulPourCount++;
             this.message.setText('Correct!');
+
             if (this.successfulPourCount >= this.maxSuccessfulPours) {
                 this.winGame();
             } else {
-                this.time.delayedCall(500, () => this.startRound());
+                this.time.delayedCall(600, () => this.startRound());
             }
         } else {
             this.loseGame();
@@ -131,32 +198,36 @@ export default class oilAndWater extends Phaser.Scene {
 
     winGame() {
         if (this.isGameOver) return;
+
         this.isGameOver = true;
         this.message.setText('Great job!');
-        this.time.delayedCall(800, () => {
+
+        this.time.delayedCall(900, () => {
             this.scene.start('transitionScreen', {
                 lives: this.lives,
                 score: this.finalScore,
                 xCoord: this.xCoord,
                 yCoord: this.yCoord,
                 won: true,
-                elapsedTime: this.time.now,
+                elapsedTime: this.time.now
             });
         });
     }
 
     loseGame() {
         if (this.isGameOver) return;
+
         this.isGameOver = true;
         this.message.setText('Wrong choice!');
-        this.time.delayedCall(800, () => {
+
+        this.time.delayedCall(900, () => {
             this.scene.start('transitionScreen', {
                 lives: this.lives,
                 score: this.finalScore,
                 xCoord: this.xCoord,
                 yCoord: this.yCoord,
                 won: false,
-                elapsedTime: this.time.now,
+                elapsedTime: this.time.now
             });
         });
     }

@@ -50,7 +50,7 @@ export default class fruitPicker extends Phaser.Scene {
     this.add.image(this.xCoord / 2, this.yCoord / 2, 'ff_bg')
       .setDisplaySize(this.xCoord, this.yCoord);
     this.add.image(this.xCoord / 2, this.yCoord / 2.5, 'tree')
-      .setScale(2);
+      .setScale(1);
 
     // Create the draggable basket.  Use Arcade physics so that we can
     // constrain movement easily and detect overlaps, but disable gravity.
