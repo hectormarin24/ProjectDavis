@@ -47,11 +47,21 @@ export default class fruitPicker extends Phaser.Scene {
     console.log('Game12 loaded');
 
     // Draw the background and tree.  The tree is purely decorative.
-    this.add.image(this.xCoord / 2, this.yCoord / 2, 'ff_bg')
-      .setDisplaySize(this.xCoord, this.yCoord);
+    let bg = this.add.image(this.xCoord / 2, this.yCoord / 2, 'ff_bg');
+      //.setDisplaySize(this.xCoord, this.yCoord);
     this.add.image(this.xCoord / 2, this.yCoord / 2.5, 'tree')
       .setScale(1);
 
+
+    const cx = this.cameras.main.centerX;
+    this.message = this.add
+            .text(cx, 80, 'Move the basket left to right to catch the apples and stop them from spoling.', {
+                font: '26px Arial',
+                color: '#111',
+                align: 'center',
+                wordWrap: { width: this.scale.width - 80 },
+            })
+            .setOrigin(0.5, 0.5);
     // Create the draggable basket.  Use Arcade physics so that we can
     // constrain movement easily and detect overlaps, but disable gravity.
     this.basket = this.add.image(this.xCoord / 2, this.yCoord - 100, 'basket')

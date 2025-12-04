@@ -83,13 +83,15 @@ export default class bugFriend extends Phaser.Scene {
 
         this.setDirections();
 
-        this.rulesText = this.add.text(
-            500,
-            100,
-            "Protect Your Garden, Squash The Unwelcome Bugs",
-            { fontSize: '34px', fill: '#000000' }
-        ).setOrigin(0.5);
-        this.time.delayedCall(2000, () => this.rulesText.destroy());
+        const cx = this.cameras.main.centerX;
+        this.message = this.add
+            .text(cx, 50, 'Squash all the bad bugs from the garden!', {
+                font: '26px Arial',
+                color: '#111',
+                align: 'center',
+                wordWrap: { width: this.scale.width - 80 },
+            })
+            .setOrigin(0.5, 0.5);
 
         this.gameEnded = false;
 

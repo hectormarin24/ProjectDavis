@@ -52,6 +52,16 @@ export default class recycle extends Phaser.Scene {
       this.cameras.main.setBackgroundColor(0x333333);
     }
     // HUD for timer and lives
+    const cx = this.cameras.main.centerX;
+    this.message = this.add
+            .text(cx, 50, 'Choose the correct bin to put the items in.', {
+                font: '26px Arial',
+                color: '#111',
+                align: 'center',
+                wordWrap: { width: this.scale.width - 80 },
+            })
+            .setOrigin(0.5, 0.5);
+
     this.timerText = this.add
       .text(20, 20, '', { fontSize: '32px', fill: '#ffffff' })
       .setDepth(100);

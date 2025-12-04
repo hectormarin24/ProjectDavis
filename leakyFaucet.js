@@ -39,6 +39,7 @@ export default class leakyFaucet extends Phaser.Scene {
     this.isAnimating = false;
     this.tightenCount = 0;
     // HUD: display global time left and lives
+    
     const screenW = this.scale.width;
     this.timerText = this.add
       .text(20, 20, '', { fontSize: '32px', fill: '#ffffff' })
@@ -71,6 +72,16 @@ export default class leakyFaucet extends Phaser.Scene {
       .image(width / 2, height / 2, 'faucet_bg')
       .setOrigin(0.5)
       .setDisplaySize(width, height);
+
+    const cx = this.cameras.main.centerX;
+    this.message = this.add
+            .text(cx, 50, 'Click the wrench to tighten the pipe and stop the leak!', {
+                font: '26px Arial',
+                color: '#111',
+                align: 'center',
+                wordWrap: { width: this.scale.width - 80 },
+            })
+            .setOrigin(0.5, 0.5);
     // Sink
     this.sink = this.add.image(width * 0.5, height * 0.67, 'sink');
     this.sink.setScale(0.72).setOrigin(0.5, 0.5);

@@ -86,6 +86,15 @@ export default class compostSort extends Phaser.Scene {
     const scale = Math.max(scaleX, scaleY);
     bg.setScale(scale);
 
+    const cx = this.cameras.main.centerX;
+    this.message = this.add
+            .text(cx, 50, 'Drag the items into the compost or the paper bag.', {
+                font: '26px Arial',
+                color: '#111',
+                align: 'center',
+                wordWrap: { width: this.scale.width - 80 },
+            })
+            .setOrigin(0.5, 0.5);
     // Score display shows global and target score for this mini game
     this.scoreText = this.add.text(16, 16, `Score: ${this.score} / ${this.targetScore}`, {
       fontSize: '26px',
