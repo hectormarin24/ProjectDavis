@@ -3,6 +3,7 @@
 // the global queue is started when the player clicks the background.
 
 export default class bugFriend extends Phaser.Scene {
+
   constructor() {
     super('bugFriend');
   }
@@ -102,6 +103,40 @@ export default class bugFriend extends Phaser.Scene {
     this.gameEnded = false;
   }
 
+   // ==================================================
+        // ADA ACCESSIBILITY ADDITIONS (Keyboard Controls)
+        // ==================================================
+
+        // 1. Keyboard Selector Cursor
+        this.selector = this.add.circle(
+            this.xCoord / 2,
+            this.yCoord / 2,
+            35,
+            0xffff00,
+            0.35
+        ).setDepth(200);
+
+        this.cursorSpeed = 10;
+
+        this.keys = this.input.keyboard.addKeys({
+            up: 'W',
+            down: 'S',
+            left: 'A',
+            right: 'D',
+            up2: 'UP',
+            down2: 'DOWN',
+            left2: 'LEFT',
+            right2: 'RIGHT',
+            activate: 'SPACE',
+            activate2: 'ENTER',
+        });
+
+        // 2. Outline used to highlight nearest insect
+        this.highlight = this.add.circle(0, 0, 55, 0xffff00, 0.15)
+            .setDepth(199)
+            .setVisible(false);
+    }
+
   createInsect(key, x, y, isGood) {
     const gs = window.globalGameState || {};
     const insect = this.physics.add.image(x, y, key).setInteractive();
@@ -160,6 +195,41 @@ export default class bugFriend extends Phaser.Scene {
     insect.setAngle(Phaser.Math.RadToDeg(angle));
   }
 
+  
+    // ==================================================
+    // ADA — Find nearest insect for keyboard selection
+    // ==================================================
+    getNearestInsect() {
+        let nearest = null;
+        let minDist = Infinity;
+
+        for (const insect of this.insects) {
+            if (!insect.active) continue;
+            const d = Phaser.Math.Distance.Between(
+                this.selector.x,
+                this.selector.y,
+                insect.x,
+                insect.y
+            );
+            if (d < minDist) {
+                minDist = d;
+                nearest = insect;
+            }
+        }
+        return nearest;
+    }
+
+    // ==================================================
+    // ADA — Keyboard “click”
+    // ==================================================
+    keyboardSquash(insect) {
+        if (!insect || !insect.active) return;
+
+        insect.setVisible(false);
+        insect.setActive(false);
+        this.checkAnswer(insect.getData('isGood'));
+    }  
+
   checkAnswer(isGood) {
     if (this.isGameOver) return;
     const gs = window.globalGameState || {};
@@ -205,4 +275,47 @@ export default class bugFriend extends Phaser.Scene {
       });
     });
   }
+
+    // ==================================================
+    // UPDATE — handle keyboard movement + activation
+    // ==================================================
+    update() {
+        if (this.isGameOver) return;
+
+        // Cursor movement
+        if (this.keys.left.isDown || this.keys.left2.isDown)
+            this.selector.x -= this.cursorSpeed;
+
+        if (this.keys.right.isDown || this.keys.right2.isDown)
+            this.selector.x += this.cursorSpeed;
+
+        if (this.keys.up.isDown || this.keys.up2.isDown)
+            this.selector.y -= this.cursorSpeed;
+
+        if (this.keys.down.isDown || this.keys.down2.isDown)
+            this.selector.y += this.cursorSpeed;
+
+        // Clamp
+        this.selector.x = Phaser.Math.Clamp(this.selector.x, 0, this.xCoord);
+        this.selector.y = Phaser.Math.Clamp(this.selector.y, 0, this.yCoord);
+
+        // Highlight nearest insect
+        const nearest = this.getNearestInsect();
+        if (nearest) {
+            this.highlight.setVisible(true);
+            this.highlight.x = nearest.x;
+            this.highlight.y = nearest.y;
+        } else {
+            this.highlight.setVisible(false);
+        }
+
+        // Keyboard “click” → squash
+        if (
+            Phaser.Input.Keyboard.JustDown(this.keys.activate) ||
+            Phaser.Input.Keyboard.JustDown(this.keys.activate2)
+        ) {
+            this.keyboardSquash(nearest);
+        }
+    }
+
 }

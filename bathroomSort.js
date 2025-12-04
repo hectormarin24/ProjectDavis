@@ -3,6 +3,7 @@
 // objects.
 
 export default class bathroomSort extends Phaser.Scene {
+
   constructor() {
     super({ key: 'bathroomSort' });
   }
@@ -95,7 +96,7 @@ export default class bathroomSort extends Phaser.Scene {
     this._activeSprites = new Set();
 
     // Bowl hit zone
-    const bowlW = 320, bowlH = 160;
+    const bowlW = 480, bowlH = 260;
     this.bowlZone = new Phaser.Geom.Rectangle(
       this.bowl.x - bowlW / 2,
       this.bowl.y - bowlH / 2,
@@ -138,6 +139,63 @@ export default class bathroomSort extends Phaser.Scene {
     });
   }
 
+  // Spawn timing
+        const diff = window.globalGameState?.difficulty || 1;
+        this.spawnDelay = 2500 / diff;
+
+        // ================================
+        // FIX: Only one item falls at a time
+        // ================================
+        this.spawnTimer = this.time.addEvent({
+            delay: this.spawnDelay,
+            callback: () => {
+                if (this._activeSprites.size === 0) {
+                    this.spawnFallingItem();
+                }
+            },
+            callbackScope: this,
+            loop: true,
+        });
+
+        this.time.addEvent({
+            delay: 10000,
+            callback: () => {
+                this.spawnDelay = Math.max(600 / diff, this.spawnDelay - 150);
+                this.spawnTimer.reset({
+                    delay: this.spawnDelay,
+                    callback: () => {
+                        if (this._activeSprites.size === 0) {
+                            this.spawnFallingItem();
+                        }
+                    },
+                    callbackScope: this,
+                    loop: true,
+                });
+            },
+            loop: true,
+        });
+
+        // ADA Cursor
+        this.selector = this.add
+            .circle(cx, this.scale.height - 200, 35, 0xffff00, 0.4)
+            .setDepth(200);
+
+        this.cursorSpeed = 8;
+
+        this.keys = this.input.keyboard.addKeys({
+            up: 'W',
+            down: 'S',
+            left: 'A',
+            right: 'D',
+            up2: 'UP',
+            down2: 'DOWN',
+            left2: 'LEFT',
+            right2: 'RIGHT',
+            activate: 'SPACE',
+            activate2: 'ENTER',
+        });
+    }
+    
   spawnFallingItem() {
     const gs = window.globalGameState;
     const x = Phaser.Math.Between(100, this.scale.width - 100);
@@ -196,6 +254,30 @@ export default class bathroomSort extends Phaser.Scene {
 
     this._activeSprites.add(sprite);
   }
+  
+  adaActivateClosestItem() {
+        let closest = null;
+        let minDist = 9999;
+
+        this._activeSprites.forEach((sprite) => {
+            const d = Phaser.Math.Distance.Between(
+                this.selector.x,
+                this.selector.y,
+                sprite.x,
+                sprite.y
+            );
+            if (d < minDist) {
+                minDist = d;
+                closest = sprite;
+            }
+        });
+
+        if (!closest || closest.hasEnded) return;
+
+        if (!closest.isGood) {
+            this.flickAway(closest);
+        }
+    }
 
   flickAway(obj) {
     obj.hasEnded = true;
@@ -306,4 +388,31 @@ export default class bathroomSort extends Phaser.Scene {
       });
     });
   }
+
+  update() {
+        if (!this.selector || this.isGameOver) return;
+
+        if (this.keys.left.isDown || this.keys.left2.isDown)
+            this.selector.x -= this.cursorSpeed;
+
+        if (this.keys.right.isDown || this.keys.right2.isDown)
+            this.selector.x += this.cursorSpeed;
+
+        if (this.keys.up.isDown || this.keys.up2.isDown)
+            this.selector.y -= this.cursorSpeed;
+
+        if (this.keys.down.isDown || this.keys.down2.isDown)
+            this.selector.y += this.cursorSpeed;
+
+        this.selector.x = Phaser.Math.Clamp(this.selector.x, 0, this.xCoord);
+        this.selector.y = Phaser.Math.Clamp(this.selector.y, 0, this.yCoord);
+
+        if (
+            Phaser.Input.Keyboard.JustDown(this.keys.activate) ||
+            Phaser.Input.Keyboard.JustDown(this.keys.activate2)
+        ) {
+            this.adaActivateClosestItem();
+        }
+    }
+
 }

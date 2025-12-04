@@ -20,7 +20,7 @@ export default class leakyFaucet extends Phaser.Scene {
 
   preload() {
     // Background and assets
-    this.load.image('faucet_bg', 'assets/g3_bg.png');
+    this.load.image('faucet_bg', 'assets/bathroom_bg2.png');
     this.load.image('faucet', 'assets/faucet.png');
     this.load.image('sink', 'assets/sink.png');
     this.load.image('sink_25', 'assets/sink_25.png');
