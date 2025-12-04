@@ -47,7 +47,11 @@ export default class startScreen extends Phaser.Scene {
             totalTime: 5 * 60 * 1000,
             lives: 3,
             score: 0,
-            difficulty: 1
+            difficulty: 1,
+            slowMode: false,
+            timerEnabled: true,
+            livesEnabled: true,
+            highContrast: false
         };
 
         const state = window.globalGameState;
@@ -153,6 +157,205 @@ export default class startScreen extends Phaser.Scene {
             .setInteractive({ useHandCursor: true })
             .on('pointerover', () => settingsBtn.setScale(0.28))
             .on('pointerout', () => settingsBtn.setScale(0.25))
-            
+            .on('pointerdown', () => {
+                this.showSettingsMenu();
+            });
+
+        this.settingsPanel = this.add
+            .rectangle(
+                this.xCoord / 2,
+                this.yCoord / 2,
+                this.xCoord * 0.6,
+                this.yCoord * 0.5,
+                0x000000,
+                0.5
+            )
+            .setDepth(50)
+            .setVisible(false);
+
+        this.slowModeText = this.add
+            .text(
+                this.xCoord / 2,
+                this.yCoord / 2 - 80,
+                '',
+                {
+                    fontSize: '32px',
+                    fill: '#ffffff',
+                    align: 'center',
+                    fontFamily: 'Arial',
+                    wordWrap: {
+                        width: this.xCoord * 0.5,
+                        useAdvancedWrap: true
+                    }
+                }
+            )
+            .setOrigin(0.5)
+            .setDepth(51)
+            .setVisible(false)
+            .setInteractive({ useHandCursor: true });
+
+        this.slowModeText.on('pointerdown', () => {
+            const gs = window.globalGameState;
+            gs.slowMode = !gs.slowMode;
+            this.updateSlowModeText();
+        });
+
+        this.timerToggleText = this.add
+            .text(
+                this.xCoord / 2,
+                this.yCoord / 2 - 30,
+                '',
+                {
+                    fontSize: '32px',
+                    fill: '#ffffff',
+                    align: 'center',
+                    fontFamily: 'Arial',
+                    wordWrap: {
+                        width: this.xCoord * 0.5,
+                        useAdvancedWrap: true
+                    }
+                }
+            )
+            .setOrigin(0.5)
+            .setDepth(51)
+            .setVisible(false)
+            .setInteractive({ useHandCursor: true });
+
+        this.timerToggleText.on('pointerdown', () => {
+            const gs = window.globalGameState;
+            gs.timerEnabled = !gs.timerEnabled;
+            this.updateTimerToggleText();
+        });
+
+        this.livesToggleText = this.add
+            .text(
+                this.xCoord / 2,
+                this.yCoord / 2 + 20,
+                '',
+                {
+                    fontSize: '32px',
+                    fill: '#ffffff',
+                    align: 'center',
+                    fontFamily: 'Arial',
+                    wordWrap: {
+                        width: this.xCoord * 0.5,
+                        useAdvancedWrap: true
+                    }
+                }
+            )
+            .setOrigin(0.5)
+            .setDepth(51)
+            .setVisible(false)
+            .setInteractive({ useHandCursor: true });
+
+        this.livesToggleText.on('pointerdown', () => {
+            const gs = window.globalGameState;
+            gs.livesEnabled = !gs.livesEnabled;
+            this.updateLivesToggleText();
+        });
+
+        this.highContrastText = this.add
+            .text(
+                this.xCoord / 2,
+                this.yCoord / 2 + 70,
+                '',
+                {
+                    fontSize: '32px',
+                    fill: '#ffffff',
+                    align: 'center',
+                    fontFamily: 'Arial',
+                    wordWrap: {
+                        width: this.xCoord * 0.5,
+                        useAdvancedWrap: true
+                    }
+                }
+            )
+            .setOrigin(0.5)
+            .setDepth(51)
+            .setVisible(false)
+            .setInteractive({ useHandCursor: true });
+
+        this.highContrastText.on('pointerdown', () => {
+            const gs = window.globalGameState;
+            gs.highContrast = !gs.highContrast;
+            this.updateHighContrastText();
+        });
+
+        this.closeSettingsBtn = this.add
+            .text(
+                this.xCoord / 2,
+                this.yCoord / 2 + 130,
+                'Close',
+                {
+                    fontSize: '28px',
+                    fill: '#ffffff',
+                    backgroundColor: '#333333'
+                }
+            )
+            .setOrigin(0.5)
+            .setDepth(51)
+            .setPadding(10, 6, 10, 6)
+            .setVisible(false)
+            .setInteractive({ useHandCursor: true });
+
+        this.closeSettingsBtn.on('pointerdown', () => {
+            this.hideSettingsMenu();
+        });
+
+        this.updateSlowModeText();
+        this.updateTimerToggleText();
+        this.updateLivesToggleText();
+        this.updateHighContrastText();
     }
+
+    showSettingsMenu() {
+        this.settingsPanel.setVisible(true);
+        this.slowModeText.setVisible(true);
+        this.timerToggleText.setVisible(true);
+        this.livesToggleText.setVisible(true);
+        this.highContrastText.setVisible(true);
+        this.closeSettingsBtn.setVisible(true);
+    }
+
+    hideSettingsMenu() {
+        this.settingsPanel.setVisible(false);
+        this.slowModeText.setVisible(false);
+        this.timerToggleText.setVisible(false);
+        this.livesToggleText.setVisible(false);
+        this.highContrastText.setVisible(false);
+        this.closeSettingsBtn.setVisible(false);
+    }
+
+updateSlowModeText() {
+    const gs = window.globalGameState;
+    const label = gs.slowMode ? 'Slow Mode: ON' : 'Slow Mode: OFF (default)';
+    if (this.slowModeText) {
+        this.slowModeText.setText(label);
+    }
+}
+
+updateTimerToggleText() {
+    const gs = window.globalGameState;
+    const label = gs.timerEnabled ? 'Timer: ON (default)' : 'Timer: OFF';
+    if (this.timerToggleText) {
+        this.timerToggleText.setText(label);
+    }
+}
+
+updateLivesToggleText() {
+    const gs = window.globalGameState;
+    const label = gs.livesEnabled ? 'Lives: ON (default)' : 'Lives: OFF';
+    if (this.livesToggleText) {
+        this.livesToggleText.setText(label);
+    }
+}
+
+updateHighContrastText() {
+    const gs = window.globalGameState;
+    const label = gs.highContrast ? 'High Contrast: ON' : 'High Contrast: OFF (default)';
+    if (this.highContrastText) {
+        this.highContrastText.setText(label);
+    }
+}
+
 }

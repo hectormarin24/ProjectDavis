@@ -4,7 +4,7 @@
 //
 // This scene implements a mini-game where apples fall from a tree and the
 // player must drag a basket to collect them before they spoil.  If any
-// apple spoils, the player loses one life and the mini‑game ends after a
+// apple spoils, the player loses one life and the mini-game ends after a
 // brief delay, automatically advancing to the next randomized scene.
 // The basket can be controlled with the mouse (drag) or with the A and D
 // keys on the keyboard.  A status message appears when fruit spoils to
@@ -27,7 +27,7 @@ export default class fruitPicker extends Phaser.Scene {
   }
 
   /**
-   * Preload the assets required for this mini‑game.  Images are stored
+   * Preload the assets required for this mini-game.  Images are stored
    * within the project's assets folder.  A spoiled version of the apple is
    * used to visually indicate when the fruit has been ruined by bugs.
    */
@@ -46,11 +46,13 @@ export default class fruitPicker extends Phaser.Scene {
   create() {
     console.log('Game12 loaded');
 
+    const gs = window.globalGameState || {};
+
     // Draw the background and tree.  The tree is purely decorative.
-    this.add.image(this.xCoord / 2, this.yCoord / 2, 'ff_bg')
+    const bg = this.add.image(this.xCoord / 2, this.yCoord / 2, 'ff_bg')
       .setDisplaySize(this.xCoord, this.yCoord);
-    this.add.image(this.xCoord / 2, this.yCoord / 2.5, 'tree')
-      .setScale(1);
+    const tree = this.add.image(this.xCoord / 2, this.yCoord / 2.5, 'tree')
+      .setScale(2);
 
     // Create the draggable basket.  Use Arcade physics so that we can
     // constrain movement easily and detect overlaps, but disable gravity.
@@ -59,6 +61,12 @@ export default class fruitPicker extends Phaser.Scene {
     this.physics.add.existing(this.basket);
     this.basket.body.setAllowGravity(false);
     this.basket.body.setImmovable(true);
+
+    if (gs.highContrast) {
+      bg.setTint(0xffffff);
+      tree.setTint(0xffffff);
+      this.basket.setTint(0xffff00);
+    }
 
     // Register keyboard input for A/D movement.  These keys allow
     // horizontal movement in addition to mouse dragging.
@@ -84,8 +92,13 @@ export default class fruitPicker extends Phaser.Scene {
     this.fruitCaught = 0;
     this.basketSpeed = 400;
 
+    if (gs.slowMode) {
+      this.fruitFallSpeed *= 0.7;
+      this.spawnDelay *= 1.3;
+    }
+
     // HUD: display timer and lives.  A transient message appears when
-    // fruit spoils so players understand why they lost the mini‑game.
+    // fruit spoils so players understand why they lost the mini-game.
     this.timeLeft = 25;
     this.timerText = this.add.text(40, 40, `Time: ${this.timeLeft}`, {
       fontSize: '32px',
@@ -101,8 +114,11 @@ export default class fruitPicker extends Phaser.Scene {
       fontStyle: 'bold',
     }).setOrigin(0.5);
 
+    if (!gs.timerEnabled) this.timerText.setVisible(false);
+    if (!gs.livesEnabled) this.livesText.setVisible(false);
+
     // Spawn fruits at regular intervals.  The spawn loop stops when the
-    // mini‑game finishes early due to a spoiled fruit or time running out.
+    // mini-game finishes early due to a spoiled fruit or time running out.
     this.spawnLoop = this.time.addEvent({
       delay: this.spawnDelay,
       callback: this.spawnFruit,
@@ -110,20 +126,20 @@ export default class fruitPicker extends Phaser.Scene {
       loop: true,
     });
 
-    // Countdown timer: decreases every second and ends the mini‑game if
-    // time reaches zero.  The mini‑game can also end earlier if a fruit
-    // spoils or enough fruits are collected.
-    this.timerEvent = this.time.addEvent({
-      delay: 1000,
-      callback: () => {
-        this.timeLeft--;
-        this.timerText.setText(`Time: ${this.timeLeft}`);
-        if (this.timeLeft <= 0) {
-          this.finish(true);
-        }
-      },
-      loop: true,
-    });
+    // Countdown timer
+    if (gs.timerEnabled) {
+      this.timerEvent = this.time.addEvent({
+        delay: 1000,
+        callback: () => {
+          this.timeLeft--;
+          this.timerText.setText(`Time: ${this.timeLeft}`);
+          if (this.timeLeft <= 0) {
+            this.finish(true);
+          }
+        },
+        loop: true,
+      });
+    }
   }
 
   /**
@@ -133,6 +149,7 @@ export default class fruitPicker extends Phaser.Scene {
    * update().
    */
   spawnFruit() {
+    const gs = window.globalGameState || {};
     const fruitX = Phaser.Math.Between(150, this.xCoord - 150);
     const fruit = this.physics.add.image(fruitX, 150, 'fruit').setScale(1);
     fruit.setVelocityY(this.fruitFallSpeed);
@@ -140,9 +157,11 @@ export default class fruitPicker extends Phaser.Scene {
     fruit.state = 'falling';
     fruit.isSpoiled = false;
 
+    if (gs.highContrast) {
+      fruit.setTint(0x00ff00);
+    }
+
     const groundY = this.yCoord - 130;
-    // Continuously check if the fruit has reached the ground.  Once it
-    // lands, freeze it and schedule it to spoil if not collected in time.
     this.time.addEvent({
       delay: 30,
       loop: true,
@@ -162,10 +181,13 @@ export default class fruitPicker extends Phaser.Scene {
 
   /**
    * Schedule a fruit to spoil after a short delay.  The delay decreases
-   * with higher difficulty to make the mini‑game progressively harder.
+   * with higher difficulty to make the mini-game progressively harder.
    */
   scheduleSpoil(fruit) {
-    const spoilDelay = Phaser.Math.Clamp(2000 / this.difficulty, 700, 2000);
+    let spoilDelay = Phaser.Math.Clamp(2000 / this.difficulty, 700, 2000);
+    if (window.globalGameState?.slowMode) {
+      spoilDelay *= 1.5;
+    }
     this.time.delayedCall(spoilDelay, () => {
       if (fruit.active && fruit.state === 'grounded' && !fruit.isSpoiled) {
         this.spawnBugOnFruit(fruit);
@@ -174,54 +196,49 @@ export default class fruitPicker extends Phaser.Scene {
   }
 
   /**
-   * Spawn a bug directly on the apple to indicate it has spoiled.  The
-   * message is shown and after a short delay the mini‑game ends with a
-   * failure state.  No further fruit are processed once finish() is called.
+   * Spawn a bug directly on the apple to indicate it has spoiled.
    */
-  spawnBugOnFruit(fruit) {
-    if (!fruit.active) return;
-    // Place the bug at the same coordinates as the fruit.  The bug is
-    // decorative and does not need physics since it will be destroyed
-    // shortly after.
-    const bug = this.add.image(fruit.x, fruit.y, 'bug').setScale(1);
-    fruit.setTexture('apple_spoiled');
-    fruit.isSpoiled = true;
-    this.showMessage('Fruit spoiled due to bugs!');
-    // After a brief pause, end the mini‑game with failure.  Calling
-    // finish(false) will deduct a life via finishMiniGame and move to
-    // the next scene.  We intentionally do not call loseLife() here to
-    // avoid decrementing lives twice (once here and once in finish()).
-    this.time.delayedCall(2000, () => {
-      this.scene.start('transitionScreen', {
-        lives: this.lives,
-        score: this.finalScore,
-        xCoord: this.xCoord,
-        yCoord: this.yCoord,
-        won: false,
-        elapsedTime: this.time.now
-      });
-    });
+spawnBugOnFruit(fruit) {
+  if (!fruit.active) return;
+
+  const gs = window.globalGameState || {};
+
+  const bug = this.add.image(fruit.x, fruit.y, 'bug').setScale(1);
+  fruit.setTexture('apple_spoiled');
+  fruit.isSpoiled = true;
+
+  if (gs.highContrast) {
+    fruit.setTint(0xff0000);
+    bug.setTint(0xff0000);
   }
 
+  this.showMessage('Fruit spoiled due to bugs!');
+
+  this.time.delayedCall(2000, () => {
+    const won = gs.livesEnabled === false ? true : false;
+    this.scene.start('transitionScreen', {
+      lives: this.lives,
+      score: this.finalScore,
+      xCoord: this.xCoord,
+      yCoord: this.yCoord,
+      won: won,
+      elapsedTime: this.time.now
+    });
+  });
+}
+
+
   /**
-   * Update runs on every frame.  This method handles keyboard movement
-   * for the basket and checks for collisions between the basket and
-   * grounded, unspoiled fruit.  Collected fruits increase the score and
-   * when enough are collected the mini‑game ends successfully.
+   * Update runs on every frame.
    */
   update(_, delta) {
-    // Keyboard controls: adjust basket position based on A/D keys.
     if (this.keys.left.isDown) {
       this.basket.x -= this.basketSpeed * (delta / 1000);
     } else if (this.keys.right.isDown) {
       this.basket.x += this.basketSpeed * (delta / 1000);
     }
-    // Constrain basket within bounds.
     this.basket.x = Phaser.Math.Clamp(this.basket.x, 100, this.xCoord - 100);
 
-    // Check for overlap between basket and each grounded fruit.  Only
-    // collect fruit that have not spoiled.  If enough are collected,
-    // finish the mini‑game successfully.
     for (const fruit of this.fruits) {
       if (fruit.active && fruit.state === 'grounded' && !fruit.isSpoiled) {
         const dist = Phaser.Math.Distance.Between(
@@ -239,8 +256,7 @@ export default class fruitPicker extends Phaser.Scene {
 
   /**
    * Remove a collected fruit, increase the score and check if enough
-   * fruits have been caught to finish with success.  The message is
-   * cleared when a fruit is collected.
+   * fruits have been caught to finish with success.
    */
   collectFruit(fruit) {
     if (!fruit.active || fruit.isSpoiled) return;
@@ -248,36 +264,22 @@ export default class fruitPicker extends Phaser.Scene {
     this.score += 100;
     this.fruitCaught++;
     this.clearMessage();
-    // End successfully after collecting five fruits.  Adjust this
-    // threshold as desired for game length.
     if (this.fruitCaught >= 5) {
       this.finish(true);
     }
   }
 
-  /**
-   * Display a temporary message to the player.  The message clears after
-   * a short duration.  This is used to notify about spoiled fruit.
-   */
   showMessage(text) {
     this.messageText.setText(text);
     this.time.delayedCall(1800, () => this.clearMessage());
   }
 
-  /**
-   * Clear any displayed message.  Called automatically after messages
-   * expire or when a fruit is collected.
-   */
   clearMessage() {
     this.messageText.setText('');
   }
 
   /**
-   * Finish the mini‑game.  Remove timers and destroy sprites.  If
-   * success is true, the next scene is loaded and the score is
-   * incremented; otherwise a life is deducted and the next scene is
-   * started.  Lives are managed via finishMiniGame, so local lives do
-   * not need to be decremented here.
+   * Finish the mini-game.
    */
   finish(success) {
     if (this.spawnLoop) {
@@ -286,7 +288,6 @@ export default class fruitPicker extends Phaser.Scene {
     if (this.timerEvent) {
       this.timerEvent.remove();
     }
-    // Destroy remaining fruits.
     for (const f of this.fruits) {
       if (f && f.active) {
         f.destroy();
@@ -294,12 +295,12 @@ export default class fruitPicker extends Phaser.Scene {
     }
 
     this.scene.start('transitionScreen', {
-        lives: this.lives,
-        score: this.finalScore,
-        xCoord: this.xCoord,
-        yCoord: this.yCoord,
-        won: true,
-        elapsedTime: this.time.now
-      });
+      lives: this.lives,
+      score: this.finalScore,
+      xCoord: this.xCoord,
+      yCoord: this.yCoord,
+      won: success,
+      elapsedTime: this.time.now
+    });
   }
 }

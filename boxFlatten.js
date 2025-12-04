@@ -28,17 +28,26 @@ export default class boxFlatten extends Phaser.Scene {
   }
 
   create() {
-    // Background
-    this.add
+    const gs = window.globalGameState || {};
+
+    const bg = this.add
       .image(this.xCoord / 3 + 20, this.yCoord / 2, 'background')
       .setOrigin(0.5);
-    // HUD
+
+    if (gs.highContrast) {
+      bg.setTint(0xffffff);
+    }
+
     this.timerText = this.add
       .text(20, 20, '', { fontSize: '32px', fill: '#ffffff' })
       .setDepth(100);
     this.livesText = this.add
       .text(this.xCoord - 180, 20, '', { fontSize: '32px', fill: '#ffffff' })
       .setDepth(100);
+
+    if (!gs.timerEnabled) this.timerText.setVisible(false);
+    if (!gs.livesEnabled) this.livesText.setVisible(false);
+
     this.time.addEvent({
       delay: 200,
       loop: true,
@@ -48,24 +57,31 @@ export default class boxFlatten extends Phaser.Scene {
         const timeLeft = Math.max(0, state.totalTime - elapsed);
         const minutes = Math.floor(timeLeft / 60000);
         const seconds = Math.floor((timeLeft % 60000) / 1000);
-        this.timerText.setText(`Time: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`);
-        this.livesText.setText(`Lives: ${state.lives}`);
-        if (!this.isGameOver && (timeLeft <= 0 || state.lives <= 0)) {
+        if (gs.timerEnabled)
+          this.timerText.setText(`Time: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`);
+        if (gs.livesEnabled)
+          this.livesText.setText(`Lives: ${state.lives}`);
+
+        const livesExpired = gs.livesEnabled && state.lives <= 0;
+
+        if (!this.isGameOver && livesExpired) {
           this.isGameOver = true;
           window.finishMiniGame(false, this, 0);
         }
       },
     });
-    // Spawn first box
+
     this.clickCount = 0;
     this.nextObject();
   }
 
   nextObject() {
+    const gs = window.globalGameState || {};
+
     if (this.current && this.current.destroy) {
       this.current.destroy();
     }
-    // Choose a box type with required clicks
+
     const options = [
       { key: 'smallBox', scale: 0.5, clicks: 1 },
       { key: 'mediumBox', scale: 1, clicks: 2 },
@@ -74,30 +90,39 @@ export default class boxFlatten extends Phaser.Scene {
     this.boxInfo = Phaser.Utils.Array.GetRandom(options);
     const x = Phaser.Math.Between(100, this.xCoord - 100);
     const y = Phaser.Math.Between(150, this.yCoord - 200);
+
     this.current = this.add
       .image(x, y, this.boxInfo.key)
       .setScale(this.boxInfo.scale)
       .setInteractive({ useHandCursor: true });
-    // Reset click counter
+
+    if (gs.highContrast) {
+      this.current.setTint(0xffff00);
+    }
+
     this.clickCount = 0;
     this.current.on('pointerdown', () => {
       if (this.isGameOver) return;
       this.clickCount++;
-      // If the player clicks more than required, they lose
+
       if (this.clickCount > this.boxInfo.clicks) {
-        this.loseGame();
-        return;
+        if (gs.livesEnabled !== false) {
+          this.loseGame();
+          return;
+        }
+        this.clickCount = this.boxInfo.clicks;
       }
-      // If reached required number of clicks, flatten box
+
       if (this.clickCount === this.boxInfo.clicks) {
-        // Replace with flattened box
-        this.add
+        const flat = this.add
           .image(x, y, 'flatBox')
           .setScale(this.boxInfo.scale / 3);
+        if (gs.highContrast) {
+          flat.setTint(0x00ff00);
+        }
         this.current.destroy();
         this.current = null;
         this.localScore++;
-        // Cancel existing timer for this box
         if (this.boxTimer && this.boxTimer.remove) this.boxTimer.remove();
         if (this.localScore >= 5) {
           this.winGame();
@@ -106,15 +131,23 @@ export default class boxFlatten extends Phaser.Scene {
         }
       }
     });
-    // Start a timer for this box; lose if time runs out
+
     if (this.boxTimer && this.boxTimer.remove) this.boxTimer.remove();
     const difficulty = window.globalGameState?.difficulty || 1;
-    const delay = 5000 / difficulty;
-    this.boxTimer = this.time.delayedCall(delay, () => {
-      if (!this.isGameOver) {
-        this.loseGame();
-      }
-    });
+    let delay = 5000 / difficulty;
+    if (gs.slowMode) delay *= 1.5;
+
+    if (gs.timerEnabled) {
+      this.boxTimer = this.time.delayedCall(delay, () => {
+        if (!this.isGameOver) {
+          if (gs.livesEnabled !== false) {
+            this.loseGame();
+          } else {
+            this.nextObject();
+          }
+        }
+      });
+    }
   }
 
   winGame() {
@@ -140,6 +173,8 @@ export default class boxFlatten extends Phaser.Scene {
   }
 
   loseGame() {
+    const gs = window.globalGameState || {};
+    if (gs.livesEnabled === false) return;
     if (this.isGameOver) return;
     this.isGameOver = true;
     if (this.boxTimer && this.boxTimer.remove) this.boxTimer.remove();
