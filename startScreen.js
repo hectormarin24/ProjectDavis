@@ -48,6 +48,7 @@ export default class startScreen extends Phaser.Scene {
             lives: 3,
             score: 0,
             difficulty: 1,
+            difficultyEnabled: true,
             slowMode: false,
             timerEnabled: true,
             livesEnabled: true,
@@ -173,6 +174,45 @@ export default class startScreen extends Phaser.Scene {
             .setDepth(50)
             .setVisible(false);
 
+        this.difficultyText = this.add
+            .text(
+                this.xCoord / 2,
+                this.yCoord / 2 - 40,
+                '',
+                {
+                  fontSize: '40px',
+                  fill: '#ffffff',
+                  align: 'center',
+                  fontStyle: 'bold',
+                  wordWrap: {
+                        width: this.xCoord * 0.5, 
+                        useAdvancedWrap: true
+                      }
+                }
+          )
+          .setOrigin(0.5)
+          .setDepth(21)
+          .setInteractive({ useHandCursor: true })
+          .setVisible(false);
+
+        this.updateDifficultyText = () => {
+          const state = window.globalGameState;
+          this.difficultyText.setText(
+            state.difficultyEnabled
+              ? 'Difficulty: ON'
+              : 'Difficulty: OFF (Easy Mode)'
+          );
+        };
+        
+        this.difficultyText.on('pointerup', () => {
+            const state = window.globalGameState;
+            state.difficultyEnabled = !state.difficultyEnabled;
+            if (!state.difficultyEnabled) {
+              state.difficulty = 1;
+            }
+            this.updateDifficultyText();
+          });
+        
         this.slowModeText = this.add
             .text(
                 this.xCoord / 2,
@@ -311,6 +351,7 @@ export default class startScreen extends Phaser.Scene {
     showSettingsMenu() {
         this.settingsPanel.setVisible(true);
         this.difficultyText.setVisible(true);
+        this.updateDifficultyText();
         this.slowModeText.setVisible(true);
         this.timerToggleText.setVisible(true);
         this.livesToggleText.setVisible(true);
