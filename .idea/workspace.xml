@@ -4,13 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="75f0b4c2-0777-41d2-a2c8-711c82dffe09" name="Changes" comment="Randomized Games, Added Timer and Life System, Fixed Game 12, Fixed background">
+    <list default="true" id="75f0b4c2-0777-41d2-a2c8-711c82dffe09" name="Changes" comment="raccoon.js, bugFriend.js, &amp; bathroomSort.js have all been adjusted to have keyboard accessibility">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/flowerfieldbg.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/flowerfieldbg.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/compostSort.js" beforeDir="false" afterPath="$PROJECT_DIR$/compostSort.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/tree.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/tree.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fruitPicker.js" beforeDir="false" afterPath="$PROJECT_DIR$/fruitPicker.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/leakyFaucet.js" beforeDir="false" afterPath="$PROJECT_DIR$/leakyFaucet.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/oilAndWater.js" beforeDir="false" afterPath="$PROJECT_DIR$/oilAndWater.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/raccoon.js" beforeDir="false" afterPath="$PROJECT_DIR$/raccoon.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/startScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/startScreen.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -27,7 +26,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="main" />
+        <entry key="$PROJECT_DIR$" value="dimitry's-updates" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -38,12 +37,22 @@
     &quot;assignee&quot;: &quot;XplosiveCow&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/hectormarin24/ProjectDavis&quot;,
-    &quot;accountId&quot;: &quot;bdc818c9-238d-4cfb-9cb7-a54bc0d0ef5c&quot;
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/hectormarin24/ProjectDavis",
+    "accountId": "bdc818c9-238d-4cfb-9cb7-a54bc0d0ef5c"
+  },
+  "recentNewPullRequestHead": {
+    "server": {
+      "useHttp": false,
+      "host": "github.com",
+      "port": null,
+      "suffix": null
+    },
+    "owner": "hectormarin24",
+    "repository": "ProjectDavis"
   }
-}</component>
+}]]></component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 2
 }</component>
@@ -68,7 +77,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "Asset-Update",
+    "git-widget-placeholder": "#29 on ADA-updates",
     "junie.onboarding.icon.badge.shown": "true",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "/Users/dimitryvisochin/IdeaProjects/ProjectDavis/assets",
@@ -123,10 +132,10 @@
     <recent_temporary>
       <list>
         <item itemvalue="JavaScript Debug.index.html" />
-        <item itemvalue="Node.js.oilAndWater.js" />
         <item itemvalue="Node.js.raccoon.js" />
-        <item itemvalue="Node.js.game12.js" />
+        <item itemvalue="Node.js.oilAndWater.js" />
         <item itemvalue="Node.js.main.js" />
+        <item itemvalue="Node.js.game12.js" />
       </list>
     </recent_temporary>
   </component>
@@ -155,7 +164,7 @@
       <workItem from="1761675320543" duration="4000" />
       <workItem from="1762213350564" duration="7211000" />
       <workItem from="1763242893265" duration="18000" />
-      <workItem from="1763450520604" duration="10707000" />
+      <workItem from="1763450520604" duration="23168000" />
     </task>
     <task id="LOCAL-00001" summary="Adding my game to main branch">
       <option name="closed" value="true" />
@@ -221,7 +230,39 @@
       <option name="project" value="LOCAL" />
       <updated>1762455355878</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="Small Modifications to code UI + Modified Assets for a cleaner look">
+      <option name="closed" value="true" />
+      <created>1763626997333</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1763626997333</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Small Modifications to code UI + Modified Assets for a cleaner look">
+      <option name="closed" value="true" />
+      <created>1763627423723</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1763627423723</updated>
+    </task>
+    <task id="LOCAL-00011" summary="raccoon.js, bugFriend.js, &amp; bathroomSort.js have all been adjusted to have keyboard accessibility">
+      <option name="closed" value="true" />
+      <created>1764474188117</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1764474188117</updated>
+    </task>
+    <task id="LOCAL-00012" summary="raccoon.js, bugFriend.js, &amp; bathroomSort.js have all been adjusted to have keyboard accessibility">
+      <option name="closed" value="true" />
+      <created>1764568053011</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1764568053011</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -238,7 +279,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="Asset-Update" />
+                        <option value="ADA-updates" />
                       </list>
                     </value>
                   </entry>
@@ -254,7 +295,9 @@
     <MESSAGE value="Adding my game to main branch" />
     <MESSAGE value="modified Game3" />
     <MESSAGE value="Randomized Games, Added Timer and Life System, Fixed Game 12, Fixed background" />
-    <option name="LAST_COMMIT_MESSAGE" value="Randomized Games, Added Timer and Life System, Fixed Game 12, Fixed background" />
+    <MESSAGE value="Small Modifications to code UI + Modified Assets for a cleaner look" />
+    <MESSAGE value="raccoon.js, bugFriend.js, &amp; bathroomSort.js have all been adjusted to have keyboard accessibility" />
+    <option name="LAST_COMMIT_MESSAGE" value="raccoon.js, bugFriend.js, &amp; bathroomSort.js have all been adjusted to have keyboard accessibility" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/ProjectDavis$index_html.dat" NAME="index.html Coverage Results" MODIFIED="1761241116440" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="WipCoverageRunner" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
