@@ -310,6 +310,7 @@ export default class startScreen extends Phaser.Scene {
 
     showSettingsMenu() {
         this.settingsPanel.setVisible(true);
+        this.difficultyText.setVisible(true);
         this.slowModeText.setVisible(true);
         this.timerToggleText.setVisible(true);
         this.livesToggleText.setVisible(true);
