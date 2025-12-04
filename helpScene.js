@@ -56,6 +56,30 @@ export default class helpScene extends Phaser.Scene {
       this.cameras.main.setBackgroundColor('#0d7729'); // orange
     }
 
+    // --- RETURN TO START BUTTON ---
+    const backButton = this.add
+      .rectangle(this.xCoord - 120, 40, 200, 60, 0x1e88e5, 0.9)
+      .setOrigin(0.5)
+      .setStrokeStyle(3, 0xffffff)
+      .setInteractive({ useHandCursor: true })
+      .setScrollFactor(0);
+
+    const backLabel = this.add
+      .text(this.xCoord - 120, 40, 'Back to Start', {
+        font: '20px Arial',
+        fill: '#ffffff'
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0);
+
+    backButton
+      .on('pointerover', () => backButton.setFillStyle(0x2196f3, 1))
+      .on('pointerout', () => backButton.setFillStyle(0x1e88e5, 0.9))
+      .on('pointerdown', () => {
+        this.scene.start('startScreen');
+      });
+
+
     // --- SCROLLING ---
     this.input.on('wheel', (pointer, gameObjects, deltaX, deltaY) => {
       this.cameras.main.scrollY += deltaY * 0.5;
@@ -63,7 +87,17 @@ export default class helpScene extends Phaser.Scene {
 
     const x = 140;     // text start
     const imgX = 60;   // image start
-    let y = 40;        // top offset
+
+    // --- AUDIO PROMPT ---
+    this.add
+      .text(this.xCoord / 2, 10, 'Click on the blue button to read them out loud.', {
+        font: '22px Arial',
+        fill: '#ffffff',
+        align: 'center'
+      })
+      .setOrigin(0.5, 0);
+
+    let y = 80;        // top offset
 
     //---------------- HELP ENTRY FUNCTION ----------------
     const addHelpEntry = (title, desc, imageKey, audioKey) => {
