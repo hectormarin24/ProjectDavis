@@ -101,7 +101,7 @@ export default class bugFriend extends Phaser.Scene {
         this.rulesText.destroy();
     });
     this.gameEnded = false;
-  }
+  
 
    // ==================================================
         // ADA ACCESSIBILITY ADDITIONS (Keyboard Controls)

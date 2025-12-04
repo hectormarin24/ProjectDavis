@@ -174,8 +174,8 @@ export default class oilAndWater extends Phaser.Scene {
 
     this.sink.on('pointerdown', () => this.onTarget('osink'));
     this.bucket.on('pointerdown', () => this.onTarget('bucket'));
-    }
-  
+    
+
     this.input.keyboard.on('keydown', (key) => {
             if (this.isGameOver) return;
 
@@ -193,7 +193,7 @@ export default class oilAndWater extends Phaser.Scene {
                 }
             }
         });
-     }
+    }
 
    setKeyboardSelection(optionKey) {
         this.keyboardSelection = optionKey;
@@ -210,7 +210,7 @@ export default class oilAndWater extends Phaser.Scene {
 
  
    
-    startRound() {
+    startRound(){
         if (this.isGameOver) return;
 
         this.keyboardSelection = null;
@@ -224,11 +224,6 @@ export default class oilAndWater extends Phaser.Scene {
         const cy = this.cameras.main.centerY;
         this.hintText.setText('Pot contains: ' + this.potContents);
         this.message.setText('Click the correct container');
-
-        if (this.roundTimer && this.roundTimer.remove) this.roundTimer.remove();
-
-        const difficulty = window.globalGameState?.difficulty || 1;
-        const delay = 6000 / difficulty;
 
 
     this.hintText = this.add.text(cx, cy + 130, 'Pot contains: ' + this.potContents, {

@@ -5,7 +5,7 @@ const HEIGHT = 880;
 const MIN_FOOD_DISTANCE_FROM_RACCOON = 180;
 const WIN_SCORE = 5;
 
-class raccoon extends Phaser.Scene {
+export default class raccoon extends Phaser.Scene {
   constructor() {
     super({ key: 'raccoon' });
   }
@@ -66,6 +66,7 @@ class raccoon extends Phaser.Scene {
     if (!gs.livesEnabled) this.livesText.setVisible(false);
     if (!this.livesEnabled) this.missText.setVisible(false);
 
+    // Timer & lives update
     this.time.addEvent({
       delay: 200,
       loop: true,
@@ -86,6 +87,9 @@ class raccoon extends Phaser.Scene {
         if (!this.finished && livesExpired) {
           this.finished = true;
           window.finishMiniGame(false, this, 0);
+        }
+      }
+    });
         // === HUD ===
         this.timerText = this.add
             .text(20, 20, '', { fontSize: '28px', fill: '#ffffff' })
@@ -102,27 +106,7 @@ class raccoon extends Phaser.Scene {
             })
             .setOrigin(0.5, 0)
             .setDepth(100);
-
-        // Timer & lives updater
-        this.time.addEvent({
-            delay: 200,
-            loop: true,
-            callback: () => {
-                const state = window.globalGameState;
-                const elapsed = this.time.now - state.startTime;
-                const timeLeft = Math.max(0, state.totalTime - elapsed);
-                const minutes = Math.floor(timeLeft / 60000);
-                const seconds = Math.floor((timeLeft % 60000) / 1000);
-
-                this.timerText.setText(`Time: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`);
-                this.livesText.setText(`Lives: ${state.lives}`);
-
-                if (!this.finished && (timeLeft <= 0 || state.lives <= 0)) {
-                    this.finished = true;
-                    window.finishMiniGame(false, this, 0);
-                }
-            },
-        });
+        
 
         // === Background ===
         if (this.textures.exists('bgpark')) {
@@ -161,6 +145,16 @@ class raccoon extends Phaser.Scene {
             }
         });
 
+        if (this.textures.exists('bgpark')) {
+      let bg = this.add.image(WIDTH / 2, HEIGHT / 2, 'bgpark').setDisplaySize(WIDTH, HEIGHT);
+    } else {
+      this.cameras.main.setBackgroundColor('#a7d3a6');
+    }
+
+    this.spawnRaccoon(true);
+    this.spawnFood();
+    this.updateHUD();
+
         // ================================
         //      ACCESSIBILITY: KEYBOARD
         // ================================
@@ -181,8 +175,9 @@ class raccoon extends Phaser.Scene {
             activate: 'SPACE',
             activate2: 'ENTER'
         });
-    }
 
+    }
+    
     // === HUD ===
     updateHUD() {
         this.missText.setText(`Misses: ${this.misses}/${this.maxMisses}`);
@@ -195,21 +190,11 @@ class raccoon extends Phaser.Scene {
             this.finishLevel();
 
         }
-      },
-    });
-
-    let bg;
-    if (this.textures.exists('bgpark')) {
-      bg = this.add.image(WIDTH / 2, HEIGHT / 2, 'bgpark').setDisplaySize(WIDTH, HEIGHT);
-    } else {
-      this.cameras.main.setBackgroundColor('#a7d3a6');
     }
 
-    this.spawnRaccoon(true);
-    this.spawnFood();
-    this.updateHUD();
+    
     // === Spawning ===
-    spawnFood() {
+    /*spawnFood() {
         let x, y;
         const maxAttempts = 50;
         let attempts = 0;
@@ -235,25 +220,29 @@ class raccoon extends Phaser.Scene {
     this.moveRaccoon();
 
     this.input.on('gameobjectdown', (pointer, obj) => {
-      if (!obj || !obj.texture) return;
-      if (obj.texture.key === 'food' && obj.active) {
-        if (this.sound) this.sound.play('pop', { volume: 0.25 });
-        this.incrementScore();
+        if (!obj || !obj.texture) return;
+        if (obj.texture.key === 'food' && obj.active) {
+            if (this.sound) this.sound.play('pop', { volume: 0.25 });
+            this.incrementScore();
 
-        if (this.raccoonTween) {
-          this.raccoonTween.stop();
-          this.raccoonTween = null;
+            if (this.raccoonTween) {
+            this.raccoonTween.stop();
+            this.raccoonTween = null;
+            }
+
+            obj.destroy();
+            if (this.food === obj) this.food = null;
+
+            this.time.delayedCall(400, () => {
+            if (!this.hasFinished) {
+                this.spawnFood();
+                if (gs.highContrast && this.food) this.food.setTint(0xffdd00);
+                this.moveRaccoon();
+            }
+            });
         }
-
-        obj.destroy();
-        if (this.food === obj) this.food = null;
-
-        this.time.delayedCall(400, () => {
-          if (!this.hasFinished) {
-            this.spawnFood();
-            if (gs.highContrast && this.food) this.food.setTint(0xffdd00);
-            this.moveRaccoon();
-          }
+    });
+}*/
     // === KEYBOARD MOVEMENT LOGIC ===
     update() {
         if (this.selector && !this.hasFinished) {
@@ -333,18 +322,7 @@ class raccoon extends Phaser.Scene {
     });
   }
 
-  updateHUD() {
-    this.missText.setText(`Misses: ${this.misses}/${this.maxMisses}`);
-  }
-
-  incrementScore() {
-    this.scoreLocal += 1;
-    if (this.scoreLocal >= WIN_SCORE) {
-      this.showMessage('Good job!');
-      this.finishLevel();
-    }
-  }
-
+  
   spawnFood() {
     const gs = window.globalGameState || {};
     let x, y;
@@ -456,5 +434,3 @@ class raccoon extends Phaser.Scene {
     });
   }
 }
-
-export default raccoon;

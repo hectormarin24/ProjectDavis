@@ -137,11 +137,8 @@ export default class bathroomSort extends Phaser.Scene {
       callbackScope: this,
       loop: true,
     });
-  }
 
   // Spawn timing
-        const diff = window.globalGameState?.difficulty || 1;
-        this.spawnDelay = 2500 / diff;
 
         // ================================
         // FIX: Only one item falls at a time
@@ -194,8 +191,7 @@ export default class bathroomSort extends Phaser.Scene {
             activate: 'SPACE',
             activate2: 'ENTER',
         });
-    }
-    
+      }
   spawnFallingItem() {
     const gs = window.globalGameState;
     const x = Phaser.Math.Between(100, this.scale.width - 100);
@@ -414,5 +410,7 @@ export default class bathroomSort extends Phaser.Scene {
             this.adaActivateClosestItem();
         }
     }
+  }
 
-}
+
+
