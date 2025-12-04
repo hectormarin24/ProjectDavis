@@ -4,39 +4,36 @@
 
 export default class bugFriend extends Phaser.Scene {
 
-  constructor() {
-    super('bugFriend');
-  }
+    constructor() {
+        super('bugFriend');
+    }
 
-  preload() {
-    this.load.image('fly', 'assets/flie.png');
-    this.load.image('ant', 'assets/ant.png');
-    this.load.image('wasp', 'assets/wasp.png');
-    this.load.image('bee', 'assets/honeybee.png');
-    this.load.image('ladybug', 'assets/ladybug.png');
-    this.load.image('cockroach', 'assets/cockroach.png');
-    this.load.image('bg', 'assets/flowerfieldbg.png');
-    this.load.image('aphid', 'assets/aphid.png');
-    this.load.image('grasshopper', 'assets/grasshopper.png');
-    this.load.image('butterfly', 'assets/butterfly.png');
-  }
+    preload() {
+        this.load.image('fly', 'assets/flie.png');
+        this.load.image('ant', 'assets/ant.png');
+        this.load.image('wasp', 'assets/wasp.png');
+        this.load.image('bee', 'assets/honeybee.png');
+        this.load.image('ladybug', 'assets/ladybug.png');
+        this.load.image('cockroach', 'assets/cockroach.png');
+        this.load.image('bg', 'assets/flowerfieldbg.png');
+        this.load.image('aphid', 'assets/aphid.png');
+        this.load.image('grasshopper', 'assets/grasshopper.png');
+        this.load.image('butterfly', 'assets/butterfly.png');
+    }
 
-  init(data) {
-    // Carry over screen size
-    this.xCoord = data.xCoord;
-    this.yCoord = data.yCoord;
-    this.isGameOver = false;
-    this.goodSquashed = 0;
-    this.score = data.score;
-    this.lives = data.lives;
-  }
+    init(data) {
+        this.xCoord = data.xCoord;
+        this.yCoord = data.yCoord;
+        this.isGameOver = false;
+        this.goodSquashed = 0;
+        this.score = data.score;
+        this.lives = data.lives;
+    }
 
-    
-  create() {
-       const gs = window.globalGameState || {};
+    create() {
+        const gs = window.globalGameState || {};
         this.goodSquashed = 0;
 
-        // Background
         this.background = this.add
             .image(0, 0, 'bg')
             .setOrigin(0, 0)
@@ -46,9 +43,7 @@ export default class bugFriend extends Phaser.Scene {
         if (gs.highContrast) {
             this.background.setTint(0xffffff);
         }
-        // No scene advance here — finishMiniGame handles progression.
 
-        // Insects
         this.insects = [];
         this.createInsect('butterfly', 400, 300, false);
         this.createInsect('wasp', 600, 500, true);
@@ -59,10 +54,10 @@ export default class bugFriend extends Phaser.Scene {
         this.createInsect('aphid', 100, 600, true);
         this.createInsect('grasshopper', 800, 500, true);
 
-        // HUD
         this.timerText = this.add
             .text(20, 20, '', { fontSize: '32px', fill: '#ffffff' })
             .setDepth(100);
+
         this.livesText = this.add
             .text(this.xCoord - 180, 20, '', { fontSize: '32px', fill: '#ffffff' })
             .setDepth(100);
@@ -91,21 +86,25 @@ export default class bugFriend extends Phaser.Scene {
 
         const cx = this.cameras.main.centerX;
         this.message = this.add
-            .text(cx, 50, 'Squash all the bad bugs from the garden!\n Use the arrow keys or WASD to move around and space to squash!', {
-                font: '26px Arial',
-                color: '#111',
-                align: 'center',
-                wordWrap: { width: this.scale.width - 80 },
-            })
+            .text(
+                cx,
+                50,
+                'Squash all the bad bugs from the garden!\n Use the arrow keys or WASD to move around and space to squash!',
+                {
+                    font: '26px Arial',
+                    color: '#111',
+                    align: 'center',
+                    wordWrap: { width: this.scale.width - 80 },
+                }
+            )
             .setOrigin(0.5, 0.5);
 
         this.gameEnded = false;
 
-        // ==================================================
-        // ADA ACCESSIBILITY ADDITIONS (Keyboard Controls)
-        // ==================================================
+        // ==============================
+        // ADA ACCESSIBILITY CONTROLS
+        // ==============================
 
-        // 1. Keyboard Selector Cursor
         this.selector = this.add.circle(
             this.xCoord / 2,
             this.yCoord / 2,
@@ -129,74 +128,67 @@ export default class bugFriend extends Phaser.Scene {
             activate2: 'ENTER',
         });
 
-        // 2. Outline used to highlight nearest insect
         this.highlight = this.add.circle(0, 0, 55, 0xffff00, 0.15)
             .setDepth(199)
             .setVisible(false);
     }
 
-  createInsect(key, x, y, isGood) {
-    const gs = window.globalGameState || {};
-    const insect = this.physics.add.image(x, y, key).setInteractive();
-    const scales = {
-      ant: 0.4,
-      wasp: 0.5,
-      cockroach: 0.5,
-      ladybug: 0.3,
-      fly: 0.3,
-      bee: 0.3,
-      aphid: 0.3,
-      grasshopper: 0.7,
-    };
-    insect.setScale(scales[key] ?? 0.5);
-    insect.setCollideWorldBounds(true);
+    createInsect(key, x, y, isGood) {
+        const gs = window.globalGameState || {};
+        const insect = this.physics.add.image(x, y, key).setInteractive();
 
-    if (gs.highContrast) {
-      if (isGood) {
-        insect.setTint(0xff0000);
-      } else {
-        insect.setTint(0x00ff00);
-      }
+        const scales = {
+            ant: 0.4,
+            wasp: 0.5,
+            cockroach: 0.5,
+            ladybug: 0.3,
+            fly: 0.3,
+            bee: 0.3,
+            aphid: 0.3,
+            grasshopper: 0.7,
+        };
+        insect.setScale(scales[key] ?? 0.5);
+        insect.setCollideWorldBounds(true);
+
+        // ★ FIX — store whether the insect is good or bad
+        insect.setData('isGood', isGood);
+        insect.setData('typeKey', key);
+
+        if (gs.highContrast) {
+            insect.setTint(isGood ? 0xff0000 : 0x00ff00);
+        }
+
+        insect.on('pointerdown', () => {
+            insect.setVisible(false);
+            insect.setActive(false);
+            this.checkAnswer(isGood);
+        });
+
+        this.insects.push(insect);
     }
 
-    insect.on('pointerdown', () => {
-      insect.setVisible(false);
-      insect.setActive(false);
-      this.checkAnswer(isGood);
-    });
-    if (!this.insects) this.insects = [];
-    this.insects.push(insect);
-    insect.setData('typeKey', key);
-  }
-
-  setDirections() {
-    this.insects.forEach((insect) => {
-      this.setRandomDirection(insect);
-      this.time.addEvent({
-        delay: Phaser.Math.Between(2000, 4000),
-        callback: () => this.setRandomDirection(insect),
-        loop: true,
-      });
-    });
-  }
-
-  setRandomDirection(insect) {
-    if (!insect.active) return;
-    const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
-    const base = Phaser.Math.Between(50, 120);
-    const difficulty = window.globalGameState?.difficulty || 1;
-    let speed = base * difficulty;
-    if (window.globalGameState?.slowMode) {
-      speed *= 0.7;
+    setDirections() {
+        this.insects.forEach((insect) => {
+            this.setRandomDirection(insect);
+            this.time.addEvent({
+                delay: Phaser.Math.Between(2000, 4000),
+                callback: () => this.setRandomDirection(insect),
+                loop: true,
+            });
+        });
     }
-    insect.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
-    insect.setAngle(Phaser.Math.RadToDeg(angle));
-  }
 
-  
-    // ==================================================
-    // ADA — Find nearest insect for keyboard selection
-    // ==================================================
+    setRandomDirection(insect) {
+        if (!insect.active) return;
+        const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
+        const base = Phaser.Math.Between(50, 120);
+        const difficulty = window.globalGameState?.difficulty || 1;
+        let speed = base * difficulty;
+        if (window.globalGameState?.slowMode) speed *= 0.7;
+        insect.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
+        insect.setAngle(Phaser.Math.RadToDeg(angle));
+    }
+
     getNearestInsect() {
         let nearest = null;
         let minDist = Infinity;
@@ -214,73 +206,70 @@ export default class bugFriend extends Phaser.Scene {
                 nearest = insect;
             }
         }
+
         return nearest;
     }
 
-    // ==================================================
-    // ADA — Keyboard “click”
-    // ==================================================
     keyboardSquash(insect) {
         if (!insect || !insect.active) return;
 
         insect.setVisible(false);
         insect.setActive(false);
+
+        // now works because we stored isGood earlier
         this.checkAnswer(insect.getData('isGood'));
-    }  
-
-  checkAnswer(isGood) {
-    if (this.isGameOver) return;
-    const gs = window.globalGameState || {};
-    if (isGood) {
-      this.goodSquashed++;
-      if (this.goodSquashed >= 5) {
-        this.endGame(true);
-      }
-    } else {
-      this.endGame(false);
-    }
-  }
-
-  endGame(won) {
-    const gs = window.globalGameState || {};
-    if (gs.livesEnabled === false) {
-      won = true;
     }
 
-    if (this.isGameOver) return;
-    this.isGameOver = true;
-    this.gameEnded = true;
-    if (this.insects) {
-      this.insects.forEach((insect) => {
-        if (insect && insect.destroy) insect.destroy();
-      });
-    }
-    const msg = won ? 'You Win!' : 'You Lost...';
-    this.add
-      .text(this.xCoord / 2, this.yCoord / 2, msg, {
-        fontSize: '84px',
-        fill: '#ffffff',
-      })
-      .setOrigin(0.5);
-    this.time.delayedCall(800, () => {
-      this.scene.start('transitionScreen', {
-        lives: this.lives,
-        score: this.score,
-        xCoord: this.xCoord,
-        yCoord: this.yCoord,
-        won: won,
-        elapsedTime: this.time.now
-      });
-    });
-  }
+    checkAnswer(isGood) {
+        if (this.isGameOver) return;
 
-    // ==================================================
-    // UPDATE — handle keyboard movement + activation
-    // ==================================================
+        if (isGood) {
+            this.goodSquashed++;
+            if (this.goodSquashed >= 5) {
+                this.endGame(true);
+            }
+        } else {
+            this.endGame(false);
+        }
+    }
+
+    endGame(won) {
+        const gs = window.globalGameState || {};
+
+        if (gs.livesEnabled === false) {
+            won = true;
+        }
+
+        if (this.isGameOver) return;
+        this.isGameOver = true;
+        this.gameEnded = true;
+
+        if (this.insects) {
+            this.insects.forEach(i => i?.destroy?.());
+        }
+
+        this.add.text(
+            this.xCoord / 2,
+            this.yCoord / 2,
+            won ? 'You Win!' : 'You Lost...',
+            { fontSize: '84px', fill: '#ffffff' }
+        ).setOrigin(0.5);
+
+        this.time.delayedCall(800, () => {
+            this.scene.start('transitionScreen', {
+                lives: this.lives,
+                score: this.score,
+                xCoord: this.xCoord,
+                yCoord: this.yCoord,
+                won: won,
+                elapsedTime: this.time.now,
+            });
+        });
+    }
+
     update() {
         if (this.isGameOver) return;
 
-        // Cursor movement
         if (this.keys.left.isDown || this.keys.left2.isDown)
             this.selector.x -= this.cursorSpeed;
 
@@ -293,12 +282,11 @@ export default class bugFriend extends Phaser.Scene {
         if (this.keys.down.isDown || this.keys.down2.isDown)
             this.selector.y += this.cursorSpeed;
 
-        // Clamp
         this.selector.x = Phaser.Math.Clamp(this.selector.x, 0, this.xCoord);
         this.selector.y = Phaser.Math.Clamp(this.selector.y, 0, this.yCoord);
 
-        // Highlight nearest insect
         const nearest = this.getNearestInsect();
+
         if (nearest) {
             this.highlight.setVisible(true);
             this.highlight.x = nearest.x;
@@ -307,7 +295,6 @@ export default class bugFriend extends Phaser.Scene {
             this.highlight.setVisible(false);
         }
 
-        // Keyboard “click” → squash
         if (
             Phaser.Input.Keyboard.JustDown(this.keys.activate) ||
             Phaser.Input.Keyboard.JustDown(this.keys.activate2)
@@ -315,5 +302,4 @@ export default class bugFriend extends Phaser.Scene {
             this.keyboardSquash(nearest);
         }
     }
-
 }
