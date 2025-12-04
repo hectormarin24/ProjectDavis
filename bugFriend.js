@@ -31,6 +31,8 @@ export default class bugFriend extends Phaser.Scene {
   }
 
   create() {
+    const gs = window.globalGameState || {};
+
     // Reset counts
     this.goodSquashed = 0;
     // Background
@@ -40,6 +42,11 @@ export default class bugFriend extends Phaser.Scene {
       .setInteractive();
     this.background.displayWidth = this.sys.game.config.width;
     this.background.displayHeight = this.sys.game.config.height;
+
+    if (gs.highContrast) {
+      this.background.setTint(0xffffff);
+    }
+
     // When the player clicks the background and the game has ended, move to the next scene
     this.background.on('pointerdown', () => {
       // Background no longer advances scenes; finishMiniGame handles progression
@@ -60,6 +67,10 @@ export default class bugFriend extends Phaser.Scene {
     this.livesText = this.add
       .text(this.xCoord - 180, 20, '', { fontSize: '32px', fill: '#ffffff' })
       .setDepth(100);
+
+    if (!gs.timerEnabled) this.timerText.setVisible(false);
+    if (!gs.livesEnabled) this.livesText.setVisible(false);
+
     this.time.addEvent({
       delay: 200,
       loop: true,
@@ -69,9 +80,14 @@ export default class bugFriend extends Phaser.Scene {
         const timeLeft = Math.max(0, state.totalTime - elapsed);
         const minutes = Math.floor(timeLeft / 60000);
         const seconds = Math.floor((timeLeft % 60000) / 1000);
-        this.timerText.setText(`Time: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`);
-        this.livesText.setText(`Lives: ${state.lives}`);
-        if (!this.isGameOver && (timeLeft <= 0 || state.lives <= 0)) {
+        if (gs.timerEnabled)
+          this.timerText.setText(`Time: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`);
+        if (gs.livesEnabled)
+          this.livesText.setText(`Lives: ${state.lives}`);
+
+        const livesExpired = gs.livesEnabled && state.lives <= 0;
+
+        if (!this.isGameOver && livesExpired) {
           this.isGameOver = true;
           window.finishMiniGame(false, this, 0);
         }
@@ -87,10 +103,8 @@ export default class bugFriend extends Phaser.Scene {
   }
 
   createInsect(key, x, y, isGood) {
-    // Create a physics-enabled insect that can be clicked.  Good insects
-    // should not be squashed; bad insects should be.
+    const gs = window.globalGameState || {};
     const insect = this.physics.add.image(x, y, key).setInteractive();
-    // Scale each insect type differently for visibility
     const scales = {
       ant: 0.4,
       wasp: 0.5,
@@ -103,20 +117,26 @@ export default class bugFriend extends Phaser.Scene {
     };
     insect.setScale(scales[key] ?? 0.5);
     insect.setCollideWorldBounds(true);
+
+    if (gs.highContrast) {
+      if (isGood) {
+        insect.setTint(0xff0000);
+      } else {
+        insect.setTint(0x00ff00);
+      }
+    }
+
     insect.on('pointerdown', () => {
       insect.setVisible(false);
       insect.setActive(false);
       this.checkAnswer(isGood);
     });
-    // Store references for later removal
     if (!this.insects) this.insects = [];
     this.insects.push(insect);
-    // Keep track of velocity resetting
     insect.setData('typeKey', key);
   }
 
   setDirections() {
-    // Give each insect a random velocity and periodically change it
     this.insects.forEach((insect) => {
       this.setRandomDirection(insect);
       this.time.addEvent({
@@ -132,38 +152,41 @@ export default class bugFriend extends Phaser.Scene {
     const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
     const base = Phaser.Math.Between(50, 120);
     const difficulty = window.globalGameState?.difficulty || 1;
-    const speed = base * difficulty;
+    let speed = base * difficulty;
+    if (window.globalGameState?.slowMode) {
+      speed *= 0.7;
+    }
     insect.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
     insect.setAngle(Phaser.Math.RadToDeg(angle));
   }
 
   checkAnswer(isGood) {
     if (this.isGameOver) return;
-    // isGood == true indicates this insect is harmful (needs to be squashed) or friendly?
-    // In this mini game, the third parameter passed to createInsect() was
-    // 'isGood' where true meant the insect was harmful (foe) and false
-    // meant friend.  Squashing a friend should trigger a failure, while
-    // squashing foes counts toward victory.
+    const gs = window.globalGameState || {};
     if (isGood) {
-      // Player squashed a foe; increment count
       this.goodSquashed++;
       if (this.goodSquashed >= 5) {
         this.endGame(true);
       }
     } else {
-      // Player squashed a friend; immediate failure
       this.endGame(false);
     }
   }
 
   endGame(won) {
+    const gs = window.globalGameState || {};
+    if (gs.livesEnabled === false) {
+      won = true;
+    }
+
     if (this.isGameOver) return;
     this.isGameOver = true;
     this.gameEnded = true;
-    // Stop all insects from moving and destroy them
-    this.insects.forEach((insect) => {
-      if (insect && insect.destroy) insect.destroy();
-    });
+    if (this.insects) {
+      this.insects.forEach((insect) => {
+        if (insect && insect.destroy) insect.destroy();
+      });
+    }
     const msg = won ? 'You Win!' : 'You Lost...';
     this.add
       .text(this.xCoord / 2, this.yCoord / 2, msg, {

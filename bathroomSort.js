@@ -1,7 +1,6 @@
-// game10.js — Bathroom sorting game.  Items fall toward the toilet; the
+// game10.js — Bathroom sorting game. Items fall toward the toilet; the
 // player must let toilet paper fall into the bowl and swipe away other
-// objects.  This version uses the global gameQueue to decide the next
-// scene after winning or losing and carries forward the cumulative score.
+// objects.
 
 export default class bathroomSort extends Phaser.Scene {
   constructor() {
@@ -9,7 +8,6 @@ export default class bathroomSort extends Phaser.Scene {
   }
 
   init(data) {
-    // Carry over screen dimensions.  Score is managed globally.
     this.xCoord = data?.xCoord ?? this.scale.width;
     this.yCoord = data?.yCoord ?? this.scale.height;
     this.isGameOver = false;
@@ -27,14 +25,21 @@ export default class bathroomSort extends Phaser.Scene {
   }
 
   create() {
+    const gs = window.globalGameState;
     const cx = this.cameras.main.centerX;
-    // HUD for timer and lives
+
+    // HUD
     this.timerText = this.add
       .text(20, 20, '', { fontSize: '28px', fill: '#ffffff' })
       .setDepth(100);
+
     this.livesText = this.add
       .text(this.cameras.main.width - 180, 20, '', { fontSize: '28px', fill: '#ffffff' })
       .setDepth(100);
+
+    if (!gs.timerEnabled) this.timerText.setVisible(false);
+    if (!gs.livesEnabled) this.livesText.setVisible(false);
+
     this.time.addEvent({
       delay: 200,
       loop: true,
@@ -42,62 +47,85 @@ export default class bathroomSort extends Phaser.Scene {
         const state = window.globalGameState;
         const elapsed = this.time.now - state.startTime;
         const timeLeft = Math.max(0, state.totalTime - elapsed);
+
         const minutes = Math.floor(timeLeft / 60000);
         const seconds = Math.floor((timeLeft % 60000) / 1000);
-        this.timerText.setText(`Time: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`);
-        this.livesText.setText(`Lives: ${state.lives}`);
-        if (!this.isGameOver && (timeLeft <= 0 || state.lives <= 0)) {
+
+        if (gs.timerEnabled)
+          this.timerText.setText(`Time: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`);
+
+        if (gs.livesEnabled)
+          this.livesText.setText(`Lives: ${state.lives}`);
+
+        const timeExpired = gs.timerEnabled && timeLeft <= 0;
+        const livesExpired = gs.livesEnabled && state.lives <= 0;
+
+        if (!this.isGameOver && (timeExpired || livesExpired)) {
           this.isGameOver = true;
           window.finishMiniGame(false, this, 0);
         }
       },
     });
-    // background
-    if (this.textures.exists('bath_bg')) {
-      this.add
-        .image(0, 0, 'bath_bg')
-        .setOrigin(0, 0)
-        .setDisplaySize(this.scale.width, this.scale.height);
-    } else {
-      this.cameras.main.setBackgroundColor(0xbdefff);
-    }
-    // Enlarged toilet
-    this.bowl = this.add.image(cx, this.scale.height - 120, 'toilet').setOrigin(0.5, 0.5).setScale(1.1);
-    // instruction text
+
+    // Background
+    const bg = this.add
+      .image(0, 0, 'bath_bg')
+      .setOrigin(0, 0)
+      .setDisplaySize(this.scale.width, this.scale.height);
+
+    // HIGH CONTRAST MODE
+    if (gs.highContrast) bg.setTint(0xffffff);
+
+    // Toilet
+    this.bowl = this.add.image(cx, this.scale.height - 120, 'toilet')
+      .setOrigin(0.5)
+      .setScale(1.1);
+
+    // Instructions
     this.message = this.add.text(cx, 50, 'Let toilet paper fall. Swipe other stuff away!', {
       font: '26px Arial',
       color: '#111',
       align: 'center',
       wordWrap: { width: this.scale.width - 80 },
-    }).setOrigin(0.5, 0.5);
-    // scoring
+    }).setOrigin(0.5);
+
     this.clears = 0;
     this.mistakes = 0;
     this.targetClears = 8;
     this._activeSprites = new Set();
-    // toilet hit zone
-    const bowlW = 320,
-      bowlH = 160;
+
+    // Bowl hit zone
+    const bowlW = 320, bowlH = 160;
     this.bowlZone = new Phaser.Geom.Rectangle(
       this.bowl.x - bowlW / 2,
       this.bowl.y - bowlH / 2,
       bowlW,
-      bowlH,
+      bowlH
     );
-    // spawn timing adjusted by difficulty
-    const diff = window.globalGameState?.difficulty || 1;
-    this.spawnDelay = 2500 / diff;
+
+    // Difficulty + toggles
+    const diff = gs.difficulty || 1;
+
+    let spawnDelay = 2500 / diff;
+    if (gs.slowMode) spawnDelay *= 1.15; // was 1.8, much gentler now
+
+    this.spawnDelay = spawnDelay;
+
     this.spawnTimer = this.time.addEvent({
       delay: this.spawnDelay,
       callback: this.spawnFallingItem,
       callbackScope: this,
       loop: true,
     });
-    // gentle difficulty increase with minimum delay adjusted by difficulty
+
+    // Difficulty ramp
     this.time.addEvent({
       delay: 10000,
       callback: () => {
-        this.spawnDelay = Math.max(600 / diff, this.spawnDelay - 150);
+        let newDelay = Math.max(600 / diff, this.spawnDelay - 150);
+        // no extra slow multiplier here; keep spawn rate reasonable in ADA
+        this.spawnDelay = newDelay;
+
         this.spawnTimer.reset({
           delay: this.spawnDelay,
           callback: this.spawnFallingItem,
@@ -111,27 +139,36 @@ export default class bathroomSort extends Phaser.Scene {
   }
 
   spawnFallingItem() {
+    const gs = window.globalGameState;
     const x = Phaser.Math.Between(100, this.scale.width - 100);
-    const y = -50;
+
     const isGood = Math.random() < 0.45;
     const key = isGood ? 'tp_good' : Phaser.Utils.Array.GetRandom(['wipes_bad', 'toy_bad', 'trash_bad']);
+
     const sprite = this.add
-      .image(x, y, key)
+      .image(x, -50, key)
       .setOrigin(0.5)
       .setScale(0.4)
-      .setInteractive({ draggable: true, cursor: 'grab' });
+      .setInteractive({ draggable: true });
+
     sprite.isGood = isGood;
     sprite.hasEnded = false;
-    // falling tween
-    const diff = window.globalGameState?.difficulty || 1;
+
+    // HIGH CONTRAST
+    if (gs.highContrast) sprite.setTint(isGood ? 0x00ff00 : 0xff0000);
+
+    let fallDuration = Phaser.Math.Between(4000, 5500) / (gs.difficulty || 1);
+
+    if (gs.slowMode) fallDuration *= 1.25; // was 1.6
+
+    // Falling behavior
     this.tweens.add({
       targets: sprite,
       y: this.scale.height + 100,
-      duration: Phaser.Math.Between(4000, 5500) / diff,
+      duration: fallDuration,
       ease: 'Linear',
       onUpdate: () => {
-        if (sprite.hasEnded) return;
-        if (Phaser.Geom.Rectangle.Contains(this.bowlZone, sprite.x, sprite.y)) {
+        if (!sprite.hasEnded && Phaser.Geom.Rectangle.Contains(this.bowlZone, sprite.x, sprite.y)) {
           this.onItemEnteredBowl(sprite);
         }
       },
@@ -139,21 +176,24 @@ export default class bathroomSort extends Phaser.Scene {
         if (!sprite.hasEnded) this.onItemMissed(sprite);
       },
     });
-    // swipe logic
+
+    // Swipe handling
     this.input.setDraggable(sprite, true);
-    this.input.on('drag', (_pointer, obj, dragX, dragY) => {
+    this.input.on('drag', (_p, obj, dragX, dragY) => {
       if (obj === sprite && !sprite.hasEnded) {
         obj.x = dragX;
         obj.y = dragY;
       }
     });
-    this.input.on('dragend', (_pointer, obj) => {
+
+    this.input.on('dragend', (_p, obj) => {
       if (obj === sprite && !sprite.hasEnded) {
         const dx = Math.abs(obj.x - this.bowl.x);
         const dy = Math.abs(obj.y - this.bowl.y);
         if (dx > 200 || dy > 200) this.flickAway(obj);
       }
     });
+
     this._activeSprites.add(sprite);
   }
 
@@ -180,8 +220,10 @@ export default class bathroomSort extends Phaser.Scene {
   onItemEnteredBowl(obj) {
     if (obj.hasEnded) return;
     obj.hasEnded = true;
+
     if (obj.isGood) this.registerSuccess('Correct: TP goes in.');
-    else this.registerFail('No wipes / toys / trash in toilet!');
+    else this.registerFail('No wipes / toys / trash in toilet.');
+
     this.tweens.add({
       targets: obj,
       scaleX: 0.5,
@@ -199,25 +241,31 @@ export default class bathroomSort extends Phaser.Scene {
   onItemMissed(obj) {
     if (obj.hasEnded) return;
     obj.hasEnded = true;
+
     if (obj.isGood) this.registerFail('TP should go in the toilet.');
     else this.registerSuccess('Dodged it!');
+
     obj.destroy();
     this._activeSprites.delete(obj);
     this.checkEnd();
   }
 
-  registerSuccess(text) {
+  registerSuccess(t) {
     this.clears++;
-    this.message.setText(text + `   Cleared: ${this.clears}/${this.targetClears}`);
+    this.message.setText(`${t}    Cleared: ${this.clears}/${this.targetClears}`);
   }
 
-  registerFail(text) {
-    this.mistakes++;
-    this.message.setText(text + `   Mistakes: ${this.mistakes}`);
+  registerFail(t) {
+    const gs = window.globalGameState;
+
+    if (gs.livesEnabled) this.mistakes++;
+
+    this.message.setText(`${t}    Mistakes: ${this.mistakes}`);
   }
 
   checkEnd() {
     if (this.isGameOver) return;
+
     if (this.clears >= this.targetClears) {
       this.isGameOver = true;
       this.endGame(true);
@@ -228,6 +276,11 @@ export default class bathroomSort extends Phaser.Scene {
   }
 
   endGame(won) {
+    const gs = window.globalGameState || {};
+    if (gs.livesEnabled === false) {
+      won = true;
+    }
+
     this.time.removeAllEvents();
     this.input.enabled = false;
     if (this._activeSprites) {
@@ -242,7 +295,6 @@ export default class bathroomSort extends Phaser.Scene {
         fill: '#fff',
       })
       .setOrigin(0.5);
-    // After a short delay, call finishMiniGame to update global state.
     this.time.delayedCall(800, () => {
       this.scene.start('transitionScreen', {
         lives: this.lives,
