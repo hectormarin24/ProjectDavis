@@ -167,51 +167,56 @@ export default class startScreen extends Phaser.Scene {
                 this.xCoord / 2,
                 this.yCoord / 2,
                 this.xCoord * 0.6,
-                this.yCoord * 0.5,
+                this.yCoord * 0.8,
                 0x000000,
                 0.5
             )
             .setDepth(50)
             .setVisible(false);
 
-        this.difficultyText = this.add
-            .text(
-                this.xCoord / 2,
-                this.yCoord / 2 - 40,
-                '',
-                {
-                  fontSize: '40px',
-                  fill: '#ffffff',
-                  align: 'center',
-                  fontStyle: 'bold',
-                  wordWrap: {
-                        width: this.xCoord * 0.5, 
-                        useAdvancedWrap: true
-                      }
+                // Difficulty text object
+        this.difficultyText = this.add.text(
+            this.xCoord / 2,
+            this.yCoord / 2 + 130,
+            '',
+            {
+                fontSize: '32px',
+                fill: '#ffffff',
+                align: 'center',
+                fontStyle: 'bold',
+                wordWrap: {
+                    width: this.xCoord * 0.5,
+                    useAdvancedWrap: true
                 }
-          )
-          .setOrigin(0.5)
-          .setDepth(21)
-          .setInteractive({ useHandCursor: true })
-          .setVisible(false);
+            }
+        )
+        .setOrigin(0.5)
+        .setDepth(51)
+        .setInteractive({ useHandCursor: true })
+        .setVisible(false);
 
+        // Function to refresh difficulty label text
         this.updateDifficultyText = () => {
-          const state = window.globalGameState;
-          this.difficultyText.setText(
-            state.difficultyEnabled
-              ? 'Difficulty: ON'
-              : 'Difficulty: OFF (Easy Mode)'
-          );
+            const { difficultyEnabled } = window.globalGameState;
+            this.difficultyText.setText(
+                difficultyEnabled ? 'Difficulty: ON' : 'Difficulty: OFF (Easy Mode)'
+            );
         };
-        
+
+        // Toggle difficulty on click
         this.difficultyText.on('pointerup', () => {
             const state = window.globalGameState;
+
             state.difficultyEnabled = !state.difficultyEnabled;
+
+            // Reset difficulty level when turned off
             if (!state.difficultyEnabled) {
-              state.difficulty = 1;
+                state.difficulty = 1;
             }
+
             this.updateDifficultyText();
-          });
+        });
+
         
         this.slowModeText = this.add
             .text(
@@ -324,7 +329,7 @@ export default class startScreen extends Phaser.Scene {
         this.closeSettingsBtn = this.add
             .text(
                 this.xCoord / 2,
-                this.yCoord / 2 + 130,
+                this.yCoord / 2 + 180,
                 'Close',
                 {
                     fontSize: '28px',
@@ -362,6 +367,7 @@ export default class startScreen extends Phaser.Scene {
     hideSettingsMenu() {
         this.settingsPanel.setVisible(false);
         this.slowModeText.setVisible(false);
+        this.difficultyText.setVisible(false);
         this.timerToggleText.setVisible(false);
         this.livesToggleText.setVisible(false);
         this.highContrastText.setVisible(false);
