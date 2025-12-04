@@ -96,7 +96,7 @@ export default class bathroomSort extends Phaser.Scene {
     this._activeSprites = new Set();
 
     // Bowl hit zone
-    const bowlW = 480, bowlH = 260;
+    const bowlW = 560, bowlH = 260;
     this.bowlZone = new Phaser.Geom.Rectangle(
       this.bowl.x - bowlW / 2,
       this.bowl.y - bowlH / 2,

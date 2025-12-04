@@ -57,7 +57,7 @@ export default class fruitPicker extends Phaser.Scene {
 
     const cx = this.cameras.main.centerX;
     this.message = this.add
-            .text(cx, 80, 'Move the basket left to right to catch the apples and stop them from spoling.', {
+            .text(cx, 80, 'Move the basket left to right to catch the apples.\nUse WASD to move around.', {
                 font: '26px Arial',
                 color: '#111',
                 align: 'center',

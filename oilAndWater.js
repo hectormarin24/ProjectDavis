@@ -78,7 +78,7 @@ export default class oilAndWater extends Phaser.Scene {
         };
         
         this.message = this.add
-            .text(cx, 80, 'Choose whether the liquid in the pot goes in the sink or container.', {
+            .text(cx, 95, 'Choose whether the liquid in the pot goes in the sink or container.\n Use the arrow keys to rotate between the two options and press space to select it.', {
                 font: '26px Arial',
                 color: '#111',
                 align: 'center',
