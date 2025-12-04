@@ -140,7 +140,7 @@ export default class raccoon extends Phaser.Scene {
 
     const cx = this.cameras.main.centerX;
         this.message = this.add
-            .text(cx, 65, 'Don\'t let the raccoon get to the sandwiches! Click to pick them up.', {
+            .text(cx, 65, 'Don\'t let the raccoon get to the sandwiches! Click to pick them up.\n Use can use the arrow keys to move around and space to pick up sandwiches.', {
                 font: '26px Arial',
                 color: '#111',
                 align: 'center',
@@ -151,7 +151,7 @@ export default class raccoon extends Phaser.Scene {
     this.spawnRaccoon(true);
     this.spawnFood();
     this.updateHUD();
-    this.moveRaccoon();
+    //this.moveRaccoon();
 
         // ================================
         //      ACCESSIBILITY: KEYBOARD

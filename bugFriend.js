@@ -91,7 +91,7 @@ export default class bugFriend extends Phaser.Scene {
 
         const cx = this.cameras.main.centerX;
         this.message = this.add
-            .text(cx, 50, 'Squash all the bad bugs from the garden!', {
+            .text(cx, 50, 'Squash all the bad bugs from the garden!\n Use the arrow keys or WASD to move around and space to squash!', {
                 font: '26px Arial',
                 color: '#111',
                 align: 'center',
@@ -225,7 +225,7 @@ export default class bugFriend extends Phaser.Scene {
 
         insect.setVisible(false);
         insect.setActive(false);
-        this.checkAnswer(insect.getData('isGood'));
+        this.checkAnswer(insect.getData(isGood));
     }  
 
   checkAnswer(isGood) {

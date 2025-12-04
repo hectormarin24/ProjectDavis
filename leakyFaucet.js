@@ -88,7 +88,7 @@ export default class leakyFaucet extends Phaser.Scene {
 
     const cx = this.cameras.main.centerX;
     this.message = this.add
-            .text(cx, 50, 'Click the wrench to tighten the pipe and stop the leak!', {
+            .text(cx, 50, 'Click the wrench to tighten the pipe and stop the leak! \n Press \'D\' or the right arrow tighten.', {
                 font: '26px Arial',
                 color: '#111',
                 align: 'center',

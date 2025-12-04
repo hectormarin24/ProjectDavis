@@ -83,7 +83,7 @@ export default class bathroomSort extends Phaser.Scene {
       .setScale(1.1);
 
     // Instructions
-    this.message = this.add.text(cx, 50, 'Let toilet paper fall. Swipe other stuff away!', {
+    this.message = this.add.text(cx, 50, 'Let toilet paper fall. Swipe other stuff away!\n Use arrow keys or WASD to move around and space to SWIPE AWAY!', {
       font: '26px Arial',
       color: '#111',
       align: 'center',
