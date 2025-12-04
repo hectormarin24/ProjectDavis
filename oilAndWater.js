@@ -119,8 +119,8 @@ export default class oilAndWater extends Phaser.Scene {
             .setScale(0.2)
             .setInteractive({ useHandCursor: true });
 
-        this.bucket = this.add.image(cx + 180, cy + 10, 'bucket')
-            .setScale(0.22)
+        this.bucket = this.add.image(cx + 180, cy - 10, 'bucket')
+            .setScale(0.2)
             .setInteractive({ useHandCursor: true });
 
         const txtStyle = {
@@ -147,25 +147,13 @@ export default class oilAndWater extends Phaser.Scene {
                     duration: 100
                 });
             });
-
-            sprite.on("pointerout", () => {
-                this.tweens.add({
-                    targets: sprite,
-                    scaleX: baseX,
-                    scaleY: baseY,
-                    duration: 100
-                });
-            });
         };
 
         addHover(this.sink);
         addHover(this.bucket);
 
 
-    this.bucket = this.add.image(cx + 180, cy - 10, 'bucket')
-      .setScale(0.2)
-      .setInteractive({ useHandCursor: true });
-
+    
 
     if (gs.highContrast) {
       if (bg) bg.setTint(0xffffff);
@@ -174,10 +162,7 @@ export default class oilAndWater extends Phaser.Scene {
       this.bucket.setTint(0xffdd00);
     }
 
-    this.message = this.add.text(cx, cy + 180, 'Click the correct container', {
-      font: '20px Arial',
-      color: '#222',
-    }).setOrigin(0.5);
+    
 
     this.startRound();
 
@@ -231,31 +216,28 @@ export default class oilAndWater extends Phaser.Scene {
 
         const cx = this.cameras.main.centerX;
         const cy = this.cameras.main.centerY;
-        this.hintText.setText('Pot contains: ' + this.potContents);
+
+        this.hintText = this.add.text(cx, cy + 130, 'Pot contains: ' + this.potContents, {
+          font: '28px Arial',
+          color: '#000',
+          fontStyle: 'bold',
+        }).setOrigin(0.5);
+
         this.message.setText('Click the correct container');
 
+        if (this.roundTimer && this.roundTimer.remove) this.roundTimer.remove();
+        const difficulty = window.globalGameState?.difficulty || 1;
+        let delay = 6000 / difficulty;
+        if (window.globalGameState?.slowMode) {
+          delay *= 1.5;
+        }
 
-    this.hintText = this.add.text(cx, cy + 130, 'Pot contains: ' + this.potContents, {
-      font: '28px Arial',
-      color: '#000',
-      fontStyle: 'bold',
-    }).setOrigin(0.5);
-
-    this.message.setText('Click the correct container');
-
-    if (this.roundTimer && this.roundTimer.remove) this.roundTimer.remove();
-    const difficulty = window.globalGameState?.difficulty || 1;
-    let delay = 6000 / difficulty;
-    if (window.globalGameState?.slowMode) {
-      delay *= 1.5;
-    }
-
-    if (window.globalGameState?.timerEnabled) {
-      this.roundTimer = this.time.delayedCall(delay, () => {
-        if (!this.isGameOver) this.loseGame();
-      });
-    }
-  }
+        if (window.globalGameState?.timerEnabled) {
+          this.roundTimer = this.time.delayedCall(delay, () => {
+            if (!this.isGameOver) this.loseGame();
+          });
+        }
+      }
 
   onTarget(target) {
     if (this.isGameOver) return;

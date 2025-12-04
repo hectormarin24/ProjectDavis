@@ -52,7 +52,7 @@ export default class fruitPicker extends Phaser.Scene {
     const bg = this.add.image(this.xCoord / 2, this.yCoord / 2, 'ff_bg')
       .setDisplaySize(this.xCoord, this.yCoord);
     const tree = this.add.image(this.xCoord / 2, this.yCoord / 2.5, 'tree')
-      .setScale(2);
+      .setScale(1);
 
 
     const cx = this.cameras.main.centerX;

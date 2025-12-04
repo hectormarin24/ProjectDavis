@@ -106,29 +106,7 @@ export default class raccoon extends Phaser.Scene {
             })
             .setOrigin(0.5, 0)
             .setDepth(100);
-        
-
-        // === Background ===
-        if (this.textures.exists('bgpark')) {
-            this.add.image(WIDTH / 2, HEIGHT / 2, 'bgpark').setDisplaySize(WIDTH, HEIGHT);
-        } else {
-            this.cameras.main.setBackgroundColor('#a7d3a6');
-        }
-
-        const cx = this.cameras.main.centerX;
-        this.message = this.add
-            .text(cx, 65, 'Don\'t let the raccoon get to the sandwiches! Click to pick them up.', {
-                font: '26px Arial',
-                color: '#111',
-                align: 'center',
-                wordWrap: { width: this.scale.width - 80 },
-            })
-            .setOrigin(0.5, 0.5);
-        // === Spawn Raccoon + Food ===
-        this.spawnRaccoon(true);
-        this.spawnFood();
-        this.updateHUD();
-        this.moveRaccoon();
+                
 
         // === Mouse click handler ===
         this.input.on('gameobjectdown', (pointer, obj) => {
@@ -160,9 +138,20 @@ export default class raccoon extends Phaser.Scene {
       this.cameras.main.setBackgroundColor('#a7d3a6');
     }
 
+    const cx = this.cameras.main.centerX;
+        this.message = this.add
+            .text(cx, 65, 'Don\'t let the raccoon get to the sandwiches! Click to pick them up.', {
+                font: '26px Arial',
+                color: '#111',
+                align: 'center',
+                wordWrap: { width: this.scale.width - 80 },
+            })
+            .setOrigin(0.5, 0.5);
+    // === Spawn Raccoon + Food ===
     this.spawnRaccoon(true);
     this.spawnFood();
     this.updateHUD();
+    this.moveRaccoon();
 
         // ================================
         //      ACCESSIBILITY: KEYBOARD
