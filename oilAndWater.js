@@ -76,6 +76,15 @@ export default class oilAndWater extends Phaser.Scene {
             stroke: '#000000',
             strokeThickness: 4
         };
+        
+        this.message = this.add
+            .text(cx, 80, 'Choose whether the liquid in the pot goes in the sink or container.', {
+                font: '26px Arial',
+                color: '#111',
+                align: 'center',
+                wordWrap: { width: this.scale.width - 80 },
+            })
+            .setOrigin(0.5, 0.5);
 
         this.timerText = this.add.text(24, 24, '', hudStyle).setDepth(100);
         this.livesText = this.add.text(this.cameras.main.width - 200, 24, '', hudStyle).setDepth(100);

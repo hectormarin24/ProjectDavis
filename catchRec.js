@@ -16,6 +16,7 @@ export default class catchRec extends Phaser.Scene {
     this.load.image('can', 'assets/tin_can.png');
     this.load.image('paper', 'assets/crumpled_paper.png');
     this.load.image('background', 'assets/background.webp');
+    this.load.image('recbin', 'assets/recycle_can_open_empty.png');
   }
 
   init(data) {
@@ -37,7 +38,19 @@ export default class catchRec extends Phaser.Scene {
     if (gs.highContrast) {
       bg.setTint(0xffffff);
     }
-
+    //Text
+    const cx = this.cameras.main.centerX;
+    this.message = this.add
+            .text(cx, 50, 'Catch the plastic bags! Don\'t let them fall into the recycle bin.', {
+                font: '26px Arial',
+                color: '#111',
+                align: 'center',
+                wordWrap: { width: this.scale.width - 80 },
+            })
+            .setOrigin(0.5, 0.5);
+    // Recycle bin
+    let img = this.add.image(cx, 1150, 'recbin');
+    img.setScale(3);
     // HUD for global timer and lives
     this.timerText = this.add
       .text(20, 20, '', { fontSize: '28px', fill: '#ffffff' })

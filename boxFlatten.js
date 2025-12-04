@@ -70,7 +70,17 @@ export default class boxFlatten extends Phaser.Scene {
         }
       },
     });
+    const cx = this.cameras.main.centerX;
+    this.message = this.add
+            .text(cx, 50, 'Click to flatten the boxes as fast as possible!', {
+                font: '26px Arial',
+                color: '#111',
+                align: 'center',
+                wordWrap: { width: this.scale.width - 80 },
+            })
+            .setOrigin(0.5, 0.5);
 
+    // Spawn first box
     this.clickCount = 0;
     this.nextObject();
   }

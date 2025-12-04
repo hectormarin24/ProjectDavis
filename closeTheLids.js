@@ -157,11 +157,15 @@ export default class closeTheLids extends Phaser.Scene {
       },
     });
 
-    this.rulesText = this.add.text(500, 200, "Don't Let All The Lids Open!", {
-                        fontSize: '38px', fill: '#000000ff' }).setOrigin(0.5);
-    this.time.delayedCall(2000, () => {
-        this.rulesText.destroy();
-    });
+    const cx = this.cameras.main.centerX;
+    this.message = this.add
+            .text(cx, 50, 'Click The Lids To Close Them! Don\'t let all of them open', {
+                font: '26px Arial',
+                color: '#111',
+                align: 'center',
+                wordWrap: { width: this.scale.width - 80 },
+            })
+            .setOrigin(0.5, 0.5);
     
     
     
@@ -215,6 +219,9 @@ checkScore(score){
         this.H1X1Can.disableInteractive().setAlpha(0.5);
         this.H2X1Can.disableInteractive().setAlpha(0.5);
         this.H3X1Can.disableInteractive().setAlpha(0.5);
+        this.H1X2Can.disableInteractive().setAlpha(0.5);
+        this.H2X2Can.disableInteractive().setAlpha(0.5);
+        this.H3X2Can.disableInteractive().setAlpha(0.5);
         this.winGame();
     }
 

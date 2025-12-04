@@ -31,79 +31,77 @@ export default class bugFriend extends Phaser.Scene {
     this.lives = data.lives;
   }
 
+    
   create() {
-    const gs = window.globalGameState || {};
+       const gs = window.globalGameState || {};
+        this.goodSquashed = 0;
 
-    // Reset counts
-    this.goodSquashed = 0;
-    // Background
-    this.background = this.add
-      .image(0, 0, 'bg')
-      .setOrigin(0, 0)
-      .setInteractive();
-    this.background.displayWidth = this.sys.game.config.width;
-    this.background.displayHeight = this.sys.game.config.height;
-
-    if (gs.highContrast) {
-      this.background.setTint(0xffffff);
-    }
-
-    // When the player clicks the background and the game has ended, move to the next scene
-    this.background.on('pointerdown', () => {
-      // Background no longer advances scenes; finishMiniGame handles progression
-    });
-    // Create insects
-    this.createInsect('butterfly', 400, 300, false);
-    this.createInsect('wasp', 600, 500, true);
-    this.createInsect('cockroach', 800, 800, true);
-    this.createInsect('ladybug', 200, 100, false);
-    this.createInsect('fly', 180, 160, true);
-    this.createInsect('bee', 750, 150, false);
-    this.createInsect('aphid', 100, 600, true);
-    this.createInsect('grasshopper', 800, 500, true);
-    // HUD for global timer and lives
-    this.timerText = this.add
-      .text(20, 20, '', { fontSize: '32px', fill: '#ffffff' })
-      .setDepth(100);
-    this.livesText = this.add
-      .text(this.xCoord - 180, 20, '', { fontSize: '32px', fill: '#ffffff' })
-      .setDepth(100);
-
-    if (!gs.timerEnabled) this.timerText.setVisible(false);
-    if (!gs.livesEnabled) this.livesText.setVisible(false);
-
-    this.time.addEvent({
-      delay: 200,
-      loop: true,
-      callback: () => {
-        const state = window.globalGameState;
-        const elapsed = this.time.now - state.startTime;
-        const timeLeft = Math.max(0, state.totalTime - elapsed);
-        const minutes = Math.floor(timeLeft / 60000);
-        const seconds = Math.floor((timeLeft % 60000) / 1000);
-        if (gs.timerEnabled)
-          this.timerText.setText(`Time: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`);
-        if (gs.livesEnabled)
-          this.livesText.setText(`Lives: ${state.lives}`);
-
-        const livesExpired = gs.livesEnabled && state.lives <= 0;
-
-        if (!this.isGameOver && livesExpired) {
-          this.isGameOver = true;
-          window.finishMiniGame(false, this, 0);
+        // Background
+        this.background = this.add
+            .image(0, 0, 'bg')
+            .setOrigin(0, 0)
+            .setInteractive();
+        this.background.displayWidth = this.sys.game.config.width;
+        this.background.displayHeight = this.sys.game.config.height;
+        if (gs.highContrast) {
+            this.background.setTint(0xffffff);
         }
-      },
-    });
-    this.setDirections();
-    this.rulesText = this.add.text(500, 100, "Protect Your Garden, Squash The Unwelcome Bugs", {
-                        fontSize: '34px', fill: '#000000ff' }).setOrigin(0.5);
-    this.time.delayedCall(2000, () => {
-        this.rulesText.destroy();
-    });
-    this.gameEnded = false;
-  
+        // No scene advance here — finishMiniGame handles progression.
 
-   // ==================================================
+        // Insects
+        this.insects = [];
+        this.createInsect('butterfly', 400, 300, false);
+        this.createInsect('wasp', 600, 500, true);
+        this.createInsect('cockroach', 800, 800, true);
+        this.createInsect('ladybug', 200, 100, false);
+        this.createInsect('fly', 180, 160, true);
+        this.createInsect('bee', 750, 150, false);
+        this.createInsect('aphid', 100, 600, true);
+        this.createInsect('grasshopper', 800, 500, true);
+
+        // HUD
+        this.timerText = this.add
+            .text(20, 20, '', { fontSize: '32px', fill: '#ffffff' })
+            .setDepth(100);
+        this.livesText = this.add
+            .text(this.xCoord - 180, 20, '', { fontSize: '32px', fill: '#ffffff' })
+            .setDepth(100);
+
+        this.time.addEvent({
+            delay: 200,
+            loop: true,
+            callback: () => {
+                const state = window.globalGameState;
+                const elapsed = this.time.now - state.startTime;
+                const timeLeft = Math.max(0, state.totalTime - elapsed);
+                const minutes = Math.floor(timeLeft / 60000);
+                const seconds = Math.floor((timeLeft % 60000) / 1000);
+
+                this.timerText.setText(`Time: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`);
+                this.livesText.setText(`Lives: ${state.lives}`);
+
+                if (!this.isGameOver && (timeLeft <= 0 || state.lives <= 0)) {
+                    this.isGameOver = true;
+                    window.finishMiniGame(false, this, 0);
+                }
+            },
+        });
+
+        this.setDirections();
+
+        const cx = this.cameras.main.centerX;
+        this.message = this.add
+            .text(cx, 50, 'Squash all the bad bugs from the garden!', {
+                font: '26px Arial',
+                color: '#111',
+                align: 'center',
+                wordWrap: { width: this.scale.width - 80 },
+            })
+            .setOrigin(0.5, 0.5);
+
+        this.gameEnded = false;
+
+        // ==================================================
         // ADA ACCESSIBILITY ADDITIONS (Keyboard Controls)
         // ==================================================
 
