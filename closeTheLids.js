@@ -30,6 +30,8 @@ export default class closeTheLids extends Phaser.Scene {
   }
 
   create() {
+    const gs = window.globalGameState;
+
     // Background
     this.background = this.add
       .image(0, 0, 'neighborhood')
@@ -38,8 +40,13 @@ export default class closeTheLids extends Phaser.Scene {
     this.background.displayHeight = this.sys.game.config.height;
     this.score = 0;
 
+    if (gs.highContrast) {
+      this.background.setTint(0xffffff);
+    }
+
     //House trash cans set
     this.H1X1Can = this.add.sprite(100,675, 'closedTrashCan').setScale(.25).setInteractive();
+    if (gs.highContrast) this.H1X1Can.setTint(0xff0000);
     this.H1X1Can.on('pointerdown', () => {
             console.log("House 1A Trash Can clicked!");
             if(this.H1X1Can.texture.key === 'openTrashCan')
@@ -50,6 +57,7 @@ export default class closeTheLids extends Phaser.Scene {
         });
 
     this.H1X2Can = this.add.sprite(200,675, 'closedRecCan').setScale(.25).setInteractive();
+    if (gs.highContrast) this.H1X2Can.setTint(0x00ff00);
     this.H1X2Can.on('pointerdown', () => {
             console.log("House 1B Trash Can clicked!");
             if(this.H1X2Can.texture.key === 'openRecCan')
@@ -60,6 +68,7 @@ export default class closeTheLids extends Phaser.Scene {
         });
     
     this.H2X1Can = this.add.image(425,675, 'closedTrashCan').setScale(.25).setInteractive();
+    if (gs.highContrast) this.H2X1Can.setTint(0xff0000);
     this.H2X1Can.on('pointerdown', () => {
             console.log("House 2A Trash Can clicked!");
             if(this.H2X1Can.texture.key === 'openTrashCan')
@@ -70,6 +79,7 @@ export default class closeTheLids extends Phaser.Scene {
         });
 
     this.H2X2Can = this.add.image(550,675, 'closedRecCan').setScale(.25).setInteractive();
+    if (gs.highContrast) this.H2X2Can.setTint(0x00ff00);
     this.H2X2Can.on('pointerdown', () => {
             console.log("House 2B Trash Can clicked!");
             if(this.H2X2Can.texture.key === 'openRecCan')
@@ -80,6 +90,7 @@ export default class closeTheLids extends Phaser.Scene {
         });
     
     this.H3X1Can = this.add.image(800,675 , 'closedTrashCan').setScale(.25).setInteractive();
+    if (gs.highContrast) this.H3X1Can.setTint(0xff0000);
     this.H3X1Can.on('pointerdown', () => {
             console.log("House 3 Trash Can clicked!");
             if(this.H3X1Can.texture.key === 'openTrashCan')
@@ -90,6 +101,7 @@ export default class closeTheLids extends Phaser.Scene {
         });
 
     this.H3X2Can = this.add.image(900,675 , 'closedRecCan').setScale(.25).setInteractive();
+    if (gs.highContrast) this.H3X2Can.setTint(0x00ff00);
     this.H3X2Can.on('pointerdown', () => {
             console.log("House 3 Trash Can clicked!");
             if(this.H3X2Can.texture.key === 'openRecCan')
@@ -99,9 +111,12 @@ export default class closeTheLids extends Phaser.Scene {
             }
         });
 
+    const difficulty = gs?.difficulty || 1;
+    let windLoopDelay = 1000 / difficulty;
+    if (gs.slowMode) windLoopDelay *= 1.5;
 
     this.time.addEvent({
-        delay: 1000,
+        delay: windLoopDelay,
         loop: true,
         callback: () => {
             this.wind();
@@ -115,6 +130,10 @@ export default class closeTheLids extends Phaser.Scene {
     this.livesText = this.add
       .text(this.sys.game.config.width - 180, 20, '', { fontSize: '32px', fill: '#ffffff' })
       .setDepth(100);
+
+    if (!gs.timerEnabled) this.timerText.setVisible(false);
+    if (!gs.livesEnabled) this.livesText.setVisible(false);
+
     this.time.addEvent({
       delay: 200,
       loop: true,
@@ -124,9 +143,14 @@ export default class closeTheLids extends Phaser.Scene {
         const timeLeft = Math.max(0, state.totalTime - elapsed);
         const minutes = Math.floor(timeLeft / 60000);
         const seconds = Math.floor((timeLeft % 60000) / 1000);
-        this.timerText.setText(`Time: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`);
-        this.livesText.setText(`Lives: ${state.lives}`);
-        if (!this.isGameOver && (timeLeft <= 0 || state.lives <= 0)) {
+        if (gs.timerEnabled)
+          this.timerText.setText(`Time: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`);
+        if (gs.livesEnabled)
+          this.livesText.setText(`Lives: ${state.lives}`);
+
+        const livesExpired = gs.livesEnabled && state.lives <= 0;
+
+        if (!this.isGameOver && livesExpired) {
           this.isGameOver = true;
           window.finishMiniGame(false, this, 0);
         }
@@ -202,8 +226,11 @@ checkScore(score){
     }
 
     // Wind timer to open lids periodically; speed increases with difficulty
-    const difficulty = window.globalGameState?.difficulty || 1;
-    const windDelay = 1500 / difficulty;
+    const gs = window.globalGameState;
+    const difficulty = gs?.difficulty || 1;
+    let windDelay = 1500 / difficulty;
+    if (gs.slowMode) windDelay *= 1.5;
+
     this.windTimer = this.time.addEvent({
       delay: windDelay,
       loop: true,
@@ -211,12 +238,16 @@ checkScore(score){
       callbackScope: this,
     });
     // Mini game timer: fail if not completed in time
-    const gameDelay = 20000 / difficulty;
-    this.miniTimer = this.time.delayedCall(gameDelay, () => {
-      if (!this.isGameOver) {
-        this.failGame();
-      }
-    });
+    let gameDelay = 20000 / difficulty;
+    if (gs.slowMode) gameDelay *= 1.5;
+
+    if (gs.timerEnabled) {
+      this.miniTimer = this.time.delayedCall(gameDelay, () => {
+        if (!this.isGameOver) {
+          this.failGame();
+        }
+      });
+    }
   }
 
 
@@ -243,24 +274,31 @@ checkScore(score){
     });
   }
 
-  failGame() {
-    if (this.windTimer) this.windTimer.remove();
-    if (this.miniTimer) this.miniTimer.remove();
-    this.add
-      .text(this.sys.game.config.width / 2, this.sys.game.config.height / 2, 'Oops!', {
-        fontSize: '64px',
-        fill: '#ffffff',
-      })
-      .setOrigin(0.5);
-    this.time.delayedCall(800, () => {
-      this.scene.start('transitionScreen', {
-        lives: this.lives,
-        score: this.finalScore,
-        xCoord: this.xCoord,
-        yCoord: this.yCoord,
-        won: false,
-        elapsedTime: this.time.now
-      });
-    });
+failGame() {
+  const gs = window.globalGameState || {};
+  if (gs.livesEnabled === false) {
+    this.winGame();
+    return;
   }
+
+  if (this.windTimer) this.windTimer.remove();
+  if (this.miniTimer) this.miniTimer.remove();
+  this.add
+    .text(this.sys.game.config.width / 2, this.sys.game.config.height / 2, 'Oops!', {
+      fontSize: '64px',
+      fill: '#ffffff',
+    })
+    .setOrigin(0.5);
+  this.time.delayedCall(800, () => {
+    this.scene.start('transitionScreen', {
+      lives: this.lives,
+      score: this.finalScore,
+      xCoord: this.xCoord,
+      yCoord: this.yCoord,
+      won: false,
+      elapsedTime: this.time.now
+    });
+  });
+}
+
 }

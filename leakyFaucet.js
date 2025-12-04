@@ -32,12 +32,15 @@ export default class leakyFaucet extends Phaser.Scene {
   }
 
   create() {
+    const gs = window.globalGameState || {};
+
     this.waterLevel = 0;
     this.leakFixed = false;
     this.gameOver = false;
     this.keyHeld = false;
     this.isAnimating = false;
     this.tightenCount = 0;
+
     // HUD: display global time left and lives
     
     const screenW = this.scale.width;
@@ -47,6 +50,10 @@ export default class leakyFaucet extends Phaser.Scene {
     this.livesText = this.add
       .text(screenW - 180, 20, '', { fontSize: '32px', fill: '#ffffff' })
       .setDepth(100);
+
+    if (!gs.timerEnabled) this.timerText.setVisible(false);
+    if (!gs.livesEnabled) this.livesText.setVisible(false);
+
     this.time.addEvent({
       delay: 200,
       loop: true,
@@ -56,9 +63,15 @@ export default class leakyFaucet extends Phaser.Scene {
         const timeLeft = Math.max(0, state.totalTime - elapsed);
         const minutes = Math.floor(timeLeft / 60000);
         const seconds = Math.floor((timeLeft % 60000) / 1000);
-        this.timerText.setText(`Time: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`);
-        this.livesText.setText(`Lives: ${state.lives}`);
-        if (!this.gameOver && (timeLeft <= 0 || state.lives <= 0)) {
+
+        if (gs.timerEnabled)
+          this.timerText.setText(`Time: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`);
+        if (gs.livesEnabled)
+          this.livesText.setText(`Lives: ${state.lives}`);
+
+        const livesExpired = gs.livesEnabled && state.lives <= 0;
+
+        if (!this.gameOver && livesExpired) {
           this.gameOver = true;
           window.finishMiniGame(false, this, 0);
         }
@@ -68,7 +81,7 @@ export default class leakyFaucet extends Phaser.Scene {
 
     const { width, height } = this.scale;
     // Background
-    this.add
+    const bg = this.add
       .image(width / 2, height / 2, 'faucet_bg')
       .setOrigin(0.5)
       .setDisplaySize(width, height);
@@ -98,6 +111,19 @@ export default class leakyFaucet extends Phaser.Scene {
     this.wrench.y = 8;
     this.wrench.setAngle(-35);
     this.wrenchContainer.add(this.wrench);
+    // Droplet
+    this.dropletStartY = this.faucet.y + this.faucet.displayHeight * 0.45;
+    this.droplet = this.add.image(this.faucet.x, this.dropletStartY, 'droplet');
+    this.droplet.setScale(0.25).setOrigin(0.5, 0);
+
+    if (gs.highContrast) {
+      bg.setTint(0xffffff);
+      this.sink.setTint(0xffffff);
+      this.faucet.setTint(0xffffff);
+      this.wrench.setTint(0xffff00);
+      this.droplet.setTint(0x00ffff);
+    }
+
     // Make wrench interactive
     this.wrench.setInteractive({ useHandCursor: true });
     this.wrench.on('pointerdown', () => this.animateRatcheting());
@@ -113,16 +139,14 @@ export default class leakyFaucet extends Phaser.Scene {
         this.keyHeld = false;
       }
     });
-    // Droplet
-    this.dropletStartY = this.faucet.y + this.faucet.displayHeight * 0.45;
-    this.droplet = this.add.image(this.faucet.x, this.dropletStartY, 'droplet');
-    this.droplet.setScale(0.25).setOrigin(0.5, 0);
+
     // Continuous drip
-    // Drip frequency increases with difficulty.  Use a shorter delay as
-    // difficulty rises.
     const difficulty = window.globalGameState?.difficulty || 1;
+    let dripDelay = 800 / difficulty;
+    if (gs.slowMode) dripDelay *= 1.5;
+
     this.dripTimer = this.time.addEvent({
-      delay: 800 / difficulty,
+      delay: dripDelay,
       loop: true,
       callback: this.drip,
       callbackScope: this,
@@ -171,7 +195,9 @@ export default class leakyFaucet extends Phaser.Scene {
   }
 
   increaseWater() {
-    this.waterLevel += 5;
+    const gs = window.globalGameState || {};
+    const step = gs.slowMode ? 3 : 5;
+    this.waterLevel += step;
     if (this.waterLevel >= 100 && !this.leakFixed) {
       this.endGame(false);
       return;
@@ -183,6 +209,12 @@ export default class leakyFaucet extends Phaser.Scene {
   }
 
   endGame(success) {
+    const gs = window.globalGameState || {};
+    let won = success;
+    if (gs.livesEnabled === false && !success) {
+      won = true;
+    }
+
     // Mark the game as over to stop further interactions
     this.gameOver = true;
     this.sink.setTexture(success ? 'sink' : 'sink_full');
@@ -204,20 +236,14 @@ export default class leakyFaucet extends Phaser.Scene {
         { font: '32px Arial', color: '#ffffff' },
       )
       .setOrigin(0.5);
-    // After a short delay, invoke finishMiniGame to update global state
+    // After a short delay, invoke transition
     this.time.delayedCall(1200, () => {
-      if(success) {
-        this.won = true;
-      } else {
-        this.won = false;
-      }
-
       this.scene.start('transitionScreen', {
         lives: this.lives,
         score: this.score,
         xCoord: this.xCoord,
         yCoord: this.yCoord,
-        won: this.won,
+        won: won,
         elapsedTime: this.time.now
       });
     });

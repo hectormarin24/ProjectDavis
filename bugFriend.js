@@ -3,33 +3,37 @@
 // the global queue is started when the player clicks the background.
 
 export default class bugFriend extends Phaser.Scene {
-    constructor() {
-        super('bugFriend');
-    }
 
-    preload() {
-        this.load.image('fly', 'assets/flie.png');
-        this.load.image('ant', 'assets/ant.png');
-        this.load.image('wasp', 'assets/wasp.png');
-        this.load.image('bee', 'assets/honeybee.png');
-        this.load.image('ladybug', 'assets/ladybug.png');
-        this.load.image('cockroach', 'assets/cockroach.png');
-        this.load.image('bg', 'assets/flowerfieldbg.png');
-        this.load.image('aphid', 'assets/aphid.png');
-        this.load.image('grasshopper', 'assets/grasshopper.png');
-        this.load.image('butterfly', 'assets/butterfly.png');
-    }
+  constructor() {
+    super('bugFriend');
+  }
 
-    init(data) {
-        this.xCoord = data.xCoord;
-        this.yCoord = data.yCoord;
-        this.isGameOver = false;
-        this.goodSquashed = 0;
-        this.score = data.score;
-        this.lives = data.lives;
-    }
+  preload() {
+    this.load.image('fly', 'assets/flie.png');
+    this.load.image('ant', 'assets/ant.png');
+    this.load.image('wasp', 'assets/wasp.png');
+    this.load.image('bee', 'assets/honeybee.png');
+    this.load.image('ladybug', 'assets/ladybug.png');
+    this.load.image('cockroach', 'assets/cockroach.png');
+    this.load.image('bg', 'assets/flowerfieldbg.png');
+    this.load.image('aphid', 'assets/aphid.png');
+    this.load.image('grasshopper', 'assets/grasshopper.png');
+    this.load.image('butterfly', 'assets/butterfly.png');
+  }
 
-    create() {
+  init(data) {
+    // Carry over screen size
+    this.xCoord = data.xCoord;
+    this.yCoord = data.yCoord;
+    this.isGameOver = false;
+    this.goodSquashed = 0;
+    this.score = data.score;
+    this.lives = data.lives;
+  }
+
+    
+  create() {
+       const gs = window.globalGameState || {};
         this.goodSquashed = 0;
 
         // Background
@@ -39,7 +43,9 @@ export default class bugFriend extends Phaser.Scene {
             .setInteractive();
         this.background.displayWidth = this.sys.game.config.width;
         this.background.displayHeight = this.sys.game.config.height;
-
+        if (gs.highContrast) {
+            this.background.setTint(0xffffff);
+        }
         // No scene advance here — finishMiniGame handles progression.
 
         // Insects
@@ -129,56 +135,65 @@ export default class bugFriend extends Phaser.Scene {
             .setVisible(false);
     }
 
-    createInsect(key, x, y, isGood) {
-        const insect = this.physics.add.image(x, y, key).setInteractive();
+  createInsect(key, x, y, isGood) {
+    const gs = window.globalGameState || {};
+    const insect = this.physics.add.image(x, y, key).setInteractive();
+    const scales = {
+      ant: 0.4,
+      wasp: 0.5,
+      cockroach: 0.5,
+      ladybug: 0.3,
+      fly: 0.3,
+      bee: 0.3,
+      aphid: 0.3,
+      grasshopper: 0.7,
+    };
+    insect.setScale(scales[key] ?? 0.5);
+    insect.setCollideWorldBounds(true);
 
-        const scales = {
-            ant: 0.4,
-            wasp: 0.5,
-            cockroach: 0.5,
-            ladybug: 0.3,
-            fly: 0.3,
-            bee: 0.3,
-            aphid: 0.3,
-            grasshopper: 0.7,
-        };
-        insect.setScale(scales[key] ?? 0.5);
-        insect.setCollideWorldBounds(true);
-
-        insect.on('pointerdown', () => {
-            insect.setVisible(false);
-            insect.setActive(false);
-            this.checkAnswer(isGood);
-        });
-
-        insect.setData('typeKey', key);
-        insect.setData('isGood', isGood);
-        this.insects.push(insect);
+    if (gs.highContrast) {
+      if (isGood) {
+        insect.setTint(0xff0000);
+      } else {
+        insect.setTint(0x00ff00);
+      }
     }
 
-    setDirections() {
-        this.insects.forEach((insect) => {
-            this.setRandomDirection(insect);
-            this.time.addEvent({
-                delay: Phaser.Math.Between(2000, 4000),
-                callback: () => this.setRandomDirection(insect),
-                loop: true,
-            });
-        });
+    insect.on('pointerdown', () => {
+      insect.setVisible(false);
+      insect.setActive(false);
+      this.checkAnswer(isGood);
+    });
+    if (!this.insects) this.insects = [];
+    this.insects.push(insect);
+    insect.setData('typeKey', key);
+  }
+
+  setDirections() {
+    this.insects.forEach((insect) => {
+      this.setRandomDirection(insect);
+      this.time.addEvent({
+        delay: Phaser.Math.Between(2000, 4000),
+        callback: () => this.setRandomDirection(insect),
+        loop: true,
+      });
+    });
+  }
+
+  setRandomDirection(insect) {
+    if (!insect.active) return;
+    const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
+    const base = Phaser.Math.Between(50, 120);
+    const difficulty = window.globalGameState?.difficulty || 1;
+    let speed = base * difficulty;
+    if (window.globalGameState?.slowMode) {
+      speed *= 0.7;
     }
+    insect.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
+    insect.setAngle(Phaser.Math.RadToDeg(angle));
+  }
 
-    setRandomDirection(insect) {
-        if (!insect.active) return;
-
-        const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
-        const base = Phaser.Math.Between(50, 120);
-        const difficulty = window.globalGameState?.difficulty || 1;
-        const speed = base * difficulty;
-
-        insect.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
-        insect.setAngle(Phaser.Math.RadToDeg(angle));
-    }
-
+  
     // ==================================================
     // ADA — Find nearest insect for keyboard selection
     // ==================================================
@@ -211,46 +226,53 @@ export default class bugFriend extends Phaser.Scene {
         insect.setVisible(false);
         insect.setActive(false);
         this.checkAnswer(insect.getData('isGood'));
+    }  
+
+  checkAnswer(isGood) {
+    if (this.isGameOver) return;
+    const gs = window.globalGameState || {};
+    if (isGood) {
+      this.goodSquashed++;
+      if (this.goodSquashed >= 5) {
+        this.endGame(true);
+      }
+    } else {
+      this.endGame(false);
+    }
+  }
+
+  endGame(won) {
+    const gs = window.globalGameState || {};
+    if (gs.livesEnabled === false) {
+      won = true;
     }
 
-    checkAnswer(isGood) {
-        if (this.isGameOver) return;
-
-        if (isGood) {
-            this.goodSquashed++;
-            if (this.goodSquashed >= 5) {
-                this.endGame(true);
-            }
-        } else {
-            this.endGame(false);
-        }
+    if (this.isGameOver) return;
+    this.isGameOver = true;
+    this.gameEnded = true;
+    if (this.insects) {
+      this.insects.forEach((insect) => {
+        if (insect && insect.destroy) insect.destroy();
+      });
     }
-
-    endGame(won) {
-        if (this.isGameOver) return;
-
-        this.isGameOver = true;
-        this.insects.forEach((insect) => insect.destroy());
-
-        const msg = won ? 'You Win!' : 'You Lost...';
-        this.add
-            .text(this.xCoord / 2, this.yCoord / 2, msg, {
-                fontSize: '84px',
-                fill: '#ffffff',
-            })
-            .setOrigin(0.5);
-
-        this.time.delayedCall(800, () => {
-            this.scene.start('transitionScreen', {
-                lives: this.lives,
-                score: this.score,
-                xCoord: this.xCoord,
-                yCoord: this.yCoord,
-                won,
-                elapsedTime: this.time.now
-            });
-        });
-    }
+    const msg = won ? 'You Win!' : 'You Lost...';
+    this.add
+      .text(this.xCoord / 2, this.yCoord / 2, msg, {
+        fontSize: '84px',
+        fill: '#ffffff',
+      })
+      .setOrigin(0.5);
+    this.time.delayedCall(800, () => {
+      this.scene.start('transitionScreen', {
+        lives: this.lives,
+        score: this.score,
+        xCoord: this.xCoord,
+        yCoord: this.yCoord,
+        won: won,
+        elapsedTime: this.time.now
+      });
+    });
+  }
 
     // ==================================================
     // UPDATE — handle keyboard movement + activation
@@ -293,4 +315,5 @@ export default class bugFriend extends Phaser.Scene {
             this.keyboardSquash(nearest);
         }
     }
+
 }
