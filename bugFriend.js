@@ -225,7 +225,7 @@ export default class bugFriend extends Phaser.Scene {
 
         insect.setVisible(false);
         insect.setActive(false);
-        this.checkAnswer(insect.getData(isGood));
+        this.checkAnswer(insect.getData('isGood'));
     }  
 
   checkAnswer(isGood) {
