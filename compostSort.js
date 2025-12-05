@@ -1,360 +1,332 @@
-// game6.js — Compost sorting mini game.
+// game6.js — Compost sorting mini game with downward-only movement and proper bottom detection.
 
 const FRUIT_KEYS = [
-  'banana',
-  'black-berry-dark',
-  'coconut',
-  'green-apple',
-  'green-grape',
-  'lemon',
-  'lime',
-  'orange',
-  'peach',
-  'pear',
-  'strawberry',
-  'watermelon',
+    'banana','black-berry-dark','coconut','green-apple','green-grape',
+    'lemon','lime','orange','peach','pear','strawberry','watermelon'
 ];
 
-const PLASTIC_KEYS = ['bag', 'bottle', 'cup', 'Tray', 'utensil'];
+const PLASTIC_KEYS = ['bag','bottle','cup','Tray','utensil'];
 
 export default class compostSort extends Phaser.Scene {
-  constructor() {
-    super('compostSort');
-  }
-
-  init(data) {
-    this.W = data?.xCoord ?? 1000;
-    this.H = data?.yCoord ?? 900;
-    this.activePiece = null;
-    this.spawnQueued = false;
-    this.score = 0;
-    this.targetScore = 5;
-    this.gameOver = false;
-    this.finalScore = data.score;
-    this.lives = data.lives;
-  }
-
-  preload() {
-    FRUIT_KEYS.forEach((name) => {
-      this.load.image(name, `assets/game6assets/${name}.png`);
-    });
-    this.load.image('garden_bg', 'assets/game6assets/garden.webp');
-    PLASTIC_KEYS.forEach((name) => {
-      this.load.image(name, `assets/game6assets/${name}.png`);
-    });
-    this.load.image('compost_bin_img', 'assets/game6assets/compostbin.png');
-  }
-
-  makeRandomPlastic(x, y) {
-    const key = Phaser.Utils.Array.GetRandom(PLASTIC_KEYS);
-    const img = this.add.image(x, y, key);
-    const src = this.textures.get(key).getSourceImage();
-    const maxDim = Math.max(src.width, src.height);
-    const target = 140;
-    img.setScale(target / maxDim);
-    img.setData('type', 'noncomp');
-    return img;
-  }
-
-  makeRandomFruit(x, y) {
-    const key = Phaser.Utils.Array.GetRandom(FRUIT_KEYS);
-    const img = this.add.image(x, y, key);
-    const src = this.textures.get(key).getSourceImage();
-    const maxDim = Math.max(src.width, src.height);
-    const target = 120;
-    img.setScale(target / maxDim);
-    img.setData('type', 'compost');
-    return img;
-  }
-
-  create() {
-    const gs = window.globalGameState;
-
-    // Background
-    const bg = this.add.image(this.W / 2, this.H / 2, 'garden_bg');
-    bg.setOrigin(0.5);
-    bg.setDepth(-10);
-    const scaleX = this.W / bg.width;
-    const scaleY = this.H / bg.height;
-    const scale = Math.max(scaleX, scaleY);
-    bg.setScale(scale);
-
-    const cx = this.cameras.main.centerX;
-    this.message = this.add
-            .text(cx, 50, 'Drag the items into the compost or the paper bag.', {
-                font: '26px Arial',
-                color: '#111',
-                align: 'center',
-                wordWrap: { width: this.scale.width - 80 },
-            })
-            .setOrigin(0.5, 0.5);
-    // Score display shows global and target score for this mini game
-    if (gs.highContrast) bg.setTint(0xffffff);
-
-    // Score
-    this.scoreText = this.add.text(16, 16, `Score: ${this.score} / ${this.targetScore}`, {
-      fontSize: '26px',
-      color: '#5cbc08ff',
-      fontFamily: 'system-ui',
-    });
-
-    // Timer / Lives
-    this.timerText = this.add
-      .text(16, 48, '', { fontSize: '26px', color: '#ffffff' })
-      .setDepth(100);
-
-    this.livesText = this.add
-      .text(this.W - 180, 16, '', { fontSize: '26px', color: '#ffffff' })
-      .setDepth(100);
-
-    if (!gs.timerEnabled) this.timerText.setVisible(false);
-    if (!gs.livesEnabled) this.livesText.setVisible(false);
-
-    // GLOBAL TIMER — OPTION B (do not end minigame on time)
-    this.time.addEvent({
-      delay: 200,
-      loop: true,
-      callback: () => {
-        const state = gs;
-        const elapsed = this.time.now - state.startTime;
-        const timeLeft = Math.max(0, state.totalTime - elapsed);
-
-        const minutes = Math.floor(timeLeft / 60000);
-        const seconds = Math.floor((timeLeft % 60000) / 1000);
-
-        if (gs.timerEnabled)
-          this.timerText.setText(`Time: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`);
-
-        if (gs.livesEnabled)
-          this.livesText.setText(`Lives: ${state.lives}`);
-
-        // OPTION B — ONLY lives can end the game
-        const livesExpired = gs.livesEnabled && state.lives <= 0;
-
-        if (!this.gameOver && livesExpired) {
-          this.gameOver = true;
-          window.finishMiniGame(false, this, 0);
-        }
-      },
-    });
-
-    // Compost Bin
-    const binY = this.H - 100;
-    this.bin = this.add
-      .image(this.W / 2, binY, 'compost_bin_img')
-      .setOrigin(0.5)
-      .setScale(1.4);
-
-    // First piece
-    this.spawnNextPiece();
-  }
-
-  spawnNextPiece() {
-    if (this.gameOver) return;
-    this.spawnQueued = false;
-
-    if (this.activePiece && this.activePiece.destroy) {
-      this.stopStepFall(this.activePiece);
-      this.activePiece.destroy();
+    constructor() {
+        super('compostSort');
     }
 
-    const type = Math.random() < 0.6 ? 'compost' : 'noncomp';
-    const x = Phaser.Math.Between(this.W * 0.25, this.W * 0.75);
-    const y = this.H * 0.2;
+    init(data) {
+        this.W = data?.xCoord ?? 1000;
+        this.H = data?.yCoord ?? 900;
 
-    const piece = type === 'compost'
-      ? this.makeRandomFruit(x, y)
-      : this.makeRandomPlastic(x, y);
+        this.activePiece = null;
+        this.spawnQueued = false;
 
-    if (window.globalGameState.highContrast) {
-      piece.setTint(type === 'compost' ? 0x00ff00 : 0xff0000);
+        this.score = 0;
+        this.targetScore = 5;
+        this.gameOver = false;
+
+        this.finalScore = data.score;
+        this.lives = data.lives;
+
+        this.keyMoveSpeedX = 14;   // left/right
+        this.keyMoveSpeedY = 22;   // fast drop speed
     }
 
-    piece.setData('type', type);
-    this.makeDraggable(piece);
-    this.startStepFall(piece);
-    this.activePiece = piece;
-  }
+    preload() {
+        FRUIT_KEYS.forEach(n => this.load.image(n, `assets/game6assets/${n}.png`));
+        PLASTIC_KEYS.forEach(n => this.load.image(n, `assets/game6assets/${n}.png`));
 
-  // Falling animation modified by slowMode + difficulty
-  startStepFall(item) {
-    const STEP_PX = 28;
-
-    const difficulty = window.globalGameState?.difficulty || 1;
-
-    let STEP_TIME = 160 / difficulty;
-    let PAUSE_TIME = 480 / difficulty;
-
-    if (window.globalGameState.slowMode) {
-      STEP_TIME *= 1.5;
-      PAUSE_TIME *= 1.6;
+        this.load.image('garden_bg','assets/game6assets/garden.webp');
+        this.load.image('compost_bin_img','assets/game6assets/compostbin.png');
     }
 
-    const stepOnce = () => {
-      if (!item.active || item.getData('dragging') || this.gameOver) return;
+    create() {
+        const bg = this.add.image(this.W/2, this.H/2, 'garden_bg');
+        bg.setOrigin(0.5).setDepth(-10);
+        bg.setScale(Math.max(this.W/bg.width, this.H/bg.height));
 
-      const bottomLimit = this.H - 10;
+        this.scoreText = this.add.text(16,16,`Score: 0 / ${this.targetScore}`,{
+            fontSize:'26px', color:'#5cbc08ff'
+        });
 
-      if (item.y >= bottomLimit) {
-        this.startBounce(item);
-        return;
-      }
+        // Compost bin
+        this.bin = this.add.image(this.W/2, this.H-110,'compost_bin_img')
+            .setOrigin(0.5)
+            .setScale(1.4);
 
-      const targetY = Math.min(item.y + STEP_PX, bottomLimit);
+        // keyboard
+        this.cursors = this.input.keyboard.createCursorKeys();
+        this.keys = this.input.keyboard.addKeys({
+            A:'A', D:'D',
+            LEFT:'LEFT', RIGHT:'RIGHT',
+            S:'S', DOWN:'DOWN',
+            SPACE:'SPACE'
+        });
 
-      const t = this.tweens.add({
-        targets: item,
-        y: targetY,
-        duration: STEP_TIME,
-        ease: 'Linear',
-        onComplete: () => {
-          item.setData('stepTween', null);
-          const timer = this.time.addEvent({
-            delay: PAUSE_TIME,
-            callback: stepOnce,
-          });
-          item.setData('stepTimer', timer);
-        },
-      });
-
-      item.setData('stepTween', t);
-    };
-
-    stepOnce();
-  }
-
-  stopStepFall(item) {
-    const t = item.getData('stepTween');
-    if (t && t.remove) t.remove();
-    const timer = item.getData('stepTimer');
-    if (timer && timer.remove) timer.remove();
-  }
-
-  makeDraggable(item) {
-    item.setInteractive({ draggable: true, cursor: 'grab' });
-    item.setData('dragging', false);
-
-    this.input.setDraggable(item, true);
-
-    this.input.on('dragstart', (_p, obj) => {
-      if (obj === item) {
-        obj.setData('dragging', true);
-        this.stopStepFall(obj);
-      }
-    });
-
-    this.input.on('drag', (_p, obj, dragX, dragY) => {
-      if (obj === item) {
-        obj.x = dragX;
-        obj.y = dragY;
-      }
-    });
-
-    this.input.on('dragend', (_p, obj) => {
-      if (obj === item) {
-        obj.setData('dragging', false);
-
-        if (this.isOverBin(obj)) {
-          this.handleDrop(obj);
-        } else {
-          this.stopStepFall(obj);
-          this.startStepFall(obj);
-        }
-      }
-    });
-  }
-
-  isOverBin(item) {
-    const binBounds = this.bin.getBounds();
-    const itemBounds = item.getBounds();
-    return Phaser.Geom.Intersects.RectangleToRectangle(itemBounds, binBounds);
-  }
-
-  handleDrop(item) {
-    if (this.gameOver) return;
-
-    const type = item.getData('type');
-    this.stopStepFall(item);
-    item.destroy();
-
-    if (type === 'compost') {
-      this.score++;
-      this.scoreText.setText(`Score: ${this.score} / ${this.targetScore}`);
-
-      if (this.score >= this.targetScore) {
-        this.endGame(true);
-      } else {
         this.spawnNextPiece();
-      }
-    } else {
-      this.endGame(false);
     }
-  }
 
-  flashCamera(color, duration) {
-    const r = (color >> 16) & 255,
-      g = (color >> 8) & 255,
-      b = color & 255;
-    this.cameras.main.flash(duration, r, g, b);
-  }
+    // ---------------------------------------------------------
+    // Detects contact with compost bin
+    // ---------------------------------------------------------
+    touchesBin(item) {
+        const i = item.getBounds();
+        const b = this.bin.getBounds();
 
-  startBounce(item) {
-    this.tweens.add({
-      targets: item,
-      y: item.y - 20,
-      duration: 200,
-      yoyo: true,
-      repeat: 1,
-      onComplete: () => {
-        if (!this.gameOver) {
-          this.stopStepFall(item);
-          item.destroy();
-          this.queueNextOnce();
+        return (
+            i.bottom >= b.top &&
+            i.right >= b.left &&
+            i.left <= b.right
+        );
+    }
+
+    // ---------------------------------------------------------
+    // SPAWNING
+    // ---------------------------------------------------------
+
+    spawnNextPiece() {
+        if (this.gameOver) return;
+
+        this.spawnQueued = false;
+
+        if (this.activePiece) {
+            this.stopStepFall(this.activePiece);
+            this.activePiece.destroy();
         }
-      },
-    });
-  }
 
-  queueNextOnce() {
-    if (this.spawnQueued) return;
-    this.spawnQueued = true;
+        const fruit = Math.random() < 0.6;
+        const x = Phaser.Math.Between(this.W * 0.25, this.W * 0.75);
+        const y = this.H * 0.20;
 
-    this.time.delayedCall(500, () => {
-      this.spawnNextPiece();
-    });
-  }
+        const piece = fruit ? this.makeFruit(x, y) : this.makePlastic(x, y);
 
-endGame(won) {
-  const gs = window.globalGameState || {};
-  if (gs.livesEnabled === false) {
-    won = true;
-  }
+        this.makeDraggable(piece);
+        this.startStepFall(piece);
 
-  if (this.gameOver) return;
-  this.gameOver = true;
-  if (this.activePiece) {
-    this.stopStepFall(this.activePiece);
-    this.activePiece.destroy();
-    this.activePiece = null;
-  }
-  this.spawnQueued = false;
-  const msg = won ? 'Nice composting!' : 'Oops!';
-  this.add
-    .text(this.W / 2, this.H / 2, msg, {
-      fontSize: '48px',
-      fill: '#ffffff',
-    })
-    .setOrigin(0.5);
-  this.time.delayedCall(800, () => {
-    this.scene.start('transitionScreen', {
-      lives: this.lives,
-      score: this.finalScore,
-      xCoord: this.xCoord,
-      yCoord: this.yCoord,
-      won: won,
-      elapsedTime: this.time.now
-    });
-  });
-}
+        this.activePiece = piece;
+    }
 
+    makeFruit(x, y) {
+        const key = Phaser.Utils.Array.GetRandom(FRUIT_KEYS);
+        const img = this.add.image(x, y, key);
+        const src = this.textures.get(key).getSourceImage();
+        img.setScale(120 / Math.max(src.width, src.height));
+        img.setData('type', 'compost');
+        return img;
+    }
+
+    makePlastic(x, y) {
+        const key = Phaser.Utils.Array.GetRandom(PLASTIC_KEYS);
+        const img = this.add.image(x, y, key);
+        const src = this.textures.get(key).getSourceImage();
+        img.setScale(140 / Math.max(src.width, src.height));
+        img.setData('type', 'noncomp');
+        return img;
+    }
+
+    // ---------------------------------------------------------
+    // AUTOMATIC FALLING
+    // ---------------------------------------------------------
+
+    startStepFall(item) {
+        const STEP = 28;
+        const TIME = 160;
+        const PAUSE = 480;
+
+        const fall = () => {
+            if (!item.active || item.getData('dragging') || this.gameOver)
+                return;
+
+            // 1. Check if touching bin
+            if (this.touchesBin(item)) {
+                this.resolveBinContact(item);
+                return;
+            }
+
+            // 2. NEW: bottom boundary detection (noncomp fix)
+            if (item.y >= this.H - 40) {
+                this.resolveBinContact(item);
+                return;
+            }
+
+            // Continue falling normally
+            const newY = item.y + STEP;
+            item.y = newY;
+
+            const t = this.tweens.add({
+                targets: item,
+                y: newY,
+                duration: TIME,
+                ease: 'Linear',
+                onComplete: () => {
+                    const timer = this.time.addEvent({ delay: PAUSE, callback: fall });
+                    item.setData('stepTimer', timer);
+                }
+            });
+
+            item.setData('stepTween', t);
+        };
+
+        fall();
+    }
+
+    stopStepFall(item) {
+        const t = item.getData('stepTween');
+        if (t) t.remove();
+
+        const timer = item.getData('stepTimer');
+        if (timer) timer.remove();
+    }
+
+    // ---------------------------------------------------------
+    // RESOLVE BIN CONTACT
+    // ---------------------------------------------------------
+
+    resolveBinContact(item) {
+        const type = item.getData('type');
+
+        this.stopStepFall(item);
+        item.destroy();
+
+        if (type === 'compost') {
+            this.score++;
+            this.scoreText.setText(`Score: ${this.score} / ${this.targetScore}`);
+
+            if (this.score >= this.targetScore) {
+                this.endGame(true);
+                return;
+            }
+        } else {
+            this.lives--;
+            if (this.lives <= 0) {
+                this.endGame(false);
+                return;
+            }
+        }
+
+        this.spawnNextPiece();
+    }
+
+    // ---------------------------------------------------------
+    // MOUSE DRAG — LEFT, RIGHT, DOWN ONLY
+    // ---------------------------------------------------------
+
+    makeDraggable(item) {
+        item.setInteractive({ draggable: true });
+        this.input.setDraggable(item);
+
+        item.on('dragstart', () => {
+            item.setData('dragging', true);
+            this.stopStepFall(item);
+        });
+
+        item.on('drag', (_pointer, dragX, dragY) => {
+            // horizontal allowed
+            item.x = dragX;
+
+            // downward allowed only
+            if (dragY > item.y) {
+                item.y = dragY;
+            }
+
+            this.clampX(item);
+
+            // bin check
+            if (this.touchesBin(item)) {
+                this.resolveBinContact(item);
+                return;
+            }
+
+            // bottom boundary check
+            if (item.y >= this.H - 40) {
+                this.resolveBinContact(item);
+                return;
+            }
+        });
+
+        item.on('dragend', () => {
+            item.setData('dragging', false);
+            this.startStepFall(item);
+        });
+    }
+
+    clampX(item) {
+        const b = item.getBounds();
+        if (b.left < 0) item.x = b.width/2;
+        if (b.right > this.W) item.x = this.W - b.width/2;
+    }
+
+    // ---------------------------------------------------------
+    // KEYBOARD — LEFT, RIGHT, DOWN ONLY
+    // ---------------------------------------------------------
+
+    update() {
+        if (!this.activePiece || this.gameOver) return;
+
+        const p = this.activePiece;
+        let moved = false;
+
+        // left / right
+        if (this.keys.A.isDown || this.cursors.left.isDown) {
+            p.x -= this.keyMoveSpeedX;
+            moved = true;
+        }
+        if (this.keys.D.isDown || this.cursors.right.isDown) {
+            p.x += this.keyMoveSpeedX;
+            moved = true;
+        }
+
+        // down (fast drop)
+        if (this.keys.S.isDown || this.cursors.down.isDown) {
+            p.y += this.keyMoveSpeedY;
+            moved = true;
+        }
+
+        if (moved) {
+            this.clampX(p);
+
+            // bin contact check
+            if (this.touchesBin(p)) {
+                this.resolveBinContact(p);
+                return;
+            }
+
+            // bottom boundary fix
+            if (p.y >= this.H - 40) {
+                this.resolveBinContact(p);
+                return;
+            }
+        }
+
+        // SPACE = force drop
+        if (Phaser.Input.Keyboard.JustDown(this.keys.SPACE)) {
+            p.setData('dragging', false);
+
+            if (this.touchesBin(p)) this.resolveBinContact(p);
+            else this.startStepFall(p);
+        }
+    }
+
+    // ---------------------------------------------------------
+    // END GAME
+    // ---------------------------------------------------------
+
+    endGame(won = true) {
+        this.gameOver = true;
+
+        if (this.activePiece) this.activePiece.destroy();
+
+        this.add.rectangle(this.W/2,this.H/2,this.W,this.H,0x000000,0.45);
+        this.add.text(this.W/2,this.H/2, won ? 'You Win!' : 'Oops!', {
+            fontSize:'64px', color:'#ffffff'
+        }).setOrigin(0.5);
+
+        this.input.once('pointerdown', () => {
+            this.scene.start('transitionScreen', {
+                score:this.finalScore,
+                lives:this.lives,
+                xCoord:this.W,
+                yCoord:this.H,
+                won
+            });
+        });
+    }
 }
