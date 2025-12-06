@@ -1,247 +1,296 @@
 // recycle.js — mini game to sort items into recycle/trash/compost bins.
-// Updated to integrate with a global timer, lives and difficulty system.
-// The player must correctly sort five items in a row to win.  Each
-// object must be sorted within a time limit that shrinks as difficulty
-// increases.  On success or failure, finishMiniGame() is called to
-// update the global score/lives and move to the next random mini game.
+// Updated: Full keyboard accessibility (A/D to move between bins, SPACE to choose)
 
 export default class recycle extends Phaser.Scene {
-  constructor() {
-    super('recycle');
-  }
-
-  preload() {
-    this.load.image('background', 'assets/background.webp');
-    // Bins
-    this.load.image('recycle_bin', 'assets/Recycle_can.png');
-    this.load.image('trash_bin', 'assets/trash_can.png');
-    this.load.image('compost_bin', 'assets/compost_can.png');
-    // Objects to sort
-    this.load.image('tin_can', 'assets/tin_can.png');
-    this.load.image('banana_peel', 'assets/banana_peel.png');
-    this.load.image('pileOfLeaves', 'assets/pileOfLeaves.png');
-    this.load.image('smallBox', 'assets/Small Box.png');
-    this.load.image('milkCarton', 'assets/milk_carton.webp');
-  }
-
-  init(data) {
-    // Dimensions passed from the previous scene
-    this.xCoord = data.xCoord;
-    this.yCoord = data.yCoord;
-    this.score = data.score;
-    this.lives = data.lives;
-    // Prevent multiple finish calls
-    this.isGameOver = false;
-    // Track correct answers within this mini game
-    this.localScore = 0;
-  }
-
-  create() {
-    const gs = window.globalGameState || {};
-
-    console.log('Recycle scene loaded');
-    // Static background; fill the screen and centre it.  Scaling the
-    // background to the full game dimensions avoids it being offset
-    // incorrectly on wide screens.  If the texture is missing,
-    // fallback to a plain colour.  (Previously the background was
-    // anchored at xCoord/3 which caused grey areas.)
-    if (this.textures.exists('background')) {
-      this.background = this.add
-        .image(this.xCoord / 2, this.yCoord / 2, 'background')
-        .setOrigin(0.5)
-        .setDisplaySize(this.xCoord, this.yCoord);
-    } else {
-      this.cameras.main.setBackgroundColor(0x333333);
+    constructor() {
+        super('recycle');
     }
-    // HUD for timer and lives
-    const cx = this.cameras.main.centerX;
-    this.message = this.add
-            .text(cx, 50, 'Choose the correct bin to put the items in.', {
+
+    preload() {
+        this.load.image('background', 'assets/background.webp');
+
+        this.load.image('recycle_bin', 'assets/Recycle_can.png');
+        this.load.image('trash_bin', 'assets/trash_can.png');
+        this.load.image('compost_bin', 'assets/compost_can.png');
+
+        this.load.image('tin_can', 'assets/tin_can.png');
+        this.load.image('banana_peel', 'assets/banana_peel.png');
+        this.load.image('pileOfLeaves', 'assets/pileOfLeaves.png');
+        this.load.image('smallBox', 'assets/Small Box.png');
+        this.load.image('milkCarton', 'assets/milk_carton.webp');
+    }
+
+    init(data) {
+        this.xCoord = data.xCoord;
+        this.yCoord = data.yCoord;
+        this.score = data.score;
+        this.lives = data.lives;
+
+        this.isGameOver = false;
+        this.localScore = 0;
+
+        this.selectedIndex = 1; // 0 = recycle, 1 = trash, 2 = compost
+    }
+
+    create() {
+        const gs = window.globalGameState || {};
+
+        // Background
+        if (this.textures.exists('background')) {
+            this.background = this.add
+                .image(this.xCoord / 2, this.yCoord / 2, 'background')
+                .setOrigin(0.5)
+                .setDisplaySize(this.xCoord, this.yCoord);
+        } else {
+            this.cameras.main.setBackgroundColor(0x333333);
+        }
+
+        // HUD
+        const cx = this.cameras.main.centerX;
+        this.message = this.add
+            .text(cx, 50, 'Use A/D or ←/→ to choose a bin. Press SPACE to sort.', {
                 font: '26px Arial',
                 color: '#111',
                 align: 'center',
                 wordWrap: { width: this.scale.width - 80 },
             })
-            .setOrigin(0.5, 0.5);
-
-    this.timerText = this.add
-      .text(20, 20, '', { fontSize: '32px', fill: '#ffffff' })
-      .setDepth(100);
-    this.livesText = this.add
-      .text(this.xCoord - 180, 20, '', { fontSize: '32px', fill: '#ffffff' })
-      .setDepth(100);
-
-    if (!gs.timerEnabled) this.timerText.setVisible(false);
-    if (!gs.livesEnabled) this.livesText.setVisible(false);
-
-    // Regularly update the HUD and check for global timeout or lives depletion
-    this.time.addEvent({
-      delay: 200,
-      loop: true,
-      callback: () => {
-        const state = window.globalGameState;
-        const elapsed = this.time.now - state.startTime;
-        const timeLeft = Math.max(0, state.totalTime - elapsed);
-        const minutes = Math.floor(timeLeft / 60000);
-        const seconds = Math.floor((timeLeft % 60000) / 1000);
-        if (gs.timerEnabled)
-          this.timerText.setText(`Time: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`);
-        if (gs.livesEnabled)
-          this.livesText.setText(`Lives: ${state.lives}`);
-
-        const livesExpired = gs.livesEnabled && state.lives <= 0;
-        if (!this.isGameOver && livesExpired) {
-          this.isGameOver = true;
-          window.finishMiniGame(false, this, 0);
-        }
-      },
-      callbackScope: this,
-    });
-
-    // Create buttons for the three bins
-    this.recycleButton = this.add
-      .image(this.xCoord / 4, (3 * this.yCoord) / 4, 'recycle_bin')
-      .setOrigin(0.5)
-      .setScale(0.5)
-      .setInteractive({ useHandCursor: true });
-    this.recycleButton.on('pointerdown', () => this.checkAnswer('recycle'));
-
-    this.trashButton = this.add
-      .image(this.xCoord / 2, (3 * this.yCoord) / 4, 'trash_bin')
-      .setOrigin(0.5)
-      .setScale(0.5)
-      .setInteractive({ useHandCursor: true });
-    this.trashButton.on('pointerdown', () => this.checkAnswer('trash'));
-
-    this.compostButton = this.add
-      .image((3 * this.xCoord) / 4, (3 * this.yCoord) / 4, 'compost_bin')
-      .setOrigin(0.5)
-      .setScale(0.5)
-      .setInteractive({ useHandCursor: true });
-    this.compostButton.on('pointerdown', () => this.checkAnswer('compost'));
-
-    if (gs.highContrast) {
-      if (this.background) this.background.setTint(0xffffff);
-      this.recycleButton.setTint(0x00ffff);
-      this.trashButton.setTint(0xff6666);
-      this.compostButton.setTint(0x66ff66);
-    }
-
-    // Spawn first object
-    this.nextObject();
-  }
-
-  nextObject() {
-    const gs = window.globalGameState || {};
-
-    // Destroy existing object if present
-    if (this.currentObject && this.currentObject.destroy) {
-      this.currentObject.destroy();
-    }
-    // Randomly choose a new item and its correct bin.
-    const objects = [
-      { key: 'banana_peel', correct: 'compost' },
-      { key: 'tin_can', correct: 'trash' },
-      { key: 'pileOfLeaves', correct: 'compost' },
-      { key: 'smallBox', correct: 'recycle' },
-      { key: 'milkCarton', correct: 'recycle' },
-    ];
-    const idx = Math.floor(Math.random() * objects.length);
-    this.current = objects[idx];
-    this.currentObject = this.add
-      .image(this.xCoord / 2, this.yCoord / 3, this.current.key)
-      .setOrigin(0.5);
-
-    if (gs.highContrast) {
-      this.currentObject.setTint(0xffff00);
-    }
-
-    if (this.objectTimer && this.objectTimer.remove) {
-      this.objectTimer.remove();
-    }
-    const difficulty = window.globalGameState?.difficulty || 1;
-    let delay = 5000 / difficulty;
-    if (gs.slowMode) {
-      delay *= 1.5;
-    }
-
-    if (gs.timerEnabled) {
-      this.objectTimer = this.time.delayedCall(delay, () => {
-        if (!this.isGameOver) {
-          this.isGameOver = true;
-          this.add
-            .text(this.xCoord / 2, this.yCoord / 2, "Time's up!", {
-              fontSize: '64px',
-              fill: '#ffffff',
-            })
             .setOrigin(0.5);
 
-          this.time.delayedCall(500, () => {
-            const won = gs.livesEnabled === false ? true : false;
-            this.scene.start('transitionScreen', {
-              lives: this.lives,
-              score: this.score,
-              xCoord: this.xCoord,
-              yCoord: this.yCoord,
-              won: won,
-              elapsedTime: this.time.now
-            });
-          });
-        }
-      });
-    }
-  }
-
-  checkAnswer(bin) {
-    const gs = window.globalGameState || {};
-    if (this.isGameOver) return;
-
-    if (this.objectTimer && this.objectTimer.remove) {
-      this.objectTimer.remove();
-    }
-
-    if (bin === this.current.correct) {
-      this.localScore++;
-      if (this.localScore >= 5) {
-        this.isGameOver = true;
-        this.add
-          .text(this.xCoord / 2, this.yCoord / 2, 'Great sorting!', {
-            fontSize: '64px',
+        this.timerText = this.add.text(20, 20, '', {
+            fontSize: '32px',
             fill: '#ffffff',
-          })
-          .setOrigin(0.5);
-        this.time.delayedCall(800, () => {
-          this.scene.start('transitionScreen', {
-            lives: this.lives,
-            score: this.score,
-            xCoord: this.xCoord,
-            yCoord: this.yCoord,
-            won: true,
-            elapsedTime: this.time.now
-          });
         });
-      } else {
+
+        this.livesText = this.add.text(this.xCoord - 180, 20, '', {
+            fontSize: '32px',
+            fill: '#ffffff',
+        });
+
+        if (!gs.timerEnabled) this.timerText.setVisible(false);
+        if (!gs.livesEnabled) this.livesText.setVisible(false);
+
+        // Background updates: timer & lives
+        this.time.addEvent({
+            delay: 200,
+            loop: true,
+            callback: () => {
+                const state = window.globalGameState;
+                const elapsed = this.time.now - state.startTime;
+                const timeLeft = Math.max(0, state.totalTime - elapsed);
+                const minutes = Math.floor(timeLeft / 60000);
+                const seconds = Math.floor((timeLeft % 60000) / 1000);
+
+                if (gs.timerEnabled)
+                    this.timerText.setText(
+                        `Time: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`
+                    );
+
+                if (gs.livesEnabled)
+                    this.livesText.setText(`Lives: ${state.lives}`);
+
+                if (!this.isGameOver && gs.livesEnabled && state.lives <= 0) {
+                    this.isGameOver = true;
+                    window.finishMiniGame(false, this, 0);
+                }
+            },
+        });
+
+        // BINS
+        this.recycleButton = this.add
+            .image(this.xCoord / 4, (3 * this.yCoord) / 4, 'recycle_bin')
+            .setScale(0.5)
+            .setInteractive();
+
+        this.trashButton = this.add
+            .image(this.xCoord / 2, (3 * this.yCoord) / 4, 'trash_bin')
+            .setScale(0.5)
+            .setInteractive();
+
+        this.compostButton = this.add
+            .image((3 * this.xCoord) / 4, (3 * this.yCoord) / 4, 'compost_bin')
+            .setScale(0.5)
+            .setInteractive();
+
+        // Mouse clicks
+        this.recycleButton.on("pointerdown", () => this.checkAnswer("recycle"));
+        this.trashButton.on("pointerdown", () => this.checkAnswer("trash"));
+        this.compostButton.on("pointerdown", () => this.checkAnswer("compost"));
+
+        if (gs.highContrast) {
+            this.background && this.background.setTint(0xffffff);
+            this.recycleButton.setTint(0x00ffff);
+            this.trashButton.setTint(0xff6666);
+            this.compostButton.setTint(0x66ff66);
+        }
+
+        // Keyboard input
+        this.registerKeyboard();
+
+        // Bin array for easy index-based selection
+        this.binOrder = ["recycle", "trash", "compost"];
+        this.binSprites = [
+            this.recycleButton,
+            this.trashButton,
+            this.compostButton,
+        ];
+
+        this.updateHighlight();
         this.nextObject();
-      }
-    } else {
-      this.isGameOver = true;
-      this.add
-        .text(this.xCoord / 2, this.yCoord / 2, 'Wrong!', {
-          fontSize: '64px',
-          fill: '#ffffff',
-        })
-        .setOrigin(0.5);
-      this.time.delayedCall(800, () => {
-        const won = gs.livesEnabled === false ? true : false;
-        this.scene.start('transitionScreen', {
-          lives: this.lives,
-          score: this.score,
-          xCoord: this.xCoord,
-          yCoord: this.yCoord,
-          won: won,
-          elapsedTime: this.time.now
-        });
-      });
     }
-  }
+
+    registerKeyboard() {
+        // Move left
+        this.input.keyboard.on("keydown-A", () => {
+            this.selectedIndex = Math.max(0, this.selectedIndex - 1);
+            this.updateHighlight();
+        });
+        this.input.keyboard.on("keydown-LEFT", () => {
+            this.selectedIndex = Math.max(0, this.selectedIndex - 1);
+            this.updateHighlight();
+        });
+
+        // Move right
+        this.input.keyboard.on("keydown-D", () => {
+            this.selectedIndex = Math.min(2, this.selectedIndex + 1);
+            this.updateHighlight();
+        });
+        this.input.keyboard.on("keydown-RIGHT", () => {
+            this.selectedIndex = Math.min(2, this.selectedIndex + 1);
+            this.updateHighlight();
+        });
+
+        // Select
+        const choose = () => {
+            if (!this.isGameOver) {
+                const selectedBin = this.binOrder[this.selectedIndex];
+                this.checkAnswer(selectedBin);
+            }
+        };
+
+        this.input.keyboard.on("keydown-SPACE", choose);
+        this.input.keyboard.on("keydown-ENTER", choose);
+    }
+
+    updateHighlight() {
+        this.binSprites.forEach((bin, i) => {
+            if (i === this.selectedIndex) {
+                bin.setScale(0.6); // highlighted
+            } else {
+                bin.setScale(0.5); // normal size
+            }
+        });
+    }
+
+    nextObject() {
+        const gs = window.globalGameState || {};
+
+        if (this.currentObject && this.currentObject.destroy)
+            this.currentObject.destroy();
+
+        const objects = [
+            { key: "banana_peel", correct: "compost" },
+            { key: "tin_can", correct: "trash" },
+            { key: "pileOfLeaves", correct: "compost" },
+            { key: "smallBox", correct: "recycle" },
+            { key: "milkCarton", correct: "recycle" },
+        ];
+
+        this.current = Phaser.Utils.Array.GetRandom(objects);
+
+        this.currentObject = this.add
+            .image(this.xCoord / 2, this.yCoord / 3, this.current.key)
+            .setOrigin(0.5);
+
+        if (gs.highContrast) {
+            this.currentObject.setTint(0xffff00);
+        }
+
+        // Timer per object
+        if (this.objectTimer && this.objectTimer.remove)
+            this.objectTimer.remove();
+
+        const difficulty = window.globalGameState?.difficulty || 1;
+        let delay = 5000 / difficulty;
+        if (gs.slowMode) delay *= 1.5;
+
+        if (gs.timerEnabled) {
+            this.objectTimer = this.time.delayedCall(delay, () => {
+                if (!this.isGameOver) {
+                    this.isGameOver = true;
+                    this.add
+                        .text(this.xCoord / 2, this.yCoord / 2, "Time's up!", {
+                            fontSize: "64px",
+                            fill: "#ffffff",
+                        })
+                        .setOrigin(0.5);
+
+                    this.time.delayedCall(500, () => {
+                        this.scene.start("transitionScreen", {
+                            lives: this.lives,
+                            score: this.score,
+                            xCoord: this.xCoord,
+                            yCoord: this.yCoord,
+                            won: gs.livesEnabled === false,
+                            elapsedTime: this.time.now,
+                        });
+                    });
+                }
+            });
+        }
+    }
+
+    checkAnswer(bin) {
+        const gs = window.globalGameState || {};
+        if (this.isGameOver) return;
+
+        if (this.objectTimer && this.objectTimer.remove)
+            this.objectTimer.remove();
+
+        if (bin === this.current.correct) {
+            this.localScore++;
+
+            if (this.localScore >= 5) {
+                this.isGameOver = true;
+                this.add
+                    .text(this.xCoord / 2, this.yCoord / 2, "Great sorting!", {
+                        fontSize: "64px",
+                        fill: "#ffffff",
+                    })
+                    .setOrigin(0.5);
+
+                this.time.delayedCall(800, () => {
+                    this.scene.start("transitionScreen", {
+                        lives: this.lives,
+                        score: this.score,
+                        xCoord: this.xCoord,
+                        yCoord: this.yCoord,
+                        won: true,
+                        elapsedTime: this.time.now,
+                    });
+                });
+            } else {
+                this.nextObject();
+            }
+        } else {
+            this.isGameOver = true;
+
+            this.add
+                .text(this.xCoord / 2, this.yCoord / 2, "Wrong!", {
+                    fontSize: "64px",
+                    fill: "#ffffff",
+                })
+                .setOrigin(0.5);
+
+            this.time.delayedCall(800, () => {
+                this.scene.start("transitionScreen", {
+                    lives: this.lives,
+                    score: this.score,
+                    xCoord: this.xCoord,
+                    yCoord: this.yCoord,
+                    won: gs.livesEnabled === false,
+                    elapsedTime: this.time.now,
+                });
+            });
+        }
+    }
 }
