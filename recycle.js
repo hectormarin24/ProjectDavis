@@ -9,10 +9,10 @@ export default class recycle extends Phaser.Scene {
     preload() {
         this.load.image('background', 'assets/background.webp');
 
-        this.load.image('recycle_bin', 'assets/Recycle_can.png');
+        this.load.image('paper_bin', 'assets/Recycle_can.png');
         this.load.image('trash_bin', 'assets/trash_can.png');
         this.load.image('compost_bin', 'assets/compost_can.png');
-
+        this.load.image('bottles_bin', 'assets/bottlesAndCans.png');
         this.load.image('tin_can', 'assets/tin_can.png');
         this.load.image('banana_peel', 'assets/banana_peel.png');
         this.load.image('pileOfLeaves', 'assets/pileOfLeaves.png');
@@ -29,7 +29,7 @@ export default class recycle extends Phaser.Scene {
         this.isGameOver = false;
         this.localScore = 0;
 
-        this.selectedIndex = 1; // 0 = recycle, 1 = trash, 2 = compost
+        this.selectedIndex = 0; // 0 = recycle, 1 = trash, 2 = compost
     }
 
     create() {
@@ -96,40 +96,48 @@ export default class recycle extends Phaser.Scene {
         });
 
         // BINS
-        this.recycleButton = this.add
-            .image(this.xCoord / 4, (3 * this.yCoord) / 4, 'recycle_bin')
+        this.bottleButton = this.add  
+            .image(this.xCoord / 5, (3 * this.yCoord) / 4, 'bottles_bin')
+            .setScale(0.5)
+            .setInteractive();
+
+        this.paperButton = this.add
+            .image(2 * this.xCoord / 5, (3 * this.yCoord) / 4, 'paper_bin')
             .setScale(0.5)
             .setInteractive();
 
         this.trashButton = this.add
-            .image(this.xCoord / 2, (3 * this.yCoord) / 4, 'trash_bin')
+            .image(3 * this.xCoord / 5, (3 * this.yCoord) / 4, 'trash_bin')
             .setScale(0.5)
             .setInteractive();
 
         this.compostButton = this.add
-            .image((3 * this.xCoord) / 4, (3 * this.yCoord) / 4, 'compost_bin')
+            .image(4 * this.xCoord / 5, (3 * this.yCoord) / 4, 'compost_bin')
             .setScale(0.5)
             .setInteractive();
 
         // Mouse clicks
-        this.recycleButton.on("pointerdown", () => this.checkAnswer("recycle"));
+        this.paperButton.on("pointerdown", () => this.checkAnswer("paper"));
         this.trashButton.on("pointerdown", () => this.checkAnswer("trash"));
         this.compostButton.on("pointerdown", () => this.checkAnswer("compost"));
+        this.bottleButton.on("pointerdown", ()=> this.checkAnswer("bottle"));
 
         if (gs.highContrast) {
             this.background && this.background.setTint(0xffffff);
-            this.recycleButton.setTint(0x00ffff);
+            this.paperButton.setTint(0x00ffff);
             this.trashButton.setTint(0xff6666);
             this.compostButton.setTint(0x66ff66);
+            this.bottleButton.setTint(0x66ff66);
         }
 
         // Keyboard input
         this.registerKeyboard();
 
         // Bin array for easy index-based selection
-        this.binOrder = ["recycle", "trash", "compost"];
+        this.binOrder = ["bottle", "paper", "trash", "compost"];
         this.binSprites = [
-            this.recycleButton,
+            this.bottleButton,
+            this.paperButton,
             this.trashButton,
             this.compostButton,
         ];
@@ -151,11 +159,11 @@ export default class recycle extends Phaser.Scene {
 
         // Move right
         this.input.keyboard.on("keydown-D", () => {
-            this.selectedIndex = Math.min(2, this.selectedIndex + 1);
+            this.selectedIndex = Math.min(3, this.selectedIndex + 1);
             this.updateHighlight();
         });
         this.input.keyboard.on("keydown-RIGHT", () => {
-            this.selectedIndex = Math.min(2, this.selectedIndex + 1);
+            this.selectedIndex = Math.min(3, this.selectedIndex + 1);
             this.updateHighlight();
         });
 
@@ -189,10 +197,10 @@ export default class recycle extends Phaser.Scene {
 
         const objects = [
             { key: "banana_peel", correct: "compost" },
-            { key: "tin_can", correct: "trash" },
+            { key: "tin_can", correct: "bottles" },
             { key: "pileOfLeaves", correct: "compost" },
-            { key: "smallBox", correct: "recycle" },
-            { key: "milkCarton", correct: "recycle" },
+            { key: "smallBox", correct: "paper" },
+            { key: "milkCarton", correct: "paper" },
         ];
 
         this.current = Phaser.Utils.Array.GetRandom(objects);
