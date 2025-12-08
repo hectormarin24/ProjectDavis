@@ -29,16 +29,28 @@ export default class bathroomSort extends Phaser.Scene {
         const cx = this.cameras.main.centerX;
 
         // HUD
-        this.timerText = this.add
-            .text(20, 20, '', { fontSize: '28px', fill: '#ffffff' })
-            .setDepth(100);
+        this.timerText = this.add.text(20, 20, '', { fontSize: '28px', fill: '#000000ff', fontStyle: 'bold' }).setDepth(51);
 
-        this.livesText = this.add
-            .text(this.cameras.main.width - 180, 20, '', { fontSize: '28px', fill: '#ffffff' })
-            .setDepth(100);
+        this.timerPanel = this.add
+            .graphics()
+            .fillStyle(0xf9cb9c, 1)
+            .fillRoundedRect(5, 9, 200, 50)
+            .lineStyle(4, 0x000000, 1)
+            .strokeRoundedRect(5, 9, 200, 50)
+            .setDepth(50);
 
-        if (!gs.timerEnabled) this.timerText.setVisible(false);
-        if (!gs.livesEnabled) this.livesText.setVisible(false);
+        this.livesText = this.add.text(this.xCoord - 170, 20, '', { fontSize: '28px', fill: '#000000ff', fontStyle: 'bold' }).setDepth(51);
+
+        this.livesPanel = this.add
+            .graphics()
+            .fillStyle(0xf9cb9c, 1)
+            .fillRoundedRect(this.xCoord - 190, 9, 180, 50)
+            .lineStyle(4, 0x000000, 1)
+            .strokeRoundedRect(this.xCoord - 190, 9, 180, 50)
+            .setDepth(50);
+
+        if (!gs.timerEnabled) {this.timerText.setVisible(false); this.timerPanel.setVisible(false);}
+        if (!gs.livesEnabled) {this.livesText.setVisible(false); this.livesPanel.setVisible(false);}
 
         this.time.addEvent({
             delay: 200,
@@ -86,8 +98,8 @@ export default class bathroomSort extends Phaser.Scene {
         this.message = this.add
             .text(
                 cx,
-                50,
-                'Let toilet paper fall. Swipe other stuff away!\n Use arrow keys or WASD to move around and space to SWIPE AWAY!',
+                105,
+                'Let toilet paper fall. Swipe other stuff away!\n Use arrow keys or WASD to move and space to SWIPE AWAY!',
                 {
                     font: '26px Arial',
                     color: '#111',
@@ -95,7 +107,15 @@ export default class bathroomSort extends Phaser.Scene {
                     wordWrap: { width: this.scale.width - 80 },
                 }
             )
-            .setOrigin(0.5);
+            .setOrigin(0.5).setDepth(51);
+
+        this.messagePanel = this.add
+            .graphics()
+            .fillStyle(0xffffff, 1)
+            .fillRoundedRect(cx - 400, 70, 800, 76)
+            .lineStyle(4, 0x000000, 1)
+            .strokeRoundedRect(cx - 400, 70, 800, 76)
+            .setDepth(50);
 
         this.clears = 0;
         this.mistakes = 0;
@@ -371,7 +391,7 @@ export default class bathroomSort extends Phaser.Scene {
         this.add
             .text(cx, cy - 40, won ? 'Great job!' : 'Try again!', {
                 font: '52px Arial',
-                fill: '#fff',
+                fill: '#ffffffff',
             })
             .setOrigin(0.5);
         this.time.delayedCall(800, () => {

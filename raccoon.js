@@ -45,26 +45,50 @@ export default class raccoon extends Phaser.Scene {
     this.hasFinished = false;
 
     this.timerText = this.add
-      .text(20, 20, '', { fontSize: '28px', fill: '#ffffff' })
+      .text(20, 20, '', { fontSize: '28px', fill: '#000000ff', fontStyle: 'bold' })
       .setDepth(100);
 
+    this.timerPanel = this.add
+      .graphics()
+      .fillStyle(0xf9cb9c, 1)
+      .fillRoundedRect(5, 9, 200, 50)
+      .lineStyle(4, 0x000000, 1)
+      .strokeRoundedRect(5, 9, 200, 50)
+      .setDepth(50);
+
     this.livesText = this.add
-      .text(WIDTH - 180, 20, '', { fontSize: '28px', fill: '#ffffff' })
+      .text(WIDTH - 170, 20, '', { fontSize: '28px', fill: '#000000ff', fontStyle: 'bold' })
       .setDepth(100);
+
+    this.livesPanel = this.add
+      .graphics()
+      .fillStyle(0xf9cb9c, 1)
+      .fillRoundedRect(this.xCoord - 190, 9, 180, 50)
+      .lineStyle(4, 0x000000, 1)
+      .strokeRoundedRect(this.xCoord - 190, 9, 180, 50)
+      .setDepth(50);
 
     this.missText = this.add
       .text(WIDTH / 2, 20, `Misses: ${this.misses}/${this.maxMisses}`, {
         fontSize: '28px',
-        fill: '#ffffff',
+        fill: '#000000ff', 
+        fontStyle: 'bold'
       })
       .setOrigin(0.5, 0)
       .setDepth(100);
 
+    this.missPanel = this.add
+      .graphics()
+      .fillStyle(0xf9cb9c, 1)
+      .fillRoundedRect(WIDTH / 2 - 110, 9, 220, 50)
+      .lineStyle(4, 0x000000, 1)
+      .strokeRoundedRect(WIDTH / 2 - 110, 9, 220, 50)
+      .setDepth(50);
+
     this.livesEnabled = gs.livesEnabled !== false;
 
-    if (!gs.timerEnabled) this.timerText.setVisible(false);
-    if (!gs.livesEnabled) this.livesText.setVisible(false);
-    if (!this.livesEnabled) this.missText.setVisible(false);
+    if (!gs.timerEnabled) {this.timerText.setVisible(false); this.timerPanel.setVisible(false);}
+    if (!gs.livesEnabled) {this.livesText.setVisible(false); this.livesPanel.setVisible(false); this.missText.setVisible(false); this.missPanel.setVisible(false);}
 
     // Timer & lives update
     this.time.addEvent({
@@ -90,22 +114,6 @@ export default class raccoon extends Phaser.Scene {
         }
       }
     });
-        // === HUD ===
-        this.timerText = this.add
-            .text(20, 20, '', { fontSize: '28px', fill: '#ffffff' })
-            .setDepth(100);
-
-        this.livesText = this.add
-            .text(WIDTH - 180, 20, '', { fontSize: '28px', fill: '#ffffff' })
-            .setDepth(100);
-
-        this.missText = this.add
-            .text(WIDTH / 2, 20, `Misses: ${this.misses}/${this.maxMisses}`, {
-                fontSize: '28px',
-                fill: '#ffffff',
-            })
-            .setOrigin(0.5, 0)
-            .setDepth(100);
                 
 
         // === Mouse click handler ===
@@ -140,13 +148,22 @@ export default class raccoon extends Phaser.Scene {
 
     const cx = this.cameras.main.centerX;
         this.message = this.add
-            .text(cx, 65, 'Don\'t let the raccoon get to the sandwiches! Click to pick them up.\n Use can use the arrow keys to move around and space to pick up sandwiches.', {
+            .text(cx, 103, 'Don\'t let the raccoon get to the sandwiches! Click to pick them up.\n Use can use the arrow keys to move around and space to pick up sandwiches.', {
                 font: '26px Arial',
                 color: '#111',
                 align: 'center',
                 wordWrap: { width: this.scale.width - 80 },
             })
-            .setOrigin(0.5, 0.5);
+            .setOrigin(0.5, 0.5).setDepth(51);
+
+        this.messagePanel = this.add
+            .graphics()
+            .fillStyle(0xffffff, 1)
+            .fillRoundedRect(cx - 460, 65, 920, 76)
+            .lineStyle(4, 0x000000, 1)
+            .strokeRoundedRect(cx - 460, 65, 920, 76)
+            .setDepth(50);
+
     // === Spawn Raccoon + Food ===
     this.spawnRaccoon(true);
     this.spawnFood();

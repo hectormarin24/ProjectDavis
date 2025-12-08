@@ -41,34 +41,45 @@ export default class catchRec extends Phaser.Scene {
     //Text
     const cx = this.cameras.main.centerX;
     this.message = this.add
-            .text(cx, 50, 'Catch the plastic bags! Don\'t let them fall into the recycle bin.', {
+            .text(cx, 100, 'Catch the plastic bags! Don\'t let them fall.', {
                 font: '26px Arial',
                 color: '#111',
                 align: 'center',
                 wordWrap: { width: this.scale.width - 80 },
             })
-            .setOrigin(0.5, 0.5);
-    // Recycle bin
-    let img = this.add.image(cx, 1150, 'recbin');
-    img.setScale(3);
+            .setOrigin(0.5, 0.5).setDepth(51);
+
+    this.messagePanel = this.add
+            .graphics()
+            .fillStyle(0xffffff, 1)
+            .fillRoundedRect(cx - 375, 75, 750, 50)
+            .lineStyle(4, 0x000000, 1)
+            .strokeRoundedRect(cx - 375, 75, 750, 50)
+            .setDepth(50);
+
     // HUD for global timer and lives
-    this.timerText = this.add
-      .text(20, 20, '', { fontSize: '28px', fill: '#ffffff' })
-      .setDepth(100);
+    this.timerText = this.add.text(20, 20, '', { fontSize: '28px', fill: '#000000ff', fontStyle: 'bold' }).setDepth(51);
 
-    this.livesText = this.add
-      .text(this.xCoord - 180, 20, '', { fontSize: '28px', fill: '#ffffff' })
-      .setDepth(100);
+    this.timerPanel = this.add
+      .graphics()
+      .fillStyle(0xf9cb9c, 1)
+      .fillRoundedRect(5, 9, 200, 50)
+      .lineStyle(4, 0x000000, 1)
+      .strokeRoundedRect(5, 9, 200, 50)
+      .setDepth(50);
 
-    // TIMER TOGGLE
-    if (!gs.timerEnabled) {
-      this.timerText.setVisible(false);
-    }
+    this.livesText = this.add.text(this.xCoord - 170, 20, '', { fontSize: '28px', fill: '#000000ff', fontStyle: 'bold' }).setDepth(51);
 
-    // LIVES TOGGLE
-    if (!gs.livesEnabled) {
-      this.livesText.setVisible(false);
-    }
+    this.livesPanel = this.add
+      .graphics()
+      .fillStyle(0xf9cb9c, 1)
+      .fillRoundedRect(this.xCoord - 190, 9, 180, 50)
+      .lineStyle(4, 0x000000, 1)
+      .strokeRoundedRect(this.xCoord - 190, 9, 180, 50)
+      .setDepth(50);
+
+    if (!gs.timerEnabled) {this.timerText.setVisible(false); this.timerPanel.setVisible(false);}
+    if (!gs.livesEnabled) {this.livesText.setVisible(false); this.livesPanel.setVisible(false);}
 
     // GLOBAL TIMER (respects timerEnabled, but not if slow mode accesibility option was checked in menu)
 this.time.addEvent({
@@ -108,7 +119,7 @@ this.time.addEvent({
 
     // SLOW MODE modifies spawn rate & game duration
     let spawnDelay = 800 / difficulty;
-    let gameDuration = 6000 / difficulty;
+    let gameDuration = 15000 / difficulty;
 
     if (gs.slowMode) {
       spawnDelay *= 1.8;
@@ -132,8 +143,16 @@ this.time.addEvent({
 
     // Score display for this mini game
     this.scoreText = this.add
-      .text(20, 60, 'Score: 0', { fontSize: '28px', fill: '#ffffff' })
-      .setDepth(100);
+      .text(this.xCoord / 2, 20, 'Score: 0', { fontSize: '28px', fill: '#000000ff', fontStyle: 'bold' })
+      .setDepth(51).setOrigin(0.5,0);
+
+    this.scorePanel = this.add
+      .graphics()
+      .fillStyle(0xf9cb9c, 1)
+      .fillRoundedRect(this.xCoord / 2 - 110, 9, 220, 50)
+      .lineStyle(4, 0x000000, 1)
+      .strokeRoundedRect(this.xCoord / 2 - 110, 9, 220, 50)
+      .setDepth(50);
   }
 
   spawnItem() {
@@ -220,14 +239,12 @@ endGame() {
 
   const gs = window.globalGameState || {};
   let won = this.scoreLocal >= 0;
-  if (gs.livesEnabled === false) {
-    won = true;
-  }
 
   this.add
     .text(this.xCoord / 2, this.yCoord / 2 - 20, 'Score: ' + this.scoreLocal, {
       fontSize: '48px',
-      color: '#ffffff',
+      color: '#000000ff',
+      fontStyle: 'bold'
     })
     .setOrigin(0.5);
 

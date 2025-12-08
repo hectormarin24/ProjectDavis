@@ -35,15 +35,28 @@ export default class oilAndWater extends Phaser.Scene {
       this.cameras.main.setBackgroundColor(0xf0f0f0);
     }
 
-    this.timerText = this.add.text(20, 20, '', { fontSize: '28px', fill: '#ffffff' })
-      .setDepth(100);
+    this.timerText = this.add.text(20, 20, '', { fontSize: '28px', fill: '#000000ff', fontStyle: 'bold' }).setDepth(51);
 
-    this.livesText = this.add.text(this.cameras.main.width - 180, 20, '', {
-      fontSize: '28px', fill: '#ffffff'
-    }).setDepth(100);
+    this.timerPanel = this.add
+      .graphics()
+      .fillStyle(0xf9cb9c, 1)
+      .fillRoundedRect(5, 9, 200, 50)
+      .lineStyle(4, 0x000000, 1)
+      .strokeRoundedRect(5, 9, 200, 50)
+      .setDepth(50);
 
-    if (!gs.timerEnabled) this.timerText.setVisible(false);
-    if (!gs.livesEnabled) this.livesText.setVisible(false);
+    this.livesText = this.add.text(this.xCoord - 170, 20, '', { fontSize: '28px', fill: '#000000ff', fontStyle: 'bold' }).setDepth(51);
+
+    this.livesPanel = this.add
+      .graphics()
+      .fillStyle(0xf9cb9c, 1)
+      .fillRoundedRect(this.xCoord - 190, 9, 180, 50)
+      .lineStyle(4, 0x000000, 1)
+      .strokeRoundedRect(this.xCoord - 190, 9, 180, 50)
+      .setDepth(50);
+
+    if (!gs.timerEnabled) {this.timerText.setVisible(false); this.timerPanel.setVisible(false);}
+    if (!gs.livesEnabled) {this.livesText.setVisible(false); this.livesPanel.setVisible(false);}
 
     this.time.addEvent({
       delay: 200,
@@ -78,16 +91,21 @@ export default class oilAndWater extends Phaser.Scene {
         };
         
         this.message = this.add
-            .text(cx, 95, 'Choose whether the liquid in the pot goes in the sink or container.\n Use the arrow keys to rotate between the two options and press space to select it.', {
+            .text(cx, 115, 'Choose whether the liquid in the pot goes in the sink or container.\n Use the arrow keys to rotate between the two options and press space to select it.', {
                 font: '26px Arial',
                 color: '#111',
                 align: 'center',
                 wordWrap: { width: this.scale.width - 80 },
             })
-            .setOrigin(0.5, 0.5);
+            .setOrigin(0.5, 0.5).setDepth(51);
 
-        this.timerText = this.add.text(24, 24, '', hudStyle).setDepth(100);
-        this.livesText = this.add.text(this.cameras.main.width - 200, 24, '', hudStyle).setDepth(100);
+        this.messagePanel = this.add
+          .graphics()
+          .fillStyle(0xffffff, 1)
+          .fillRoundedRect(cx - 440, 66, 880, 100)
+          .lineStyle(4, 0x000000, 1)
+          .strokeRoundedRect(cx - 440, 66, 880, 100)
+          .setDepth(50);
 
         this.time.addEvent({
             delay: 200,

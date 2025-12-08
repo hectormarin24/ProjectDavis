@@ -19,23 +19,63 @@ export default class tranistionScreen extends Phaser.Scene {
 
     create() {
         this.add.image(0, 0, 'background').setOrigin(0, 0);
+        const gs = window.globalGameState;
 
-        this.scoreText = this.add
-        .text(this.xCoord / 2 , this.yCoord / 4, 'Score: ' + this.score, { 
-            fontSize: '60px', 
-            color: '#000', 
-            stroke: '#000',
-            strokeThickness: 4
-        })
-        .setOrigin(0.5)
-        .setDepth(100);
+        if(gs.livesEnabled){
+            this.scoreText = this.add
+            .text(this.xCoord / 2 , this.yCoord / 4, 'Score: ' + this.score, { 
+                fontSize: '60px', 
+                color: '#000', 
+                stroke: '#000',
+                strokeThickness: 4
+            })
+            .setOrigin(0.5)
+            .setDepth(100);
 
-        this.scoreBg = this.add
-        .graphics()
-        .fillStyle(0xf9cb9c, 1)
-        .fillRoundedRect(this.xCoord / 2 - 275, this.yCoord / 4 - 75, 550, 150, 20)
-        .lineStyle(4, 0x000000, 1)
-        .strokeRoundedRect(this.xCoord / 2 - 275, this.yCoord / 4 - 75, 550, 150, 20);
+            this.scoreBg = this.add
+            .graphics()
+            .fillStyle(0xf9cb9c, 1)
+            .fillRoundedRect(this.xCoord / 2 - 275, this.yCoord / 4 - 75, 550, 150, 20)
+            .lineStyle(4, 0x000000, 1)
+            .strokeRoundedRect(this.xCoord / 2 - 275, this.yCoord / 4 - 75, 550, 150, 20);
+
+            this.tempScoreText = this.add
+            .text(this.xCoord / 2 + 125, this.yCoord / 4 - 45, '', {
+                font: '32px',
+                color: '#000',
+                stroke: '#000',
+                strokeThickness: 3
+            })
+            .setDepth(100)
+            .setOrigin(0.5);
+        } else {
+            this.scoreText = this.add
+            .text(this.xCoord / 2 , this.yCoord / 2, 'Score: ' + this.score, { 
+                fontSize: '60px', 
+                color: '#000', 
+                stroke: '#000',
+                strokeThickness: 4
+            })
+            .setOrigin(0.5)
+            .setDepth(100);
+
+            this.scoreBg = this.add
+            .graphics()
+            .fillStyle(0xf9cb9c, 1)
+            .fillRoundedRect(this.xCoord / 2 - 275, this.yCoord / 2 - 75, 550, 150, 20)
+            .lineStyle(4, 0x000000, 1)
+            .strokeRoundedRect(this.xCoord / 2 - 275, this.yCoord / 2 - 75, 550, 150, 20);
+
+            this.tempScoreText = this.add
+            .text(this.xCoord / 2 + 125, this.yCoord / 2 - 45, '', {
+                font: '32px',
+                color: '#000',
+                stroke: '#000',
+                strokeThickness: 3
+            })
+            .setDepth(100)
+            .setOrigin(0.5);
+        }
 
         this.livesText = this.add
         .text(this.xCoord / 2, this.yCoord / 2, 'Lives: ' + this.lives, { 
@@ -82,16 +122,6 @@ export default class tranistionScreen extends Phaser.Scene {
         .fillRoundedRect(this.xCoord / 2 - 125, this.yCoord / 2 + 260, 250, 80, 20)
         .lineStyle(4, 0x000000, 1)
         .strokeRoundedRect(this.xCoord / 2 - 125, this.yCoord / 2 + 260, 250, 80, 20)
-
-        this.tempScoreText = this.add
-        .text(this.xCoord / 2 + 125, this.yCoord / 4 - 45, '', {
-            font: '32px',
-            color: '#000',
-            stroke: '#000',
-            strokeThickness: 3
-        })
-        .setDepth(100)
-        .setOrigin(0.5);
 
         this.tempLivesText = this.add
         .text(this.xCoord / 2 + 90, this.yCoord / 2 - 40, '', {
@@ -160,6 +190,15 @@ export default class tranistionScreen extends Phaser.Scene {
                     }
                 });
             });
+        }
+
+        if(!gs.livesEnabled) {
+            this.heart1.setVisible(false);
+            this.heart2.setVisible(false);
+            this.heart3.setVisible(false);
+            this.tempLivesText.setVisible(false);
+            this.livesBg.setVisible(false);
+            this.livesText.setVisible(false);
         }
     }
 
