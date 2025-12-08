@@ -44,15 +44,28 @@ export default class leakyFaucet extends Phaser.Scene {
     // HUD: display global time left and lives
     
     const screenW = this.scale.width;
-    this.timerText = this.add
-      .text(20, 20, '', { fontSize: '32px', fill: '#ffffff' })
-      .setDepth(100);
-    this.livesText = this.add
-      .text(screenW - 180, 20, '', { fontSize: '32px', fill: '#ffffff' })
-      .setDepth(100);
+    this.timerText = this.add.text(20, 20, '', { fontSize: '28px', fill: '#000000ff', fontStyle: 'bold' }).setDepth(51);
 
-    if (!gs.timerEnabled) this.timerText.setVisible(false);
-    if (!gs.livesEnabled) this.livesText.setVisible(false);
+    this.timerPanel = this.add
+      .graphics()
+      .fillStyle(0xf9cb9c, 1)
+      .fillRoundedRect(5, 9, 200, 50)
+      .lineStyle(4, 0x000000, 1)
+      .strokeRoundedRect(5, 9, 200, 50)
+      .setDepth(50);
+
+    this.livesText = this.add.text(this.xCoord - 170, 20, '', { fontSize: '28px', fill: '#000000ff', fontStyle: 'bold' }).setDepth(51);
+
+    this.livesPanel = this.add
+      .graphics()
+      .fillStyle(0xf9cb9c, 1)
+      .fillRoundedRect(this.xCoord - 190, 9, 180, 50)
+      .lineStyle(4, 0x000000, 1)
+      .strokeRoundedRect(this.xCoord - 190, 9, 180, 50)
+      .setDepth(50);
+
+    if (!gs.timerEnabled) {this.timerText.setVisible(false); this.timerPanel.setVisible(false);}
+    if (!gs.livesEnabled) {this.livesText.setVisible(false); this.livesPanel.setVisible(false);}
 
     this.time.addEvent({
       delay: 200,
@@ -88,13 +101,23 @@ export default class leakyFaucet extends Phaser.Scene {
 
     const cx = this.cameras.main.centerX;
     this.message = this.add
-            .text(cx, 50, 'Click the wrench to tighten the pipe and stop the leak! \n Press \'D\' or the right arrow tighten.', {
+            .text(cx, 100, 'Click the wrench to tighten the pipe and stop the leak! \n Press \'D\' or the right arrow tighten.', {
                 font: '26px Arial',
                 color: '#111',
                 align: 'center',
                 wordWrap: { width: this.scale.width - 80 },
             })
-            .setOrigin(0.5, 0.5);
+            .setOrigin(0.5, 0.5)
+            .setDepth(51);
+
+     this.messagePanel = this.add
+      .graphics()
+      .fillStyle(0xffffff, 1)
+      .fillRoundedRect(cx - 325, 63, 650, 76)
+      .lineStyle(4, 0x000000, 1)
+      .strokeRoundedRect(cx - 325, 63, 650, 76)
+      .setDepth(50);
+
     // Sink
     this.sink = this.add.image(width * 0.5, height * 0.67, 'sink');
     this.sink.setScale(0.72).setOrigin(0.5, 0.5);
@@ -211,10 +234,7 @@ export default class leakyFaucet extends Phaser.Scene {
   endGame(success) {
     const gs = window.globalGameState || {};
     let won = success;
-    if (gs.livesEnabled === false && !success) {
-      won = true;
-    }
-
+ 
     // Mark the game as over to stop further interactions
     this.gameOver = true;
     this.sink.setTexture(success ? 'sink' : 'sink_full');
@@ -227,7 +247,7 @@ export default class leakyFaucet extends Phaser.Scene {
       this.scale.height,
       0x000000,
       0.6,
-    );
+    ).setDepth(100);
     this.add
       .text(
         this.scale.width / 2,
@@ -235,7 +255,7 @@ export default class leakyFaucet extends Phaser.Scene {
         success ? '✅ Leak Fixed!' : ' Sink Overflowed!',
         { font: '32px Arial', color: '#ffffff' },
       )
-      .setOrigin(0.5);
+      .setOrigin(0.5).setDepth(101);
     // After a short delay, invoke transition
     this.time.delayedCall(1200, () => {
       this.scene.start('transitionScreen', {

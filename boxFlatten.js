@@ -32,18 +32,28 @@ export default class boxFlatten extends Phaser.Scene {
 
         if (gs.highContrast) bg.setTint(0xffffff);
 
-        this.timerText = this.add.text(20, 20, '', {
-            fontSize: '32px',
-            fill: '#ffffff'
-        }).setDepth(100);
+        this.timerText = this.add.text(20, 20, '', { fontSize: '28px', fill: '#000000ff', fontStyle: 'bold' }).setDepth(51);
 
-        this.livesText = this.add.text(this.xCoord - 180, 20, {
-            fontSize: '32px',
-            fill: '#ffffff'
-        }).setDepth(100);
+        this.timerPanel = this.add
+            .graphics()
+            .fillStyle(0xf9cb9c, 1)
+            .fillRoundedRect(5, 9, 200, 50)
+            .lineStyle(4, 0x000000, 1)
+            .strokeRoundedRect(5, 9, 200, 50)
+            .setDepth(50);
 
-        if (!gs.timerEnabled) this.timerText.setVisible(false);
-        if (!gs.livesEnabled) this.livesText.setVisible(false);
+        this.livesText = this.add.text(this.xCoord - 170, 20, '', { fontSize: '28px', fill: '#000000ff', fontStyle: 'bold' }).setDepth(51);
+
+        this.livesPanel = this.add
+            .graphics()
+            .fillStyle(0xf9cb9c, 1)
+            .fillRoundedRect(this.xCoord - 190, 9, 180, 50)
+            .lineStyle(4, 0x000000, 1)
+            .strokeRoundedRect(this.xCoord - 190, 9, 180, 50)
+            .setDepth(50);
+
+        if (!gs.timerEnabled) {this.timerText.setVisible(false); this.timerPanel.setVisible(false);}
+        if (!gs.livesEnabled) {this.livesText.setVisible(false); this.livesPanel.setVisible(false);}
 
         // HUD Timer update
         this.time.addEvent({
@@ -75,7 +85,7 @@ export default class boxFlatten extends Phaser.Scene {
         this.add
             .text(
                 cx,
-                50,
+                90,
                 'Click or press SPACE to flatten each box!',
                 {
                     font: '26px Arial',
@@ -84,7 +94,15 @@ export default class boxFlatten extends Phaser.Scene {
                     wordWrap: { width: this.scale.width - 80 }
                 }
             )
-            .setOrigin(0.5);
+            .setOrigin(0.5).setDepth(51);
+
+        this.messagePanel = this.add
+            .graphics()
+            .fillStyle(0xffffff, 1)
+            .fillRoundedRect(cx - 275, 66, 550, 50)
+            .lineStyle(4, 0x000000, 1)
+            .strokeRoundedRect(cx - 275, 66, 550, 50)
+            .setDepth(50);
 
         // --- SPACE KEY FLATTENS THE BOX ---
         this.input.keyboard.on("keydown-SPACE", () => {
@@ -204,11 +222,6 @@ export default class boxFlatten extends Phaser.Scene {
 
         if (this.boxTimer && this.boxTimer.remove) this.boxTimer.remove();
 
-        this.add.text(this.xCoord / 2, this.yCoord / 2, 'Great job!', {
-            fontSize: '64px',
-            fill: '#ffffff'
-        }).setOrigin(0.5);
-
         this.time.delayedCall(800, () => {
             this.scene.start('transitionScreen', {
                 lives: this.lives,
@@ -232,11 +245,6 @@ export default class boxFlatten extends Phaser.Scene {
         this.isGameOver = true;
 
         if (this.boxTimer && this.boxTimer.remove) this.boxTimer.remove();
-
-        this.add.text(this.xCoord / 2, this.yCoord / 2, 'Oops!', {
-            fontSize: '64px',
-            fill: '#ffffff'
-        }).setOrigin(0.5);
 
         this.time.delayedCall(800, () => {
             this.scene.start('transitionScreen', {

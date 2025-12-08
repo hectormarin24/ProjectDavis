@@ -48,26 +48,45 @@ export default class recycle extends Phaser.Scene {
         // HUD
         const cx = this.cameras.main.centerX;
         this.message = this.add
-            .text(cx, 50, 'Use A/D or ←/→ to choose a bin. Press SPACE to sort.', {
+            .text(cx, 90, 'Use A/D or ←/→ to choose a bin. Press SPACE to sort.', {
                 font: '26px Arial',
                 color: '#111',
                 align: 'center',
                 wordWrap: { width: this.scale.width - 80 },
             })
-            .setOrigin(0.5);
+            .setOrigin(0.5)
+            .setDepth(51);
+        
+        this.messagePanel = this.add
+            .graphics()
+            .fillStyle(0xffffff, 1)
+            .fillRoundedRect(cx - 350, 66, 700, 50)
+            .lineStyle(4, 0x000000, 1)
+            .strokeRoundedRect(cx - 350, 66, 700, 50)
+            .setDepth(50);
 
-        this.timerText = this.add.text(20, 20, '', {
-            fontSize: '32px',
-            fill: '#ffffff',
-        });
+        this.timerText = this.add.text(20, 20, '', { fontSize: '28px', fill: '#000000ff', fontStyle: 'bold' }).setDepth(51);
 
-        this.livesText = this.add.text(this.xCoord - 180, 20, '', {
-            fontSize: '32px',
-            fill: '#ffffff',
-        });
+        this.timerPanel = this.add
+            .graphics()
+            .fillStyle(0xf9cb9c, 1)
+            .fillRoundedRect(5, 9, 200, 50)
+            .lineStyle(4, 0x000000, 1)
+            .strokeRoundedRect(5, 9, 200, 50)
+            .setDepth(50);
 
-        if (!gs.timerEnabled) this.timerText.setVisible(false);
-        if (!gs.livesEnabled) this.livesText.setVisible(false);
+        this.livesText = this.add.text(this.xCoord - 170, 20, '', { fontSize: '28px', fill: '#000000ff', fontStyle: 'bold' }).setDepth(51);
+
+        this.livesPanel = this.add
+            .graphics()
+            .fillStyle(0xf9cb9c, 1)
+            .fillRoundedRect(this.xCoord - 190, 9, 180, 50)
+            .lineStyle(4, 0x000000, 1)
+            .strokeRoundedRect(this.xCoord - 190, 9, 180, 50)
+            .setDepth(50);
+
+        if (!gs.timerEnabled) {this.timerText.setVisible(false); this.timerPanel.setVisible(false);}
+        if (!gs.livesEnabled) {this.livesText.setVisible(false); this.livesPanel.setVisible(false);}
 
         // Background updates: timer & lives
         this.time.addEvent({
@@ -197,7 +216,7 @@ export default class recycle extends Phaser.Scene {
 
         const objects = [
             { key: "banana_peel", correct: "compost" },
-            { key: "tin_can", correct: "bottles" },
+            { key: "tin_can", correct: "bottle" },
             { key: "pileOfLeaves", correct: "compost" },
             { key: "smallBox", correct: "paper" },
             { key: "milkCarton", correct: "paper" },
@@ -218,7 +237,7 @@ export default class recycle extends Phaser.Scene {
             this.objectTimer.remove();
 
         const difficulty = window.globalGameState?.difficulty || 1;
-        let delay = 5000 / difficulty;
+        let delay = 10000 / difficulty;
         if (gs.slowMode) delay *= 1.5;
 
         if (gs.timerEnabled) {
@@ -259,13 +278,6 @@ export default class recycle extends Phaser.Scene {
 
             if (this.localScore >= 5) {
                 this.isGameOver = true;
-                this.add
-                    .text(this.xCoord / 2, this.yCoord / 2, "Great sorting!", {
-                        fontSize: "64px",
-                        fill: "#ffffff",
-                    })
-                    .setOrigin(0.5);
-
                 this.time.delayedCall(800, () => {
                     this.scene.start("transitionScreen", {
                         lives: this.lives,
@@ -281,21 +293,13 @@ export default class recycle extends Phaser.Scene {
             }
         } else {
             this.isGameOver = true;
-
-            this.add
-                .text(this.xCoord / 2, this.yCoord / 2, "Wrong!", {
-                    fontSize: "64px",
-                    fill: "#ffffff",
-                })
-                .setOrigin(0.5);
-
             this.time.delayedCall(800, () => {
                 this.scene.start("transitionScreen", {
                     lives: this.lives,
                     score: this.score,
                     xCoord: this.xCoord,
                     yCoord: this.yCoord,
-                    won: gs.livesEnabled === false,
+                    won: false,
                     elapsedTime: this.time.now,
                 });
             });

@@ -54,13 +54,28 @@ export default class bugFriend extends Phaser.Scene {
         this.createInsect('aphid', 100, 600, true);
         this.createInsect('grasshopper', 800, 500, true);
 
-        this.timerText = this.add
-            .text(20, 20, '', { fontSize: '32px', fill: '#ffffff' })
-            .setDepth(100);
+        this.timerText = this.add.text(20, 20, '', { fontSize: '28px', fill: '#000000ff', fontStyle: 'bold' }).setDepth(51);
 
-        this.livesText = this.add
-            .text(this.xCoord - 180, 20, '', { fontSize: '32px', fill: '#ffffff' })
-            .setDepth(100);
+        this.timerPanel = this.add
+            .graphics()
+            .fillStyle(0xf9cb9c, 1)
+            .fillRoundedRect(5, 9, 200, 50)
+            .lineStyle(4, 0x000000, 1)
+            .strokeRoundedRect(5, 9, 200, 50)
+            .setDepth(50);
+
+        this.livesText = this.add.text(this.xCoord - 170, 20, '', { fontSize: '28px', fill: '#000000ff', fontStyle: 'bold' }).setDepth(51);
+
+        this.livesPanel = this.add
+            .graphics()
+            .fillStyle(0xf9cb9c, 1)
+            .fillRoundedRect(this.xCoord - 190, 9, 180, 50)
+            .lineStyle(4, 0x000000, 1)
+            .strokeRoundedRect(this.xCoord - 190, 9, 180, 50)
+            .setDepth(50);
+
+        if (!gs.timerEnabled) {this.timerText.setVisible(false); this.timerPanel.setVisible(false);}
+        if (!gs.livesEnabled) {this.livesText.setVisible(false); this.livesPanel.setVisible(false);}
 
         this.time.addEvent({
             delay: 200,
@@ -88,7 +103,7 @@ export default class bugFriend extends Phaser.Scene {
         this.message = this.add
             .text(
                 cx,
-                50,
+                103,
                 'Squash all the bad bugs from the garden!\n Use the arrow keys or WASD to move around and space to squash!',
                 {
                     font: '26px Arial',
@@ -97,7 +112,15 @@ export default class bugFriend extends Phaser.Scene {
                     wordWrap: { width: this.scale.width - 80 },
                 }
             )
-            .setOrigin(0.5, 0.5);
+            .setOrigin(0.5, 0.5).setDepth(51);
+            
+        this.messagePanel = this.add
+            .graphics()
+            .fillStyle(0xffffff, 1)
+            .fillRoundedRect(cx - 400, 70, 800, 76)
+            .lineStyle(4, 0x000000, 1)
+            .strokeRoundedRect(cx - 400, 70, 800, 76)
+            .setDepth(50);
 
         this.gameEnded = false;
 
@@ -235,11 +258,7 @@ export default class bugFriend extends Phaser.Scene {
 
     endGame(won) {
         const gs = window.globalGameState || {};
-
-        if (gs.livesEnabled === false) {
-            won = true;
-        }
-
+        
         if (this.isGameOver) return;
         this.isGameOver = true;
         this.gameEnded = true;
@@ -251,8 +270,8 @@ export default class bugFriend extends Phaser.Scene {
         this.add.text(
             this.xCoord / 2,
             this.yCoord / 2,
-            won ? 'You Win!' : 'You Lost...',
-            { fontSize: '84px', fill: '#ffffff' }
+            won ? 'You Win!' : 'Oops!',
+            { fontSize: '84px', fill: '#000000ff', fontStyle: 'bold' }
         ).setOrigin(0.5);
 
         this.time.delayedCall(800, () => {

@@ -50,20 +50,29 @@ export default class fruitPicker extends Phaser.Scene {
 
     // Draw the background and tree.  The tree is purely decorative.
     const bg = this.add.image(this.xCoord / 2, this.yCoord / 2, 'ff_bg')
-      .setDisplaySize(this.xCoord, this.yCoord);
+      .setDisplaySize(this.xCoord + 300, this.yCoord);
     const tree = this.add.image(this.xCoord / 2, this.yCoord / 2.5, 'tree')
       .setScale(1);
 
 
     const cx = this.cameras.main.centerX;
     this.message = this.add
-            .text(cx, 80, 'Move the basket left to right to catch the apples.\nUse WASD to move around.', {
+            .text(cx, 103, 'Move the basket left to right to catch the apples.\nUse WASD to move around.', {
                 font: '26px Arial',
                 color: '#111',
                 align: 'center',
                 wordWrap: { width: this.scale.width - 80 },
             })
-            .setOrigin(0.5, 0.5);
+            .setOrigin(0.5, 0.5).setDepth(51);
+
+    this.messagePanel = this.add
+            .graphics()
+            .fillStyle(0xffffff, 1)
+            .fillRoundedRect(cx - 305, 65, 610, 76)
+            .lineStyle(4, 0x000000, 1)
+            .strokeRoundedRect(cx - 305, 65, 610, 76)
+            .setDepth(50);
+
     // Create the draggable basket.  Use Arcade physics so that we can
     // constrain movement easily and detect overlaps, but disable gravity.
     this.basket = this.add.image(this.xCoord / 2, this.yCoord - 100, 'basket')
@@ -110,22 +119,60 @@ export default class fruitPicker extends Phaser.Scene {
     // HUD: display timer and lives.  A transient message appears when
     // fruit spoils so players understand why they lost the mini-game.
     this.timeLeft = 25;
-    this.timerText = this.add.text(40, 40, `Time: ${this.timeLeft}`, {
-      fontSize: '32px',
-      color: '#fff',
-    });
-    this.livesText = this.add.text(this.xCoord - 180, 40, `Lives: ${this.lives}`, {
-      fontSize: '32px',
-      color: '#fff',
-    });
+    this.timerText = this.add.text(40, 40, '', { fontSize: '28px', fill: '#000000ff', fontStyle: 'bold' });
     this.messageText = this.add.text(this.xCoord / 2, 80, '', {
       fontSize: '32px',
       color: '#ff4f4f',
       fontStyle: 'bold',
     }).setOrigin(0.5);
 
-    if (!gs.timerEnabled) this.timerText.setVisible(false);
-    if (!gs.livesEnabled) this.livesText.setVisible(false);
+    this.timerText = this.add.text(20, 20, '', { fontSize: '28px', fill: '#000000ff', fontStyle: 'bold' }).setDepth(51);
+
+    this.timerPanel = this.add
+      .graphics()
+      .fillStyle(0xf9cb9c, 1)
+      .fillRoundedRect(5, 9, 200, 50)
+      .lineStyle(4, 0x000000, 1)
+      .strokeRoundedRect(5, 9, 200, 50)
+      .setDepth(50);
+
+    this.livesText = this.add.text(this.xCoord - 170, 20, '', { fontSize: '28px', fill: '#000000ff', fontStyle: 'bold' }).setDepth(51);
+
+    this.livesPanel = this.add
+      .graphics()
+      .fillStyle(0xf9cb9c, 1)
+      .fillRoundedRect(this.xCoord - 190, 9, 180, 50)
+      .lineStyle(4, 0x000000, 1)
+      .strokeRoundedRect(this.xCoord - 190, 9, 180, 50)
+      .setDepth(50);
+
+    if (!gs.timerEnabled) {this.timerText.setVisible(false); this.timerPanel.setVisible(false);}
+    if (!gs.livesEnabled) {this.livesText.setVisible(false); this.livesPanel.setVisible(false);}
+
+    this.time.addEvent({
+      delay: 200,
+      loop: true,
+      callback: () => {
+        const state = window.globalGameState;
+        const elapsed = this.time.now - state.startTime;
+        const timeLeft = Math.max(0, state.totalTime - elapsed);
+        const minutes = Math.floor(timeLeft / 60000);
+        const seconds = Math.floor((timeLeft % 60000) / 1000);
+
+        if (gs.timerEnabled)
+          this.timerText.setText(
+            `Time: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`
+          );
+
+        if (gs.livesEnabled)
+          this.livesText.setText(`Lives: ${state.lives}`);
+
+        if (!this.isGameOver && gs.livesEnabled && state.lives <= 0) {
+          this.isGameOver = true;
+          window.finishMiniGame(false, this, 0);
+        }
+      },
+    });
 
     // Spawn fruits at regular intervals.  The spawn loop stops when the
     // mini-game finishes early due to a spoiled fruit or time running out.
@@ -142,7 +189,6 @@ export default class fruitPicker extends Phaser.Scene {
         delay: 1000,
         callback: () => {
           this.timeLeft--;
-          this.timerText.setText(`Time: ${this.timeLeft}`);
           if (this.timeLeft <= 0) {
             this.finish(true);
           }
@@ -225,13 +271,12 @@ spawnBugOnFruit(fruit) {
   this.showMessage('Fruit spoiled due to bugs!');
 
   this.time.delayedCall(2000, () => {
-    const won = gs.livesEnabled === false ? true : false;
     this.scene.start('transitionScreen', {
       lives: this.lives,
       score: this.finalScore,
       xCoord: this.xCoord,
       yCoord: this.yCoord,
-      won: won,
+      won: false,
       elapsedTime: this.time.now
     });
   });

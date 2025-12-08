@@ -57,8 +57,11 @@ export default class startScreen extends Phaser.Scene {
 
         const state = window.globalGameState;
         window.finishMiniGame = (success, scene, time) => {
-            if (success) state.score += 100;
-            else state.lives -= 1;
+            if (success) {
+                state.score += 100;
+            } else if(state.livesEnabled) {
+                state.lives -= 1;
+            }
 
             state.difficulty = Math.min(3, state.difficulty + 0.1);
             state.startTime += time;
@@ -111,14 +114,14 @@ export default class startScreen extends Phaser.Scene {
         window.gameQueue = Phaser.Utils.Array.Shuffle(miniGames.slice());
 
         // Play Button
-        const playBtn = this.add
+        this.playBtn = this.add
             .image(this.xCoord / 2, (3 * this.yCoord) / 3.6, 'btnPlay')
             .setDepth(10)
             .setScale(0.2)
             .setScrollFactor(0)
             .setInteractive({ useHandCursor: true })
-            .on('pointerover', () => playBtn.setScale(0.23))
-            .on('pointerout', () => playBtn.setScale(0.2))
+            .on('pointerover', () => this.playBtn.setScale(0.23))
+            .on('pointerout', () => this.playBtn.setScale(0.2))
             .on('pointerdown', () => {
                 const nextScene =
                     window.gameQueue.length > 0 ? window.gameQueue.shift() : 'endScreen';
@@ -133,14 +136,14 @@ export default class startScreen extends Phaser.Scene {
             });
 
         // Help Button
-        const trophyBtn = this.add
+        this.trophyBtn = this.add
             .image(this.xCoord / 2.7, (3 * this.yCoord) / 3.6, 'btnTrophy')
             .setDepth(10)
             .setScale(0.25)
             .setScrollFactor(0)
             .setInteractive({ useHandCursor: true })
-            .on('pointerover', () => trophyBtn.setScale(0.28))
-            .on('pointerout', () => trophyBtn.setScale(0.25))
+            .on('pointerover', () => this.trophyBtn.setScale(0.28))
+            .on('pointerout', () => this.trophyBtn.setScale(0.25))
             .on('pointerdown', () => {
                     this.scene.start('helpScene', {
                     xCoord: this.xCoord,
@@ -150,56 +153,55 @@ export default class startScreen extends Phaser.Scene {
             
 
         // Settings Button
-        const settingsBtn = this.add
+        this.settingsBtn = this.add
             .image(this.xCoord / 1.6, (3 * this.yCoord) / 3.6, 'btnSettings')
             .setDepth(10)
             .setScale(0.25)
             .setScrollFactor(0)
             .setInteractive({ useHandCursor: true })
-            .on('pointerover', () => settingsBtn.setScale(0.28))
-            .on('pointerout', () => settingsBtn.setScale(0.25))
+            .on('pointerover', () => this.settingsBtn.setScale(0.28))
+            .on('pointerout', () => this.settingsBtn.setScale(0.25))
             .on('pointerdown', () => {
                 this.showSettingsMenu();
             });
 
         this.settingsPanel = this.add
-            .rectangle(
-                this.xCoord / 2,
-                this.yCoord / 2,
-                this.xCoord * 0.6,
-                this.yCoord * 0.8,
-                0x000000,
-                0.5
-            )
+            .graphics()
+            .fillStyle(0xf9cb9c, 1)
+            .fillRoundedRect(this.xCoord / 5, this.yCoord / 10, this.xCoord * 0.6, this.yCoord * 0.8, 20)
+            .lineStyle(4, 0x000000, 1)
+            .strokeRoundedRect(this.xCoord / 5, this.yCoord / 10, this.xCoord * 0.6, this.yCoord * 0.8, 20)
             .setDepth(50)
             .setVisible(false);
 
                 // Difficulty text object
-        this.difficultyText = this.add.text(
-            this.xCoord / 2,
-            this.yCoord / 2 + 130,
-            '',
-            {
-                fontSize: '32px',
-                fill: '#ffffff',
-                align: 'center',
-                fontStyle: 'bold',
-                wordWrap: {
-                    width: this.xCoord * 0.5,
-                    useAdvancedWrap: true
+        this.difficultyText = this.add
+            .text(
+                this.xCoord / 2,
+                this.yCoord / 2 + 140,
+                '',
+                {
+                    fontSize: '32px',
+                    fill: '#000000ff',
+                    align: 'center',
+                    fontFamily: 'Arial',
+                    fontStyle: 'bold',
+                    wordWrap: {
+                        width: this.xCoord * 0.5,
+                        useAdvancedWrap: true
+                    }
                 }
-            }
-        )
-        .setOrigin(0.5)
-        .setDepth(51)
-        .setInteractive({ useHandCursor: true })
-        .setVisible(false);
+            )
+            .setOrigin(0.5)
+            .setDepth(51)
+            .setVisible(false)
+            .setInteractive({ useHandCursor: true });
 
         // Function to refresh difficulty label text
         this.updateDifficultyText = () => {
             const { difficultyEnabled } = window.globalGameState;
             this.difficultyText.setText(
-                difficultyEnabled ? 'Difficulty: ON' : 'Difficulty: OFF (Easy Mode)'
+                difficultyEnabled ? 'Difficulty: Normal' : 'Difficulty: Easy'
             );
         };
 
@@ -221,13 +223,14 @@ export default class startScreen extends Phaser.Scene {
         this.slowModeText = this.add
             .text(
                 this.xCoord / 2,
-                this.yCoord / 2 - 80,
+                this.yCoord / 2 - 60,
                 '',
                 {
                     fontSize: '32px',
-                    fill: '#ffffff',
+                    fill: '#000000ff',
                     align: 'center',
                     fontFamily: 'Arial',
+                    fontStyle: 'bold',
                     wordWrap: {
                         width: this.xCoord * 0.5,
                         useAdvancedWrap: true
@@ -248,13 +251,14 @@ export default class startScreen extends Phaser.Scene {
         this.timerToggleText = this.add
             .text(
                 this.xCoord / 2,
-                this.yCoord / 2 - 30,
+                this.yCoord / 2 - 10,
                 '',
                 {
                     fontSize: '32px',
-                    fill: '#ffffff',
+                    fill: '#000000ff',
                     align: 'center',
                     fontFamily: 'Arial',
+                    fontStyle: 'bold',
                     wordWrap: {
                         width: this.xCoord * 0.5,
                         useAdvancedWrap: true
@@ -275,13 +279,14 @@ export default class startScreen extends Phaser.Scene {
         this.livesToggleText = this.add
             .text(
                 this.xCoord / 2,
-                this.yCoord / 2 + 20,
+                this.yCoord / 2 + 40,
                 '',
                 {
                     fontSize: '32px',
-                    fill: '#ffffff',
+                    fill: '#000000ff',
                     align: 'center',
                     fontFamily: 'Arial',
+                    fontStyle: 'bold',
                     wordWrap: {
                         width: this.xCoord * 0.5,
                         useAdvancedWrap: true
@@ -302,13 +307,14 @@ export default class startScreen extends Phaser.Scene {
         this.highContrastText = this.add
             .text(
                 this.xCoord / 2,
-                this.yCoord / 2 + 70,
+                this.yCoord / 2 + 90,
                 '',
                 {
                     fontSize: '32px',
-                    fill: '#ffffff',
+                    fill: '#000000ff',
                     align: 'center',
                     fontFamily: 'Arial',
+                    fontStyle: 'bold',
                     wordWrap: {
                         width: this.xCoord * 0.5,
                         useAdvancedWrap: true
@@ -329,23 +335,33 @@ export default class startScreen extends Phaser.Scene {
         this.closeSettingsBtn = this.add
             .text(
                 this.xCoord / 2,
-                this.yCoord / 2 + 180,
+                this.yCoord / 2 + 250,
                 'Close',
                 {
-                    fontSize: '28px',
-                    fill: '#ffffff',
-                    backgroundColor: '#333333'
+                    fontSize: '42px',
+                    fill: '#000000ff',
+                    fontStyle: 'bold',
+                    fontFamily: 'Arial'
                 }
             )
             .setOrigin(0.5)
-            .setDepth(51)
-            .setPadding(10, 6, 10, 6)
+            .setDepth(52)
             .setVisible(false)
-            .setInteractive({ useHandCursor: true });
+            .setInteractive({ useHandCursor: true })
+            .on('pointerover', () => this.closeSettingsBtn.setScale(1.1))
+            .on('pointerout', () => this.closeSettingsBtn.setScale(1))
+            .on('pointerdown', () => {this.hideSettingsMenu();});
 
-        this.closeSettingsBtn.on('pointerdown', () => {
-            this.hideSettingsMenu();
-        });
+
+
+        this.closeBtnUI = this.add
+            .graphics()
+            .fillStyle(0xc3c3c3, 1)
+            .fillRoundedRect(this.xCoord / 2 - 125, this.yCoord / 2 + 209, 250, 82, 20)
+            .lineStyle(4, 0x000000, 1)
+            .strokeRoundedRect(this.xCoord / 2 - 125, this.yCoord / 2 + 209, 250, 82, 20)
+            .setDepth(51)
+            .setVisible(false);
 
         this.updateSlowModeText();
         this.updateTimerToggleText();
@@ -362,6 +378,10 @@ export default class startScreen extends Phaser.Scene {
         this.livesToggleText.setVisible(true);
         this.highContrastText.setVisible(true);
         this.closeSettingsBtn.setVisible(true);
+        this.closeBtnUI.setVisible(true);
+        this.trophyBtn.disableInteractive();
+        this.playBtn.disableInteractive();
+        this.settingsBtn.disableInteractive();
     }
 
     hideSettingsMenu() {
@@ -372,6 +392,10 @@ export default class startScreen extends Phaser.Scene {
         this.livesToggleText.setVisible(false);
         this.highContrastText.setVisible(false);
         this.closeSettingsBtn.setVisible(false);
+        this.closeBtnUI.setVisible(false);
+        this.trophyBtn.setInteractive();
+        this.playBtn.setInteractive();
+        this.settingsBtn.setInteractive();
     }
 
 updateSlowModeText() {
