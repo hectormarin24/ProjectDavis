@@ -81,7 +81,7 @@ export default class closeTheLids extends Phaser.Scene {
 
         // Wind loop
         const difficulty = gs?.difficulty || 1;
-        let windLoopDelay = 1000 / difficulty;
+        let windLoopDelay = 1600 / difficulty;
         if (gs.slowMode) windLoopDelay *= 1.5;
 
         this.time.addEvent({
